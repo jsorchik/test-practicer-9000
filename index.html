@@ -446,9 +446,28 @@
     font-style: italic;
     padding: 0 6px;
     min-width: 0;
+    border-bottom: none;       /* drop the underline once filled — it cut through the word */
+    height: auto;
+    vertical-align: baseline;
   }
   .sentence .blank.committed {
     font-style: normal;
+  }
+
+  /* Shown above the question card in test mode when the kid is seeing a
+     question for the second time (they skipped it once already and it has
+     cycled back). One more skip and it's counted as a final skip. */
+  .skip-flag {
+    background: rgba(245,158,11,.12);
+    border: 1px solid var(--warn);
+    border-radius: 10px;
+    padding: 9px 14px;
+    margin-bottom: 14px;
+    color: var(--warn);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: .3px;
   }
 
   .feedback {
@@ -765,6 +784,7 @@
   </div>
 
   <div class="card">
+    <div class="skip-flag hidden" id="skipFlag">↻ Previously skipped — last chance to answer</div>
     <div id="promptBlock"></div>
     <div class="options" id="options"></div>
     <div class="feedback" id="feedback"></div>
@@ -3919,6 +3939,18 @@ function renderQuiz(picked = -1) {
     }
   } else {
     $("passagePanel").classList.add("hidden");
+  }
+
+  // Show the "previously skipped" banner when a test question is on its
+  // second pass (skipCount >= 1 means it was skipped once already and has
+  // cycled back — next skip will be final).
+  const skipFlag = $("skipFlag");
+  if (mode === "test") {
+    const qIdx = state.testOrder[state.testOrderPos];
+    const ans = state.testAnswers[qIdx];
+    skipFlag.classList.toggle("hidden", !(ans && ans.skipCount > 0));
+  } else {
+    skipFlag.classList.add("hidden");
   }
 
   $("promptBlock").innerHTML = q.promptHtml;
