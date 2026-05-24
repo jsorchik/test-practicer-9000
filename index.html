@@ -73,7 +73,7 @@
   /* Grade selector */
   .grade-toggle {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 8px;
     margin-bottom: 16px;
   }
@@ -430,11 +430,26 @@
     color: var(--muted);
     flex-shrink: 0;
   }
+  .option.selected { background: rgba(96,165,250,.10); border-color: var(--accent); }
+  .option.selected .key { background: var(--accent); color: #0b1220; }
   .option.correct { background: rgba(34,197,94,.15); border-color: var(--good); }
   .option.correct .key { background: var(--good); color: #052e16; }
   .option.wrong { background: rgba(239,68,68,.15); border-color: var(--bad); }
   .option.wrong .key { background: var(--bad); color: #450a0a; }
   .option:disabled { cursor: default; }
+
+  /* Sentence-completion blank: empty by default, fills with the currently
+     selected word as a preview (italic + accent) until the user submits. */
+  .sentence .blank.filled {
+    color: var(--accent);
+    font-weight: 700;
+    font-style: italic;
+    padding: 0 6px;
+    min-width: 0;
+  }
+  .sentence .blank.committed {
+    font-style: normal;
+  }
 
   .feedback {
     margin-top: 22px;
@@ -696,6 +711,10 @@
       <div class="label">Lower Level</div>
       <div class="sub">Grades 4 → 5</div>
     </button>
+    <button class="grade-pill" id="gradeBridge">
+      <div class="label">Bridge Level</div>
+      <div class="sub">Grade 5 → 6</div>
+    </button>
     <button class="grade-pill active" id="gradeMiddle">
       <div class="label">Middle Level</div>
       <div class="sub">Grades 6 → 7</div>
@@ -752,16 +771,17 @@
     <div class="actions">
       <div class="left">
         <button class="ghost hidden" id="skipBtn">Skip →</button>
+        <button class="ghost hidden" id="finishBtn">Finish test</button>
         <button class="success hidden" id="masterBtn">Mark as mastered</button>
       </div>
       <div class="right">
-        <button class="primary" id="nextBtn" disabled>Next →</button>
+        <button class="primary" id="nextBtn" disabled>Submit</button>
       </div>
     </div>
   </div>
 
   <div class="footer-hint" id="footerHint">
-    <span class="kbd">A</span>–<span class="kbd">D</span> or <span class="kbd">1</span>–<span class="kbd">4</span> answer · <span class="kbd">space</span>/<span class="kbd">enter</span> next · <span class="kbd">s</span> skip · <span class="kbd">m</span> master
+    <span class="kbd">A</span>–<span class="kbd">D</span> or <span class="kbd">1</span>–<span class="kbd">4</span> select · <span class="kbd">space</span>/<span class="kbd">enter</span> submit/next · <span class="kbd">s</span> skip · <span class="kbd">m</span> master
   </div>
 </div>
 
@@ -881,6 +901,106 @@ const LOWER_WORDS = [
   { word: "plead",    correct: "beg",       wrong: ["demand", "refuse", "whisper"],     meaning: "to ask earnestly for something" },
   { word: "prosper",  correct: "thrive",    wrong: ["wither", "stall", "wander"],       meaning: "to do well or be successful" },
   { word: "mend",     correct: "repair",    wrong: ["break", "lose", "stain"],          meaning: "to fix something that is damaged" },
+  // ── expansion batch 3 ──
+  { word: "brisk",    correct: "quick",     wrong: ["heavy", "dull", "warm"],           meaning: "moving in a fast, lively way" },
+  { word: "dim",      correct: "faint",     wrong: ["bright", "sharp", "loud"],         meaning: "not very bright or clear" },
+  { word: "fetch",    correct: "bring",     wrong: ["lose", "hide", "drop"],            meaning: "to go get something and bring it back" },
+  { word: "flicker",  correct: "flash",     wrong: ["fade", "steady", "shine"],         meaning: "to shine on and off quickly" },
+  { word: "gather",   correct: "collect",   wrong: ["scatter", "throw", "spill"],       meaning: "to bring or come together" },
+  { word: "grasp",    correct: "hold",      wrong: ["release", "shove", "spin"],        meaning: "to take firm hold of something" },
+  { word: "hatch",    correct: "emerge",    wrong: ["bury", "freeze", "shrink"],        meaning: "to break out of an egg" },
+  { word: "hush",     correct: "quiet",     wrong: ["shout", "stomp", "wake"],          meaning: "to make or become silent" },
+  { word: "jagged",   correct: "rough",     wrong: ["smooth", "round", "flat"],         meaning: "having sharp uneven edges" },
+  { word: "keen",     correct: "eager",     wrong: ["bored", "weak", "slow"],           meaning: "very interested and enthusiastic" },
+  { word: "linger",   correct: "stay",      wrong: ["rush", "leave", "flee"],           meaning: "to stay around longer than expected" },
+  { word: "loom",     correct: "tower",     wrong: ["shrink", "hide", "duck"],          meaning: "to appear large and threatening" },
+  { word: "marvel",   correct: "wonder",    wrong: ["ignore", "scoff", "yawn"],         meaning: "to feel great surprise or amazement" },
+  { word: "mighty",   correct: "powerful",  wrong: ["puny", "fragile", "soft"],         meaning: "very strong and great" },
+  { word: "mock",     correct: "tease",     wrong: ["praise", "honor", "thank"],        meaning: "to make fun of someone unkindly" },
+  { word: "murky",    correct: "cloudy",    wrong: ["clear", "bright", "shiny"],        meaning: "dark and hard to see through" },
+  { word: "plump",    correct: "chubby",    wrong: ["bony", "tall", "lean"],            meaning: "rounded and a little fat" },
+  { word: "prowl",    correct: "creep",     wrong: ["march", "skip", "leap"],           meaning: "to move quietly while hunting" },
+  { word: "quaint",   correct: "charming",  wrong: ["modern", "plain", "ugly"],         meaning: "old-fashioned in a pleasing way" },
+  { word: "recall",   correct: "remember",  wrong: ["forget", "ignore", "guess"],       meaning: "to bring something back to mind" },
+  { word: "refuse",   correct: "decline",   wrong: ["accept", "grab", "obey"],          meaning: "to say no to something" },
+  { word: "reside",   correct: "live",      wrong: ["visit", "depart", "travel"],       meaning: "to have your home somewhere" },
+  { word: "restless", correct: "fidgety",   wrong: ["calm", "sleepy", "still"],         meaning: "unable to stay still or relax" },
+  { word: "scold",    correct: "lecture",   wrong: ["praise", "hug", "reward"],         meaning: "to angrily tell someone they did wrong" },
+  { word: "scorch",   correct: "burn",      wrong: ["freeze", "soak", "cool"],          meaning: "to damage something with heat" },
+  { word: "sneer",    correct: "smirk",     wrong: ["beam", "grin", "weep"],            meaning: "to smile in a mean, scornful way" },
+  { word: "sole",     correct: "only",      wrong: ["many", "extra", "spare"],          meaning: "being the one and only" },
+  { word: "somber",   correct: "gloomy",    wrong: ["cheery", "silly", "lively"],       meaning: "dark, serious, and sad" },
+  { word: "stagger",  correct: "wobble",    wrong: ["march", "glide", "race"],          meaning: "to walk in an unsteady way" },
+  { word: "startle",  correct: "surprise",  wrong: ["bore", "soothe", "lull"],          meaning: "to make someone jump in shock" },
+  { word: "strict",   correct: "firm",      wrong: ["lazy", "loose", "playful"],        meaning: "very serious about rules" },
+  { word: "supply",   correct: "provide",   wrong: ["take", "steal", "waste"],          meaning: "to give what is needed" },
+  { word: "swarm",    correct: "crowd",     wrong: ["empty", "scatter", "vanish"],      meaning: "to gather in a large group" },
+  { word: "swift",    correct: "speedy",    wrong: ["sluggish", "heavy", "weak"],       meaning: "moving very fast" },
+  { word: "throng",   correct: "mob",       wrong: ["pair", "single", "trickle"],       meaning: "a large crowd of people" },
+  { word: "thrust",   correct: "shove",     wrong: ["tug", "drag", "lift"],             meaning: "to push something with force" },
+  { word: "trudge",   correct: "plod",      wrong: ["sprint", "dash", "skip"],          meaning: "to walk slowly with heavy steps" },
+  { word: "vague",    correct: "unclear",   wrong: ["exact", "sharp", "bold"],          meaning: "not clearly explained or seen" },
+  { word: "vault",    correct: "leap",      wrong: ["crouch", "kneel", "sit"],          meaning: "to jump over something" },
+  { word: "vex",      correct: "annoy",     wrong: ["please", "amuse", "calm"],         meaning: "to bother or irritate someone" },
+  { word: "vow",      correct: "promise",   wrong: ["doubt", "lie", "question"],        meaning: "to give your serious word" },
+  { word: "wail",     correct: "cry",       wrong: ["giggle", "whisper", "hum"],        meaning: "to make a long, sad sound" },
+  { word: "wary",     correct: "careful",   wrong: ["reckless", "bold", "rash"],        meaning: "watchful and on guard for danger" },
+  { word: "weep",     correct: "sob",       wrong: ["laugh", "smile", "chuckle"],       meaning: "to cry with tears" },
+  { word: "whirl",    correct: "spin",      wrong: ["freeze", "stop", "settle"],        meaning: "to turn around quickly" },
+  { word: "wilt",     correct: "droop",     wrong: ["bloom", "grow", "stretch"],        meaning: "to become limp and weak" },
+  { word: "wince",    correct: "flinch",    wrong: ["beam", "relax", "stretch"],        meaning: "to make a face from pain" },
+  { word: "bicker",   correct: "argue",     wrong: ["agree", "share", "forgive"],       meaning: "to quarrel about little things" },
+  { word: "boast",    correct: "brag",      wrong: ["whisper", "deny", "hide"],         meaning: "to talk proudly about yourself" },
+  { word: "clutch",   correct: "clench",    wrong: ["fling", "toss", "drop"],           meaning: "to hold tightly with your hand" },
+  { word: "crisp",    correct: "crunchy",   wrong: ["mushy", "soggy", "limp"],          meaning: "firm and fresh, easy to snap" },
+  { word: "dart",     correct: "dash",      wrong: ["crawl", "plod", "linger"],         meaning: "to move suddenly and quickly" },
+  { word: "drench",   correct: "soak",      wrong: ["dry", "dust", "warm"],             meaning: "to make something completely wet" },
+  { word: "feeble",   correct: "weak",      wrong: ["robust", "tough", "solid"],        meaning: "lacking strength or energy" },
+  { word: "glare",    correct: "scowl",     wrong: ["wink", "beam", "blink"],           meaning: "to stare in an angry way" },
+  { word: "glum",     correct: "sad",       wrong: ["merry", "perky", "giddy"],         meaning: "looking unhappy and down" },
+  { word: "gobble",   correct: "devour",    wrong: ["nibble", "sip", "taste"],          meaning: "to eat very quickly and greedily" },
+  { word: "grumble",  correct: "complain",  wrong: ["cheer", "thank", "praise"],        meaning: "to mutter in an unhappy way" },
+  { word: "hoard",    correct: "stockpile", wrong: ["share", "donate", "spend"],        meaning: "to save up a hidden supply" },
+  { word: "hurl",     correct: "fling",     wrong: ["catch", "carry", "hold"],          meaning: "to throw with great force" },
+  { word: "icy",      correct: "frosty",    wrong: ["sunny", "balmy", "humid"],         meaning: "very cold and frozen" },
+  { word: "jolt",     correct: "jerk",      wrong: ["glide", "drift", "float"],         meaning: "to move with a sudden bump" },
+  { word: "lanky",    correct: "tall",      wrong: ["squat", "stubby", "round"],        meaning: "long and thin in build" },
+  { word: "lush",     correct: "leafy",     wrong: ["barren", "dusty", "bare"],         meaning: "growing thick and green" },
+  { word: "mound",    correct: "heap",      wrong: ["pit", "hole", "ditch"],            meaning: "a small raised pile" },
+  { word: "munch",    correct: "chew",      wrong: ["spit", "swallow", "gulp"],         meaning: "to eat with a crunching sound" },
+  { word: "nudge",    correct: "poke",      wrong: ["slap", "punch", "kick"],           meaning: "to push gently with your elbow" },
+  { word: "pale",     correct: "pasty",     wrong: ["rosy", "tan", "ruddy"],            meaning: "having little color in the face" },
+  { word: "peer",     correct: "gaze",      wrong: ["glance", "wink", "blink"],         meaning: "to look carefully and closely" },
+  { word: "pester",   correct: "bother",    wrong: ["soothe", "help", "comfort"],       meaning: "to keep annoying someone" },
+  { word: "plunge",   correct: "dive",      wrong: ["climb", "rise", "float"],          meaning: "to jump down into something" },
+  { word: "prance",   correct: "strut",     wrong: ["stumble", "limp", "crawl"],        meaning: "to move with proud, lively steps" },
+  { word: "quarrel",  correct: "fight",     wrong: ["agree", "settle", "share"],        meaning: "to have a noisy disagreement" },
+  { word: "rare",     correct: "uncommon",  wrong: ["typical", "common", "usual"],      meaning: "not seen or found often" },
+  { word: "rash",     correct: "hasty",     wrong: ["careful", "patient", "wise"],      meaning: "acting without thinking first" },
+  { word: "reek",     correct: "stink",     wrong: ["sweeten", "freshen", "perfume"],   meaning: "to give off a bad smell" },
+  { word: "rigid",    correct: "stiff",     wrong: ["bendy", "loose", "soft"],          meaning: "not able to bend or move" },
+  { word: "rouse",    correct: "wake",      wrong: ["lull", "calm", "rest"],            meaning: "to stir from sleep" },
+  { word: "scour",    correct: "scrub",     wrong: ["smudge", "dirty", "stain"],        meaning: "to clean by rubbing hard" },
+  { word: "shabby",   correct: "worn",      wrong: ["new", "fancy", "crisp"],           meaning: "old and in poor condition" },
+  { word: "shimmer",  correct: "sparkle",   wrong: ["darken", "dim", "fade"],           meaning: "to shine with a soft glow" },
+  { word: "shun",     correct: "avoid",     wrong: ["greet", "welcome", "invite"],      meaning: "to keep away from on purpose" },
+  { word: "slick",    correct: "slippery",  wrong: ["sticky", "rough", "bumpy"],        meaning: "smooth and easy to slide on" },
+  { word: "smug",     correct: "conceited", wrong: ["humble", "meek", "modest"],        meaning: "too pleased with yourself" },
+  { word: "snare",    correct: "trap",      wrong: ["free", "release", "loose"],        meaning: "to catch in a clever device" },
+  { word: "snug",     correct: "cozy",      wrong: ["roomy", "drafty", "open"],         meaning: "warm and comfortable" },
+  { word: "spry",     correct: "lively",    wrong: ["stiff", "creaky", "frail"],        meaning: "active and full of energy" },
+  { word: "stash",    correct: "hide",      wrong: ["show", "reveal", "display"],       meaning: "to store away secretly" },
+  { word: "stern",    correct: "serious",   wrong: ["playful", "silly", "gentle"],      meaning: "showing no fun, very firm" },
+  { word: "stoop",    correct: "bend",      wrong: ["stand", "stretch", "rise"],        meaning: "to lean the body forward and down" },
+  { word: "stride",   correct: "march",     wrong: ["shuffle", "stumble", "drag"],      meaning: "to walk with long steps" },
+  { word: "sulk",     correct: "pout",      wrong: ["smile", "cheer", "giggle"],        meaning: "to be silently grumpy" },
+  { word: "tend",     correct: "care",      wrong: ["neglect", "ignore", "abandon"],    meaning: "to look after something" },
+  { word: "tug",      correct: "pull",      wrong: ["push", "shove", "release"],        meaning: "to give a sharp pull" },
+  { word: "wad",      correct: "lump",      wrong: ["sheet", "strip", "drop"],          meaning: "a small thick bunch of something" },
+  { word: "wedge",    correct: "jam",       wrong: ["loosen", "free", "slide"],         meaning: "to force something into a tight space" },
+  { word: "wither",   correct: "shrivel",   wrong: ["sprout", "bloom", "swell"],        meaning: "to dry up and shrink" },
+  { word: "yank",     correct: "jerk",      wrong: ["press", "stroke", "tap"],          meaning: "to pull suddenly and hard" },
+  { word: "yearn",    correct: "long",      wrong: ["dread", "shun", "refuse"],         meaning: "to want something very deeply" },
 ];
 
 const LOWER_SENTENCE_COMPLETIONS = [
@@ -935,6 +1055,107 @@ const LOWER_SENTENCE_COMPLETIONS = [
   { sentence: "Ana began to ___ with her mother to let her stay up for the fireworks.", correct: "plead", wrong: ["demand", "refuse", "argue"], explanation: "A child asking earnestly for a favor is pleading." },
   { sentence: "With warm rain and sunshine, the farmer's crops began to ___ this summer.", correct: "prosper", wrong: ["wither", "spoil", "shrink"], explanation: "Good weather helps crops do well." },
   { sentence: "Dad used strong glue to ___ the broken handle of the coffee mug.", correct: "mend", wrong: ["smash", "stain", "lose"], explanation: "Glue is used to fix or repair something broken." },
+  // ── expansion batch 3 ──
+  { sentence: "Although the puppy looked frail, it managed to ___ the heavy rope across the yard.", correct: "drag", wrong: ["drop","chew","sniff"], explanation: "Contrast 'although...frail' implies effort to move; 'drop,' 'chew,' and 'sniff' don't show pulling effort." },
+  { sentence: "The hikers had to ___ up the steep, muddy trail after hours of rain.", correct: "trudge", wrong: ["skip","glide","leap"], explanation: "Steep and muddy after rain suggests slow heavy walking; the others suggest light easy motion." },
+  { sentence: "Because the candle was nearly out, its tiny flame began to ___ in the breeze.", correct: "flicker", wrong: ["blaze","explode","freeze"], explanation: "A nearly-out flame wavers; 'blaze' and 'explode' are too strong, 'freeze' is unrelated." },
+  { sentence: "The librarian asked us to ___ so the readers could focus on their books.", correct: "hush", wrong: ["shout","sing","argue"], explanation: "Library context calls for quieting down; the distractors all add noise." },
+  { sentence: "Although the cat looked calm, it began to ___ near the bird feeder.", correct: "prowl", wrong: ["nap","purr","yawn"], explanation: "Contrast with calm and the bird feeder suggests sneaking hunt; the others show resting." },
+  { sentence: "The storm clouds began to ___ over the soccer field, scaring the players inside.", correct: "loom", wrong: ["shrink","sparkle","dissolve"], explanation: "Scary storm clouds appear large and threatening; the distractors suggest weakening or pretty light." },
+  { sentence: "My grandfather likes coffee that is strong and ___, not sweet or weak.", correct: "bitter", wrong: ["sugary","creamy","mild"], explanation: "Contrast with 'sweet or weak' points to bitter; the others are sweet or gentle flavors." },
+  { sentence: "The runner was so tired he began to ___ across the finish line.", correct: "stagger", wrong: ["sprint","soar","march"], explanation: "Exhaustion causes unsteady walking; sprint, soar, and march all suggest strong steady motion." },
+  { sentence: "Because the soup was too hot, Mia took only ___ sips at first.", correct: "tiny", wrong: ["huge","greedy","loud"], explanation: "Hot soup forces small sips; the other adjectives don't fit a careful taster." },
+  { sentence: "The teacher gave a ___ warning before the field trip to keep us safe.", correct: "strict", wrong: ["silly","kind","lazy"], explanation: "Safety warnings are firm; silly, kind, and lazy don't match a serious warning." },
+  { sentence: "Although the lake looked clear, the bottom was ___ with mud and weeds.", correct: "murky", wrong: ["sparkling","clean","sunny"], explanation: "Contrast with 'clear' points to murky; the distractors are all bright and clean." },
+  { sentence: "The toddler reached out to ___ his sister's finger as they crossed the street.", correct: "grasp", wrong: ["release","ignore","drop"], explanation: "Crossing the street safely means holding tight; the distractors mean letting go." },
+  { sentence: "Because the puppy was new to the home, it acted ___ around strangers.", correct: "wary", wrong: ["fearless","bored","cheerful"], explanation: "A new pup is cautious of strangers; the distractors show confidence or calm." },
+  { sentence: "The wind made the dry leaves ___ down the empty sidewalk.", correct: "whirl", wrong: ["stand","stack","sink"], explanation: "Wind spins leaves; standing, stacking, and sinking don't describe airy motion." },
+  { sentence: "Although she tried not to cry, a single tear made her ___ during the sad story.", correct: "weep", wrong: ["laugh","cheer","yawn"], explanation: "Sad story plus tear leads to crying; the other verbs show happiness or boredom." },
+  { sentence: "The ___ rocks along the cliff made it hard for climbers to find footing.", correct: "jagged", wrong: ["smooth","round","soft"], explanation: "Hard footing means sharp uneven rocks; the distractors are easy surfaces." },
+  { sentence: "Because the recipe called for fresh herbs, Dad went outside to ___ basil from the garden.", correct: "gather", wrong: ["scatter","plant","sell"], explanation: "Recipe needs herbs collected now; scatter, plant, and sell don't bring herbs to the kitchen." },
+  { sentence: "The boy gave a ___ smile when his dog rolled in the mud again.", correct: "grim", wrong: ["cheerful","silly","sunny"], explanation: "Annoyance at messy dog creates a stern smile; the others show happiness." },
+  { sentence: "Because the storm was so loud, our usually ___ dog barked all night.", correct: "calm", wrong: ["wild","mean","tiny"], explanation: "Contrast with all-night barking shows the dog is normally peaceful; the others don't fit 'usually.'" },
+  { sentence: "The hungry hawks would ___ above the meadow looking for mice.", correct: "soar", wrong: ["crawl","swim","burrow"], explanation: "Hawks fly high to hunt; crawling, swimming, and burrowing are ground-level actions." },
+  { sentence: "My little brother began to ___ when his ice cream fell on the sidewalk.", correct: "wail", wrong: ["giggle","whisper","hum"], explanation: "Lost treat causes loud crying; the distractors are quiet or happy sounds." },
+  { sentence: "Because the gym was packed, a huge ___ of kids waited by the door.", correct: "throng", wrong: ["pair","trickle","handful"], explanation: "'Packed' calls for a big crowd; the distractors describe small numbers." },
+  { sentence: "The angry coach began to ___ the team for missing easy passes.", correct: "scold", wrong: ["praise","reward","hug"], explanation: "Angry coach criticizes errors; praising, rewarding, and hugging are positive responses." },
+  { sentence: "The cabin sat in a ___ village tucked between two mossy hills.", correct: "quaint", wrong: ["busy","noisy","modern"], explanation: "A small mossy-hill village feels charming and old-fashioned; the others suggest a city." },
+  { sentence: "Although the puppy was hungry, it would ___ to eat the strange new food.", correct: "refuse", wrong: ["beg","gobble","plead"], explanation: "Strange food makes the puppy turn it down despite hunger; the others mean wanting it." },
+  { sentence: "The old farmhouse seemed to ___ at the back of the lonely field.", correct: "linger", wrong: ["sprint","topple","explode"], explanation: "An old building quietly remains; sprinting, toppling, and exploding are sudden actions." },
+  { sentence: "Because the bear was so ___, even one paw could knock down a small tree.", correct: "mighty", wrong: ["weak","tiny","silly"], explanation: "Tree-knocking power means strong; the distractors show smallness or harmlessness." },
+  { sentence: "The ___ kitten followed her tail in circles around the kitchen floor.", correct: "restless", wrong: ["sleepy","still","stiff"], explanation: "Following her tail in circles shows can't-sit-still energy; the others mean staying put." },
+  { sentence: "Mrs. Park asked us to ___ on the bench and stop running in the hallway.", correct: "halt", wrong: ["dash","race","sprint"], explanation: "Stopping the running requires halting; the distractors all mean speeding up." },
+  { sentence: "Because the bread was so ___, the baker brushed honey on top to brighten it.", correct: "plain", wrong: ["sticky","sweet","spicy"], explanation: "Honey is added to wake up flavorless bread; the others already have strong taste." },
+  { sentence: "The mountain looked ___ in the gray fog, with no peak in sight.", correct: "vague", wrong: ["clear","sharp","bright"], explanation: "Fog hides shapes, making them unclear; the distractors mean easy to see." },
+  { sentence: "Although Jen is small, she has a ___ grip and won the rope-pull contest.", correct: "mighty", wrong: ["feeble","loose","gentle"], explanation: "Winning the pull despite being small shows strength; the others are weak grips." },
+  { sentence: "The old hound began to ___ slowly toward the warm fireplace.", correct: "trudge", wrong: ["bound","leap","zip"], explanation: "Old dogs move heavily; the distractors describe quick energetic motion." },
+  { sentence: "Because Sam was so ___ to start the race, he jumped before the whistle.", correct: "eager", wrong: ["bored","sleepy","sad"], explanation: "Jumping early shows excitement; the distractors show low energy." },
+  { sentence: "The ___ apple was perfect for the pie, juicy and round.", correct: "plump", wrong: ["shriveled","tiny","sour"], explanation: "Juicy and round means full and ripe; shriveled and tiny mean small or dried." },
+  { sentence: "Although she tried to stay still, a loud bang made her ___ on the bench.", correct: "wince", wrong: ["relax","smile","stretch"], explanation: "Loud bangs cause a small flinch; the distractors show comfort." },
+  { sentence: "The puppy gave a ___ bark as the mailman approached the porch.", correct: "fierce", wrong: ["weak","silent","sleepy"], explanation: "A warning bark sounds strong; the distractors show no warning at all." },
+  { sentence: "Because the kitchen smelled wonderful, my mouth began to ___ for dinner.", correct: "water", wrong: ["close","dry","freeze"], explanation: "Tasty smells make saliva form; the distractors are the opposite." },
+  { sentence: "The librarian gave a ___ stare when we forgot to use whisper voices.", correct: "strict", wrong: ["kind","silly","loose"], explanation: "Forgotten rules earn a firm look; the distractors are not corrective." },
+  { sentence: "The ___ stars above the campsite made the whole sky look magical.", correct: "countless", wrong: ["few","missing","dim"], explanation: "Magical sky means too many to count; the distractors mean rare or hard to see." },
+  { sentence: "Because the snake felt threatened, it began to ___ near the rock.", correct: "coil", wrong: ["stretch","dive","sprint"], explanation: "Threatened snakes wind up into a coil; the others extend or flee fast." },
+  { sentence: "The dog's ears ___ up when she heard the treat bag rustle.", correct: "perked", wrong: ["drooped","slept","folded"], explanation: "Treat sounds catch a dog's attention; the distractors show no interest." },
+  { sentence: "Although the morning was cold, a ___ wind made the runners feel fresh.", correct: "brisk", wrong: ["sticky","warm","heavy"], explanation: "Cold plus refreshing means crisp and lively; the distractors don't feel fresh." },
+  { sentence: "The thunderclap made the baby ___ and reach for her mother.", correct: "startle", wrong: ["snore","yawn","stretch"], explanation: "A sudden loud noise causes a jump; the distractors are sleepy or restful." },
+  { sentence: "Because Grandma loves birds, she keeps a ___ feeder full of seeds outside.", correct: "tidy", wrong: ["broken","empty","filthy"], explanation: "A bird lover keeps a neat full feeder; the distractors are neglected." },
+  { sentence: "The old wooden bridge gave a ___ creak as the wagon rolled across.", correct: "faint", wrong: ["booming","crashing","roaring"], explanation: "Old wood makes a soft creak; the distractors are loud crashing sounds." },
+  { sentence: "Although Lee felt nervous, he made a ___ to finish the science project.", correct: "vow", wrong: ["mistake","mess","guess"], explanation: "A serious promise pushes him through nerves; the distractors are not promises." },
+  { sentence: "The wolves began to ___ through the snowy forest in search of food.", correct: "prowl", wrong: ["nap","skip","tumble"], explanation: "Hunting wolves move silently and watchful; the distractors are playful or resting." },
+  { sentence: "Because the milk had spoiled, it smelled so ___ that I held my nose.", correct: "foul", wrong: ["sweet","fresh","mild"], explanation: "Spoiled milk smells bad; the distractors are pleasant or weak odors." },
+  { sentence: "The old farmer spoke in a ___ voice that sounded like gravel.", correct: "gruff", wrong: ["sweet","bright","airy"], explanation: "Gravel-sounding voice is rough and low; the distractors are soft and light." },
+  { sentence: "Although the room was warm, Lily began to ___ from a sudden chill.", correct: "shiver", wrong: ["sweat","smile","stretch"], explanation: "Chill causes shaking even in warmth; the distractors don't show cold." },
+  { sentence: "The hot pan began to ___ the bacon until it turned crispy and brown.", correct: "scorch", wrong: ["chill","soak","steam"], explanation: "Hot pans burn surfaces brown; the distractors do not crisp food." },
+  { sentence: "Because the test was so hard, even the ___ students needed extra time.", correct: "keen", wrong: ["lazy","tired","slow"], explanation: "Even sharp learners struggled; the distractors don't show strong skill." },
+  { sentence: "My uncle is ___ of fishing and goes to the lake every weekend.", correct: "fond", wrong: ["scared","tired","ashamed"], explanation: "Going every weekend shows affection; the distractors mean dislike or fear." },
+  { sentence: "The ___ light from the porch was just enough to find the keys.", correct: "dim", wrong: ["blazing","blinding","glaring"], explanation: "Just enough light is faint; the distractors are too bright." },
+  { sentence: "Although the river looked gentle, it could ___ a small boat off course.", correct: "thrust", wrong: ["tickle","kiss","whisper"], explanation: "A strong river pushes hard; the distractors are tiny gentle actions." },
+  { sentence: "Because she had nothing to say, Mia gave a ___ shrug and walked off.", correct: "vague", wrong: ["loud","careful","exact"], explanation: "Nothing to say means an unclear gesture; the distractors are specific or noisy." },
+  { sentence: "The little fox would ___ around the woodpile each night for scraps.", correct: "linger", wrong: ["flee","sprint","disappear"], explanation: "Looking for scraps means staying nearby; the distractors mean leaving fast." },
+  { sentence: "Because the campfire was almost out, we needed to ___ more sticks.", correct: "gather", wrong: ["burn","break","bury"], explanation: "Restarting the fire needs collected sticks; the distractors don't bring fuel in." },
+  { sentence: "The thin ice began to ___ under the skater's heavy boots.", correct: "crack", wrong: ["shine","melt","freeze"], explanation: "Heavy boots break thin ice; the distractors don't describe sudden splitting." },
+  { sentence: "Although she was usually kind, the coach gave a ___ look at the messy locker.", correct: "stern", wrong: ["sweet","silly","sleepy"], explanation: "Mess earns a serious disapproving look; the distractors don't correct behavior." },
+  { sentence: "The frog tried to ___ the fly with its long sticky tongue.", correct: "snatch", wrong: ["release","drop","ignore"], explanation: "Frogs grab prey quickly; the distractors mean letting go." },
+  { sentence: "Because the wind was so cold, Anna pulled her ___ scarf around her neck.", correct: "thick", wrong: ["thin","torn","light"], explanation: "Cold wind calls for heavy warm fabric; the distractors are weak protection." },
+  { sentence: "The ___ mouse darted under the couch before the cat could see it.", correct: "swift", wrong: ["clumsy","heavy","stiff"], explanation: "Escaping a cat needs quickness; the distractors are slow or awkward." },
+  { sentence: "Although the room was dark, Dad could ___ the toy box on the floor.", correct: "spot", wrong: ["miss","lose","hide"], explanation: "He still saw it despite darkness; the distractors mean failing to see." },
+  { sentence: "The little turtle began to ___ down the sandy beach toward the water.", correct: "crawl", wrong: ["fly","leap","gallop"], explanation: "Turtles move slowly on legs; the distractors are too fast or airborne." },
+  { sentence: "Because the puppy chewed the slipper, Dad spoke in a ___ tone.", correct: "stern", wrong: ["gentle","funny","sweet"], explanation: "Misbehavior earns a serious tone; the distractors are not corrective." },
+  { sentence: "The hummingbird made the flower ___ slightly as it sipped the nectar.", correct: "tremble", wrong: ["freeze","sink","split"], explanation: "Tiny wings cause small shaking; the distractors are heavier actions." },
+  { sentence: "Although Ben felt shy, he gave a ___ wave to the new student.", correct: "faint", wrong: ["bold","huge","wild"], explanation: "Shyness produces a small gesture; the distractors are big and confident." },
+  { sentence: "Because the soup was simmering, Mom told us not to ___ the pot.", correct: "touch", wrong: ["watch","smell","draw"], explanation: "Hot pots are dangerous to handle; the distractors don't risk a burn." },
+  { sentence: "The ___ runner crossed the line first, beating her own school record.", correct: "swift", wrong: ["slow","sleepy","tired"], explanation: "Record-beating means very fast; the distractors are not winning speeds." },
+  { sentence: "The crowd began to ___ at the magician's amazing card trick.", correct: "marvel", wrong: ["yawn","frown","groan"], explanation: "An amazing trick brings wonder; the distractors show boredom or displeasure." },
+  { sentence: "Because the field was muddy, the boots made a ___ sound at each step.", correct: "squish", wrong: ["clang","chirp","tick"], explanation: "Mud creates wet sticky noise; the distractors are metallic or animal sounds." },
+  { sentence: "Although the cake looked perfect, one bite proved it was ___ inside.", correct: "raw", wrong: ["crispy","baked","golden"], explanation: "Perfect outside but bad bite means underdone; the distractors mean fully cooked." },
+  { sentence: "The little kitten gave a ___ meow when she lost her toy mouse.", correct: "sad", wrong: ["proud","loud","jolly"], explanation: "Lost toy upsets the kitten; the distractors are happy or strong sounds." },
+  { sentence: "Because the path was icy, we had to walk with a ___ step.", correct: "careful", wrong: ["careless","wild","quick"], explanation: "Icy paths call for caution; the distractors invite a fall." },
+  { sentence: "The ___ wind blew the kite high above the playground.", correct: "strong", wrong: ["still","weak","gentle"], explanation: "Lifting a kite high needs power; the distractors can't carry it up." },
+  { sentence: "Although the test seemed hard, Maya was ___ to get most answers right.", correct: "able", wrong: ["unable","afraid","slow"], explanation: "Getting most right shows skill; the distractors mean failing or struggling." },
+  { sentence: "The thunder began to ___ across the dark and stormy sky.", correct: "boom", wrong: ["whisper","tickle","murmur"], explanation: "Storm thunder is loud; the distractors are quiet sounds." },
+  { sentence: "Because the rabbit heard a noise, it began to ___ near the bush.", correct: "freeze", wrong: ["dance","sing","yawn"], explanation: "Scared rabbits hold still; the distractors are active or noisy." },
+  { sentence: "The chef gave a ___ smile after tasting his perfect new sauce.", correct: "proud", wrong: ["shy","angry","afraid"], explanation: "Success leads to pride; the distractors don't match a triumph." },
+  { sentence: "Although Sam tried to be quiet, the loose floorboards began to ___.", correct: "creak", wrong: ["shine","melt","bend"], explanation: "Old boards squeak under feet; the distractors aren't sound words." },
+  { sentence: "Because the dog had been digging, his paws were ___ with brown dirt.", correct: "caked", wrong: ["clean","bare","dry"], explanation: "Digging covers paws thickly; the distractors mean no dirt at all." },
+  { sentence: "The ___ stream tumbled over rocks and splashed our shoes.", correct: "bubbly", wrong: ["frozen","silent","still"], explanation: "Tumbling and splashing show lively water; the distractors are unmoving." },
+  { sentence: "Although Jay was tall, he had to ___ to reach the top shelf.", correct: "stretch", wrong: ["shrink","crouch","kneel"], explanation: "Tall plus high shelf still needs reaching up; the distractors go lower." },
+  { sentence: "Because the soup boiled too long, it became ___ and sticky.", correct: "thick", wrong: ["watery","thin","clear"], explanation: "Overcooked soup loses water and thickens; the distractors mean runny." },
+  { sentence: "The wind made the wheat fields ___ like a green sea.", correct: "sway", wrong: ["freeze","split","sink"], explanation: "Wheat in wind moves back and forth; the distractors don't describe gentle motion." },
+  { sentence: "Because the puppy was tiny, he had to ___ over the doorstep.", correct: "clamber", wrong: ["soar","sprint","dive"], explanation: "Tiny legs climb awkwardly; the distractors are smooth fast moves." },
+  { sentence: "Although the sky was clear, a ___ cloud appeared over the mountain.", correct: "lone", wrong: ["dozens","many","plenty"], explanation: "Clear sky plus one cloud means a single one; the distractors mean lots." },
+  { sentence: "The hungry chicks began to ___ for food when their mother returned.", correct: "chirp", wrong: ["roar","bark","howl"], explanation: "Chicks make small bird sounds; the distractors belong to bigger animals." },
+  { sentence: "Because she stayed up late, Mia gave a ___ yawn during math class.", correct: "huge", wrong: ["tiny","silent","quick"], explanation: "Late nights cause big tired yawns; the distractors are small yawns." },
+  { sentence: "The dancers had to ___ their movements to match the slow music.", correct: "soften", wrong: ["harden","speed","sharpen"], explanation: "Slow music calls for gentler moves; the distractors make movement stronger." },
+  { sentence: "Although the field was wide, the team could ___ together quickly.", correct: "huddle", wrong: ["scatter","wander","drift"], explanation: "Coming together fast is huddling; the distractors mean spreading apart." },
+  { sentence: "Because the cookies were warm, the chocolate began to ___ inside them.", correct: "melt", wrong: ["freeze","harden","crack"], explanation: "Warm chocolate softens; the distractors mean staying solid." },
+  { sentence: "The ___ skies kept the picnic blanket dry all afternoon.", correct: "sunny", wrong: ["stormy","rainy","misty"], explanation: "Dry blanket means clear weather; the distractors bring wetness." },
+  { sentence: "Although Toby felt brave, he began to ___ when the lights went out.", correct: "tremble", wrong: ["laugh","relax","sleep"], explanation: "Sudden dark can cause shaking even in brave kids; the distractors show comfort." },
+  { sentence: "The river otters love to ___ along the muddy bank.", correct: "slide", wrong: ["climb","march","stomp"], explanation: "Otters slip down banks for play; the distractors are stiff land movements." },
+  { sentence: "Because the bee felt poked, it began to ___ angrily near the picnic.", correct: "buzz", wrong: ["sing","bark","purr"], explanation: "Angry bees make a humming sound; the distractors belong to other animals." },
+  { sentence: "The ___ bird sat alone on the fence after losing its flock.", correct: "lone", wrong: ["packed","crowded","grouped"], explanation: "Alone after losing the flock means single; the distractors mean many together." },
+  { sentence: "Although the gift was small, it made Grandma's eyes ___ with joy.", correct: "shine", wrong: ["close","sink","dim"], explanation: "Joyful eyes brighten; the distractors describe sadness or sleep." },
 ];
 
 const LOWER_QUANT = [
@@ -993,6 +1214,119 @@ const LOWER_QUANT = [
   { type: "math", question: "Five friends shared 35 grapes equally. How many grapes did each friend get?", correct: "7", wrong: ["6", "8", "30"], explanation: "35 ÷ 5 = 7 grapes per friend." },
   { type: "math", question: "Tomas runs 3 laps on Monday, 5 on Tuesday, and 7 on Wednesday. If the pattern continues, how many laps will he run on Friday?", correct: "11", wrong: ["9", "10", "13"], explanation: "He adds 2 each day: Thursday 9, Friday 11." },
   { type: "math", question: "Anna spins a spinner with 8 equal sections numbered 1 through 8. What is the probability she spins an even number?", correct: "½", wrong: ["¼", "⅜", "⅝"], explanation: "There are 4 even numbers (2, 4, 6, 8) out of 8, so 4/8 = ½." },
+  // ── expansion batch 3 ──
+  { type: "math", question: "Maya had 42 trading cards. She gave 17 to her cousin. How many cards does Maya have left?", correct: "25", wrong: ["35", "59", "27"], explanation: "42 − 17 = 25. Subtract the ones (12−7=5, borrow), then tens (3−1=2)." },
+  { type: "math", question: "A box holds 7 muffins. How many muffins are in 9 full boxes?", correct: "63", wrong: ["56", "72", "16"], explanation: "7 × 9 = 63." },
+  { type: "math", question: "Which fraction is larger: ⅗ or ⅘?", correct: "⅘", wrong: ["⅗", "they are equal", "cannot tell"], explanation: "Same denominator (5), so compare numerators: 4 > 3, so ⅘ is larger." },
+  { type: "math", question: "What is 528 + 367?", correct: "895", wrong: ["885", "795", "905"], explanation: "Add ones 8+7=15 (carry 1), tens 2+6+1=9, hundreds 5+3=8. Total: 895." },
+  { type: "math", question: "A rectangle is 12 cm long and 4 cm wide. What is its perimeter?", correct: "32 cm", wrong: ["48 cm", "16 cm", "24 cm"], explanation: "Perimeter = 2(12+4) = 2(16) = 32 cm." },
+  { type: "math", question: "Solve for x: x + 8 = 15.", correct: "7", wrong: ["23", "8", "6"], explanation: "Subtract 8 from both sides: x = 15 − 8 = 7." },
+  { type: "math", question: "What is 50% of 64?", correct: "32", wrong: ["16", "34", "64"], explanation: "50% means half. Half of 64 is 32." },
+  { type: "math", question: "The pattern is 5, 10, 20, 40, ... What is the next number?", correct: "80", wrong: ["50", "60", "160"], explanation: "Each term doubles the previous: 40 × 2 = 80." },
+  { type: "math", question: "Tom buys 4 notebooks at $3 each and a pen for $2. How much did he spend in total?", correct: "$14", wrong: ["$12", "$20", "$9"], explanation: "4 × $3 = $12, then $12 + $2 = $14." },
+  { type: "math", question: "What is the value of the digit 4 in the number 6,438?", correct: "400", wrong: ["40", "4", "4,000"], explanation: "The 4 is in the hundreds place, so it represents 400." },
+  { type: "math", question: "Round 3,762 to the nearest hundred.", correct: "3,800", wrong: ["3,700", "3,760", "4,000"], explanation: "The tens digit is 6 (≥5), so round up: 3,762 → 3,800." },
+  { type: "math", question: "What is 0.45 + 0.27?", correct: "0.72", wrong: ["0.62", "0.82", "0.612"], explanation: "Line up decimals: 0.45 + 0.27 = 0.72." },
+  { type: "math", question: "A bag has 5 red, 3 blue, and 2 yellow marbles. What is the probability of drawing a blue marble?", correct: "3/10", wrong: ["3/7", "1/3", "2/10"], explanation: "Total marbles = 5+3+2 = 10. Blue = 3, so P(blue) = 3/10." },
+  { type: "math", question: "Lily's soccer game starts at 2:40 PM and lasts 1 hour 25 minutes. When does it end?", correct: "4:05 PM", wrong: ["3:65 PM", "4:15 PM", "3:55 PM"], explanation: "2:40 + 1 hr = 3:40. 3:40 + 25 min = 4:05 PM." },
+  { type: "math", question: "How many inches are in 5 feet?", correct: "60", wrong: ["50", "12", "72"], explanation: "1 foot = 12 inches, so 5 × 12 = 60 inches." },
+  { type: "math", question: "What is 312 ÷ 4?", correct: "78", wrong: ["68", "88", "73"], explanation: "31 ÷ 4 = 7 r3; bring down 2 → 32 ÷ 4 = 8. Answer: 78." },
+  { type: "math", question: "Which decimal is greater: 0.7 or 0.65?", correct: "0.7", wrong: ["0.65", "they are equal", "cannot tell"], explanation: "0.7 = 0.70 and 0.70 > 0.65, so 0.7 is greater." },
+  { type: "math", question: "What is ⅖ + ⅕?", correct: "⅗", wrong: ["⅖", "3/10", "⅘"], explanation: "Same denominator: 2/5 + 1/5 = 3/5." },
+  { type: "math", question: "A square has a side length of 9 inches. What is its area?", correct: "81 square inches", wrong: ["36 square inches", "18 square inches", "72 square inches"], explanation: "Area of square = side × side = 9 × 9 = 81 sq in." },
+  { type: "math", question: "Find the mean of 4, 7, 8, and 5.", correct: "6", wrong: ["7", "5", "24"], explanation: "Sum = 4+7+8+5 = 24. Mean = 24 ÷ 4 = 6." },
+  { type: "math", question: "Solve for y: 4y = 28.", correct: "7", wrong: ["6", "8", "24"], explanation: "Divide both sides by 4: y = 28 ÷ 4 = 7." },
+  { type: "math", question: "A right angle measures how many degrees?", correct: "90°", wrong: ["45°", "180°", "60°"], explanation: "By definition, a right angle is exactly 90°." },
+  { type: "math", question: "How many quarters make $2.50?", correct: "10", wrong: ["8", "12", "25"], explanation: "Each quarter is $0.25. $2.50 ÷ $0.25 = 10 quarters." },
+  { type: "math", question: "What is 25% of 200?", correct: "50", wrong: ["25", "40", "75"], explanation: "25% = ¼. 200 ÷ 4 = 50." },
+  { type: "math", question: "The pattern is 100, 91, 82, 73, ... What is the next number?", correct: "64", wrong: ["63", "65", "74"], explanation: "Each term decreases by 9: 73 − 9 = 64." },
+  { type: "math", question: "Carlos read 24 pages on Monday and 38 pages on Tuesday. How many pages total?", correct: "62", wrong: ["52", "72", "14"], explanation: "24 + 38 = 62 pages." },
+  { type: "math", question: "Which fraction equals ½?", correct: "5/10", wrong: ["3/5", "4/7", "2/5"], explanation: "5/10 simplifies to ½ since 5 is half of 10." },
+  { type: "math", question: "An obtuse angle measures...", correct: "more than 90° but less than 180°", wrong: ["exactly 90°", "less than 90°", "exactly 180°"], explanation: "Obtuse angles are greater than 90° but less than 180°." },
+  { type: "math", question: "Sam bought a sandwich for $6.75 and paid with a $10 bill. How much change?", correct: "$3.25", wrong: ["$4.25", "$3.75", "$2.25"], explanation: "$10.00 − $6.75 = $3.25." },
+  { type: "math", question: "What is 6 × 47?", correct: "282", wrong: ["272", "242", "287"], explanation: "6 × 40 = 240, 6 × 7 = 42. 240 + 42 = 282." },
+  { type: "math", question: "Find the median of 11, 3, 7, 9, 5.", correct: "7", wrong: ["9", "5", "11"], explanation: "Order: 3, 5, 7, 9, 11. The middle value is 7." },
+  { type: "math", question: "A pizza is cut into 8 equal slices. Maya eats 2 slices. What fraction is left?", correct: "¾", wrong: ["⅝", "⅔", "⅙"], explanation: "8 − 2 = 6 slices left. 6/8 = ¾." },
+  { type: "math", question: "How many minutes are in 3¼ hours?", correct: "195", wrong: ["180", "210", "190"], explanation: "3 hours = 180 min, ¼ hr = 15 min. 180 + 15 = 195." },
+  { type: "math", question: "Solve for n: n − 13 = 22.", correct: "35", wrong: ["9", "25", "33"], explanation: "Add 13 to both sides: n = 22 + 13 = 35." },
+  { type: "math", question: "What is 1.4 − 0.6?", correct: "0.8", wrong: ["0.7", "1.0", "0.2"], explanation: "1.4 − 0.6 = 0.8 (borrow from ones)." },
+  { type: "math", question: "A recipe uses 3 cups of flour for every 2 cups of sugar. If you use 9 cups of flour, how many cups of sugar?", correct: "6", wrong: ["4", "5", "8"], explanation: "Flour tripled (3→9), so triple sugar: 2 × 3 = 6 cups." },
+  { type: "math", question: "What is the perimeter of a square with side 11 ft?", correct: "44 ft", wrong: ["22 ft", "121 ft", "33 ft"], explanation: "Perimeter = 4 × side = 4 × 11 = 44 ft." },
+  { type: "math", question: "Round 8.47 to the nearest tenth.", correct: "8.5", wrong: ["8.4", "8.0", "9.0"], explanation: "Hundredths digit is 7 (≥5), so round tenths up: 8.5." },
+  { type: "math", question: "What is 10% of $90?", correct: "$9", wrong: ["$10", "$0.90", "$0.09"], explanation: "10% means one-tenth. $90 ÷ 10 = $9." },
+  { type: "math", question: "Which number is in the thousands place in 47,852?", correct: "7", wrong: ["4", "8", "5"], explanation: "From right: 2 ones, 5 tens, 8 hundreds, 7 thousands, 4 ten-thousands." },
+  { type: "math", question: "A spinner has 4 equal sections: 1, 2, 3, 4. What is the probability of spinning an odd number?", correct: "½", wrong: ["¼", "¾", "⅓"], explanation: "Odd numbers are 1 and 3 (2 outcomes). 2/4 = ½." },
+  { type: "math", question: "What is 723 − 489?", correct: "234", wrong: ["244", "334", "224"], explanation: "Borrow to subtract: 723 − 489 = 234." },
+  { type: "math", question: "How many seconds are in 4 minutes?", correct: "240", wrong: ["120", "200", "400"], explanation: "1 minute = 60 seconds. 4 × 60 = 240 seconds." },
+  { type: "math", question: "Find the range of 12, 18, 4, 9, 15.", correct: "14", wrong: ["4", "18", "12"], explanation: "Range = max − min = 18 − 4 = 14." },
+  { type: "math", question: "What is ⅚ − ⅓?", correct: "½", wrong: ["⅔", "⅙", "⅗"], explanation: "⅓ = 2/6. So 5/6 − 2/6 = 3/6 = ½." },
+  { type: "math", question: "A car travels 60 miles in 1 hour. How far in 3½ hours at the same speed?", correct: "210 miles", wrong: ["180 miles", "240 miles", "200 miles"], explanation: "60 × 3 = 180, plus 60 × ½ = 30. Total 180 + 30 = 210 miles." },
+  { type: "math", question: "Solve: 9 + x = 17.", correct: "8", wrong: ["7", "9", "26"], explanation: "Subtract 9 from both sides: x = 17 − 9 = 8." },
+  { type: "math", question: "Convert 2¾ to an improper fraction.", correct: "11/4", wrong: ["9/4", "5/4", "8/4"], explanation: "2 × 4 = 8, plus 3 numerator = 11. So 11/4." },
+  { type: "math", question: "A rectangle has length 15 m and width 6 m. What is its area?", correct: "90 sq m", wrong: ["42 sq m", "21 sq m", "30 sq m"], explanation: "Area = length × width = 15 × 6 = 90 sq m." },
+  { type: "math", question: "What is 75% of 40?", correct: "30", wrong: ["20", "10", "35"], explanation: "75% = ¾. 40 ÷ 4 = 10, then 10 × 3 = 30." },
+  { type: "math", question: "Pattern: 1, 4, 9, 16, ... What is the next number?", correct: "25", wrong: ["20", "24", "32"], explanation: "These are square numbers: 1², 2², 3², 4², 5² = 25." },
+  { type: "math", question: "Jen has 3 dimes, 4 nickels, and 8 pennies. How much money does she have?", correct: "58¢", wrong: ["48¢", "60¢", "52¢"], explanation: "3×10 + 4×5 + 8×1 = 30 + 20 + 8 = 58¢." },
+  { type: "math", question: "What is 8 × 25?", correct: "200", wrong: ["150", "175", "225"], explanation: "8 × 25 = 8 × (100÷4) = 800÷4 = 200." },
+  { type: "math", question: "Mode of: 3, 5, 5, 7, 8, 5, 9?", correct: "5", wrong: ["7", "8", "6"], explanation: "5 appears three times, more than any other number." },
+  { type: "math", question: "Tina's bus ride starts at 7:50 AM and lasts 35 minutes. When does it end?", correct: "8:25 AM", wrong: ["8:35 AM", "8:15 AM", "8:05 AM"], explanation: "7:50 + 10 min = 8:00. Then + 25 min = 8:25 AM." },
+  { type: "math", question: "Which fraction is between ¼ and ¾?", correct: "½", wrong: ["⅛", "7/8", "⅕"], explanation: "¼ = 0.25, ¾ = 0.75. ½ = 0.5, which is between them." },
+  { type: "math", question: "What is 4,506 − 1,278?", correct: "3,228", wrong: ["3,328", "3,218", "5,784"], explanation: "Borrow as needed: 4,506 − 1,278 = 3,228." },
+  { type: "math", question: "An acute angle measures...", correct: "less than 90°", wrong: ["exactly 90°", "more than 90°", "exactly 180°"], explanation: "Acute angles are smaller than 90°." },
+  { type: "math", question: "If 5 apples cost $2.00, how much does 1 apple cost?", correct: "$0.40", wrong: ["$0.50", "$0.20", "$0.25"], explanation: "$2.00 ÷ 5 = $0.40 per apple." },
+  { type: "math", question: "How many ounces are in 2 pounds?", correct: "32", wrong: ["16", "24", "20"], explanation: "1 pound = 16 ounces. 2 × 16 = 32 ounces." },
+  { type: "math", question: "Solve: 7x = 56.", correct: "8", wrong: ["7", "9", "49"], explanation: "Divide both sides by 7: x = 56 ÷ 7 = 8." },
+  { type: "math", question: "What is 0.8 × 10?", correct: "8", wrong: ["0.08", "80", "0.8"], explanation: "Multiplying by 10 shifts the decimal one place right: 0.8 → 8." },
+  { type: "math", question: "A triangle has angles 60°, 80°, and x. What is x?", correct: "40°", wrong: ["50°", "30°", "60°"], explanation: "Angles of a triangle sum to 180°. 180 − 60 − 80 = 40°." },
+  { type: "math", question: "Pattern: 64, 32, 16, 8, ... Next number?", correct: "4", wrong: ["2", "6", "0"], explanation: "Each term is halved: 8 ÷ 2 = 4." },
+  { type: "math", question: "A class of 24 students has 3 absent. What fraction is present?", correct: "⅞", wrong: ["¾", "⅛", "⅚"], explanation: "Present = 24 − 3 = 21. 21/24 = 7/8." },
+  { type: "math", question: "Round 6,491 to the nearest thousand.", correct: "6,000", wrong: ["7,000", "6,500", "6,400"], explanation: "Hundreds digit is 4 (<5), so round down: 6,000." },
+  { type: "math", question: "What is 9 × 12?", correct: "108", wrong: ["96", "98", "112"], explanation: "9 × 12 = 9 × 10 + 9 × 2 = 90 + 18 = 108." },
+  { type: "math", question: "Ben saves $5 each week. How many weeks until he saves $65?", correct: "13", wrong: ["12", "14", "15"], explanation: "65 ÷ 5 = 13 weeks." },
+  { type: "math", question: "What is ⅓ + ¼?", correct: "7/12", wrong: ["⅖", "2/7", "5/12"], explanation: "Common denominator 12: ⅓ = 4/12, ¼ = 3/12. Sum = 7/12." },
+  { type: "math", question: "A swimming pool is 25 m long. How many meters in 6 lengths?", correct: "150 m", wrong: ["125 m", "175 m", "100 m"], explanation: "25 × 6 = 150 m." },
+  { type: "math", question: "What is the area of a square with side 13?", correct: "169", wrong: ["52", "26", "139"], explanation: "Area = 13 × 13 = 169 sq units." },
+  { type: "math", question: "Solve: 18 − x = 11.", correct: "7", wrong: ["6", "8", "29"], explanation: "x = 18 − 11 = 7." },
+  { type: "math", question: "What is 0.5 of 22?", correct: "11", wrong: ["10", "12", "5.5"], explanation: "0.5 = ½. Half of 22 is 11." },
+  { type: "math", question: "A bag has 12 candies shared equally among 4 friends. How many each?", correct: "3", wrong: ["4", "2", "6"], explanation: "12 ÷ 4 = 3 candies each." },
+  { type: "math", question: "Which is the smallest: 0.4, 0.39, 0.41?", correct: "0.39", wrong: ["0.4", "0.41", "they are equal"], explanation: "0.39 < 0.40 < 0.41." },
+  { type: "math", question: "What is 287 + 415?", correct: "702", wrong: ["692", "712", "602"], explanation: "Add: 7+5=12 (carry 1), 8+1+1=10 (carry 1), 2+4+1=7. = 702." },
+  { type: "math", question: "How many millimeters are in 6 centimeters?", correct: "60", wrong: ["6", "600", "16"], explanation: "1 cm = 10 mm. 6 × 10 = 60 mm." },
+  { type: "math", question: "Test scores: 80, 90, 70, 100. What is the mean?", correct: "85", wrong: ["80", "90", "70"], explanation: "Sum = 340. Mean = 340 ÷ 4 = 85." },
+  { type: "math", question: "Round 47.83 to the nearest whole number.", correct: "48", wrong: ["47", "47.8", "50"], explanation: "Tenths digit is 8 (≥5), so round up: 48." },
+  { type: "math", question: "Pattern: 2, 6, 18, 54, ... Next?", correct: "162", wrong: ["108", "152", "216"], explanation: "Each term multiplied by 3: 54 × 3 = 162." },
+  { type: "math", question: "Maria walks ⅖ mile to school and ⅖ mile home. How far total?", correct: "⅘ mile", wrong: ["⅖ mile", "1 mile", "4/10 mile"], explanation: "⅖ + ⅖ = ⅘ mile." },
+  { type: "math", question: "A pencil costs 45¢. How much do 3 pencils cost?", correct: "$1.35", wrong: ["$1.25", "$1.45", "$1.15"], explanation: "45 × 3 = 135¢ = $1.35." },
+  { type: "math", question: "What is 600 ÷ 5?", correct: "120", wrong: ["110", "150", "100"], explanation: "600 ÷ 5 = 120 (since 5 × 120 = 600)." },
+  { type: "math", question: "How many sides does a hexagon have?", correct: "6", wrong: ["5", "7", "8"], explanation: "A hexagon has 6 sides by definition." },
+  { type: "math", question: "Solve: x + 11 = 20.", correct: "9", wrong: ["8", "10", "31"], explanation: "x = 20 − 11 = 9." },
+  { type: "math", question: "Library has 945 books. 326 are checked out. How many remain?", correct: "619", wrong: ["629", "609", "1,271"], explanation: "945 − 326 = 619." },
+  { type: "math", question: "What fraction of an hour is 15 minutes?", correct: "¼", wrong: ["½", "⅓", "⅕"], explanation: "1 hour = 60 minutes. 15/60 = ¼." },
+  { type: "math", question: "If 3 boxes hold 24 cookies, how many cookies in 5 boxes?", correct: "40", wrong: ["30", "48", "32"], explanation: "Each box: 24 ÷ 3 = 8 cookies. 8 × 5 = 40 cookies." },
+  { type: "math", question: "What is 4 × 0.25?", correct: "1", wrong: ["0.1", "1.25", "100"], explanation: "0.25 × 4 = 1 (since ¼ × 4 = 1)." },
+  { type: "math", question: "A jar has 6 red and 9 blue jellybeans. What is P(red)?", correct: "2/5", wrong: ["6/9", "9/15", "1/6"], explanation: "Total = 6+9 = 15. P(red) = 6/15 = 2/5." },
+  { type: "math", question: "What is the perimeter of a rectangle 7 m by 12 m?", correct: "38 m", wrong: ["19 m", "84 m", "76 m"], explanation: "Perimeter = 2(7+12) = 2(19) = 38 m." },
+  { type: "math", question: "Mike is 11. His sister is twice his age. How old is his sister?", correct: "22", wrong: ["13", "20", "9"], explanation: "Twice 11 = 11 × 2 = 22 years old." },
+  { type: "math", question: "Convert 7/2 to a mixed number.", correct: "3½", wrong: ["2½", "3", "4½"], explanation: "7 ÷ 2 = 3 remainder 1, so 7/2 = 3½." },
+  { type: "math", question: "What is 16 × 5?", correct: "80", wrong: ["75", "85", "21"], explanation: "16 × 5 = 80 (10×5=50, 6×5=30, sum=80)." },
+  { type: "math", question: "Pattern: 7, 14, 21, 28, ... Next?", correct: "35", wrong: ["32", "30", "42"], explanation: "Multiples of 7. 28 + 7 = 35." },
+  { type: "math", question: "Range of: 22, 14, 9, 18, 25?", correct: "16", wrong: ["14", "11", "25"], explanation: "Range = 25 − 9 = 16." },
+  { type: "math", question: "What is ⅞ − ⅜?", correct: "½", wrong: ["⅖", "⅝", "⅜"], explanation: "Same denominator: (7−3)/8 = 4/8 = ½." },
+  { type: "math", question: "A train leaves at 1:25 PM and arrives at 3:10 PM. How long is the trip?", correct: "1 hr 45 min", wrong: ["1 hr 35 min", "2 hr 15 min", "1 hr 55 min"], explanation: "1:25 → 2:25 (1 hr), 2:25 → 3:10 (45 min). Total: 1 hr 45 min." },
+  { type: "math", question: "Solve: 6n = 54.", correct: "9", wrong: ["8", "10", "48"], explanation: "n = 54 ÷ 6 = 9." },
+  { type: "math", question: "A straight angle measures...", correct: "180°", wrong: ["90°", "360°", "45°"], explanation: "A straight angle is a straight line, equal to 180°." },
+  { type: "math", question: "What is 25% of $80?", correct: "$20", wrong: ["$25", "$15", "$40"], explanation: "25% = ¼. $80 ÷ 4 = $20." },
+  { type: "math", question: "Sara has 144 stickers and shares equally among 12 friends. How many each?", correct: "12", wrong: ["10", "14", "11"], explanation: "144 ÷ 12 = 12 stickers each." },
+  { type: "math", question: "What place is the 5 in 30.052?", correct: "hundredths", wrong: ["tenths", "thousandths", "tens"], explanation: "After the decimal: 0 (tenths), 5 (hundredths), 2 (thousandths)." },
+  { type: "math", question: "How many cups in 3 quarts?", correct: "12", wrong: ["6", "9", "16"], explanation: "1 quart = 4 cups. 3 × 4 = 12 cups." },
+  { type: "math", question: "Find the missing angle in a triangle with 90° and 35°.", correct: "55°", wrong: ["45°", "65°", "125°"], explanation: "180 − 90 − 35 = 55°." },
+  { type: "math", question: "What is 14 × 11?", correct: "154", wrong: ["144", "155", "125"], explanation: "14 × 11 = 14 × 10 + 14 = 140 + 14 = 154." },
+  { type: "math", question: "Pattern: 1, 3, 6, 10, 15, ... Next?", correct: "21", wrong: ["20", "18", "25"], explanation: "Differences increase by 1: +2, +3, +4, +5, +6. So 15 + 6 = 21." },
+  { type: "math", question: "A backpack regularly costs $40 and is 50% off. What is the sale price?", correct: "$20", wrong: ["$10", "$30", "$25"], explanation: "50% off means half off. $40 ÷ 2 = $20 sale price." },
+  { type: "math", question: "Median of 6, 2, 9, 4, 7, 8, 1?", correct: "6", wrong: ["7", "5", "4"], explanation: "Order: 1,2,4,6,7,8,9. Middle (4th) value = 6." },
+  { type: "math", question: "What is 1¾ + ½?", correct: "2¼", wrong: ["2¾", "1¼", "2½"], explanation: "½ = 2/4. 1¾ + 2/4 = 1 + (3+2)/4 = 1 + 5/4 = 2¼." },
+  { type: "math", question: "If 8 + n = 3 × 5, what is n?", correct: "7", wrong: ["6", "8", "15"], explanation: "3 × 5 = 15. Then n = 15 − 8 = 7." },
+  { type: "math", question: "A pet store has 18 puppies and 6 are golden retrievers. What is the ratio of golden retrievers to all puppies?", correct: "1:3", wrong: ["1:6", "6:12", "3:1"], explanation: "6:18 simplifies by dividing by 6: 1:3." },
 ];
 
 const LOWER_MATH_ACHIEVEMENT = [
@@ -1052,6 +1386,103 @@ const LOWER_MATH_ACHIEVEMENT = [
   { type: "math", question: "What is 248 × 3?", correct: "744", wrong: ["644", "734", "844"], explanation: "248 × 3: 8×3=24 (carry 2), 4×3+2=14 (carry 1), 2×3+1=7 → 744." },
   { type: "math", question: "What is 425 ÷ 5?", correct: "85", wrong: ["75", "95", "84"], explanation: "5 goes into 42 eight times (40), remainder 2; bring down 5 → 25 ÷ 5 = 5 → 85." },
   { type: "math", question: "A bookshelf holds 4 rows of 18 books. How many books are on the shelf in all?", correct: "72", wrong: ["62", "82", "22"], explanation: "4 × 18 = 72 books." },
+  // ── expansion batch 3 ──
+  { type: "math", question: "What is 386 + 459?", correct: "845", wrong: ["745","835","855"], explanation: "6+9=15 (write 5, carry 1). 8+5+1=14 (write 4, carry 1). 3+4+1=8. Answer: 845." },
+  { type: "math", question: "Which fraction is equivalent to ⅔?", correct: "8/12", wrong: ["6/8","4/9","9/12"], explanation: "Multiply top and bottom by 4: 2×4=8 and 3×4=12. So ⅔ = 8/12." },
+  { type: "math", question: "What is 7 × 9?", correct: "63", wrong: ["56","64","72"], explanation: "7×9 = 63." },
+  { type: "math", question: "Round 5,728 to the nearest hundred.", correct: "5,700", wrong: ["5,800","5,730","6,000"], explanation: "The tens digit is 2, less than 5, so round down. 5,728 → 5,700." },
+  { type: "math", question: "What is 0.45 + 0.7?", correct: "1.15", wrong: ["0.52","1.05","0.115"], explanation: "Line up decimals: 0.45 + 0.70 = 1.15." },
+  { type: "math", question: "Solve for x: x + 8 = 15.", correct: "7", wrong: ["23","8","6"], explanation: "Subtract 8: x = 7." },
+  { type: "math", question: "How many inches are in 4 feet?", correct: "48", wrong: ["40","44","52"], explanation: "4 × 12 = 48 inches." },
+  { type: "math", question: "What is 712 − 285?", correct: "427", wrong: ["537","437","417"], explanation: "712 − 285 = 427." },
+  { type: "math", question: "What is ¾ + ⅛?", correct: "⅞", wrong: ["⅘","½","1"], explanation: "Rewrite ¾ as 6/8. Then 6/8 + 1/8 = 7/8." },
+  { type: "math", question: "A shape has 6 sides. What is it called?", correct: "Hexagon", wrong: ["Pentagon","Octagon","Heptagon"], explanation: "Hex- means 6." },
+  { type: "math", question: "What is 156 ÷ 4?", correct: "39", wrong: ["38","41","36"], explanation: "4 × 39 = 156." },
+  { type: "math", question: "Solve for n: 5n = 45.", correct: "9", wrong: ["8","40","50"], explanation: "Divide by 5: n = 9." },
+  { type: "math", question: "Write 9/4 as a mixed number.", correct: "2¼", wrong: ["1¾","2½","4/9"], explanation: "9 ÷ 4 = 2 remainder 1." },
+  { type: "math", question: "Sara has $5.00. She buys a notebook for $2.35. How much change does she get?", correct: "$2.65", wrong: ["$3.65","$2.75","$2.35"], explanation: "$5.00 − $2.35 = $2.65." },
+  { type: "math", question: "What digit is in the tens place in 4,716?", correct: "1", wrong: ["7","6","4"], explanation: "From the right: 6=ones, 1=tens." },
+  { type: "math", question: "What is the mean of 5, 8, 11, 4?", correct: "7", wrong: ["8","6","28"], explanation: "Sum 28 ÷ 4 = 7." },
+  { type: "math", question: "If you spin a spinner with 4 equal sections (red, blue, green, yellow), what is the probability of landing on blue?", correct: "¼", wrong: ["½","⅓","1/5"], explanation: "1 of 4 = 1/4." },
+  { type: "math", question: "What is 27 × 5?", correct: "135", wrong: ["125","145","105"], explanation: "25×5 + 2×5 = 125 + 10 = 135." },
+  { type: "math", question: "How many minutes are in 2¾ hours?", correct: "165", wrong: ["150","135","180"], explanation: "2 hr = 120 min. ¾ hr = 45 min. 120 + 45 = 165." },
+  { type: "math", question: "What is 1,000 − 437?", correct: "563", wrong: ["663","573","553"], explanation: "1,000 − 437 = 563." },
+  { type: "math", question: "Evaluate 3x + 4 when x = 5.", correct: "19", wrong: ["15","23","12"], explanation: "3(5) + 4 = 19." },
+  { type: "math", question: "Which is an obtuse angle?", correct: "120°", wrong: ["60°","90°","180°"], explanation: "Obtuse: greater than 90° but less than 180°." },
+  { type: "math", question: "A bag has 3 red, 2 blue, and 5 green marbles. P(red)?", correct: "3/10", wrong: ["1/3","3/7","1/10"], explanation: "3 / 10 marbles." },
+  { type: "math", question: "Round 8,461 to the nearest thousand.", correct: "8,000", wrong: ["9,000","8,500","8,400"], explanation: "Hundreds digit is 4, round down." },
+  { type: "math", question: "What is 0.8 − 0.32?", correct: "0.48", wrong: ["0.52","0.5","0.6"], explanation: "0.80 − 0.32 = 0.48." },
+  { type: "math", question: "Find the median of 11, 3, 7, 14, 9.", correct: "9", wrong: ["7","11","8"], explanation: "Sort: 3, 7, 9, 11, 14. Middle = 9." },
+  { type: "math", question: "Simplify the ratio 6:9.", correct: "2:3", wrong: ["3:2","1:3","6:9"], explanation: "Divide both by 3." },
+  { type: "math", question: "What is ⅚ − ½?", correct: "⅓", wrong: ["¼","½","⅖"], explanation: "Common denom 6: 5/6 − 3/6 = 2/6 = ⅓." },
+  { type: "math", question: "A triangle has all sides equal. What is it called?", correct: "Equilateral triangle", wrong: ["Isosceles triangle","Right triangle","Scalene triangle"], explanation: "Equi- means equal." },
+  { type: "math", question: "Solve: x − 6 = 14.", correct: "20", wrong: ["8","16","21"], explanation: "Add 6: x = 20." },
+  { type: "math", question: "What is 50% of 84?", correct: "42", wrong: ["48","21","40"], explanation: "Half of 84 = 42." },
+  { type: "math", question: "What is 348 + 567?", correct: "915", wrong: ["815","925","905"], explanation: "8+7=15 (carry 1). 4+6+1=11 (carry 1). 3+5+1=9." },
+  { type: "math", question: "Find the mode: 2, 4, 4, 6, 7, 4, 9.", correct: "4", wrong: ["6","7","2"], explanation: "4 appears three times." },
+  { type: "math", question: "What is 9² (9 squared)?", correct: "81", wrong: ["18","72","99"], explanation: "9 × 9 = 81." },
+  { type: "math", question: "Write 0.07 in words.", correct: "Seven hundredths", wrong: ["Seven tenths","Seven thousandths","Seventy hundredths"], explanation: "The 7 is in the hundredths place." },
+  { type: "math", question: "What is the perimeter of a rectangle with length 14 m and width 6 m?", correct: "40 m", wrong: ["20 m","84 m","32 m"], explanation: "2(14+6) = 40 m." },
+  { type: "math", question: "How many quarters are in $3.50?", correct: "14", wrong: ["12","10","16"], explanation: "$3.50 ÷ $0.25 = 14." },
+  { type: "math", question: "What is 5⅔ as an improper fraction?", correct: "17/3", wrong: ["15/3","11/3","5/3"], explanation: "5×3 + 2 = 17." },
+  { type: "math", question: "What is 84 ÷ 7?", correct: "12", wrong: ["11","13","14"], explanation: "7 × 12 = 84." },
+  { type: "math", question: "A polygon has 5 sides. What is it called?", correct: "Pentagon", wrong: ["Hexagon","Quadrilateral","Octagon"], explanation: "Penta- means 5." },
+  { type: "math", question: "Find the range of 14, 8, 21, 5, 17.", correct: "16", wrong: ["13","21","9"], explanation: "Max − min = 21 − 5 = 16." },
+  { type: "math", question: "What is 14 × 6?", correct: "84", wrong: ["74","86","94"], explanation: "10×6 + 4×6 = 84." },
+  { type: "math", question: "Which is greater: 0.5 or 0.45?", correct: "0.5", wrong: ["0.45","They are equal","Cannot tell"], explanation: "0.50 > 0.45." },
+  { type: "math", question: "What is ⅙ + ⅓?", correct: "½", wrong: ["⅖","⅔","¼"], explanation: "Common denom 6: 1/6 + 2/6 = 3/6 = ½." },
+  { type: "math", question: "Solve: 2n + 3 = 17.", correct: "7", wrong: ["10","8","14"], explanation: "2n = 14, n = 7." },
+  { type: "math", question: "Round 729 to the nearest ten.", correct: "730", wrong: ["720","700","740"], explanation: "Ones digit 9, round up." },
+  { type: "math", question: "What is 75% of 60?", correct: "45", wrong: ["40","30","50"], explanation: "¾ of 60 = 45." },
+  { type: "math", question: "What is 503 − 178?", correct: "325", wrong: ["425","335","315"], explanation: "503 − 178 = 325." },
+  { type: "math", question: "How many sides does an octagon have?", correct: "8", wrong: ["6","7","10"], explanation: "Octa- means 8." },
+  { type: "math", question: "What is 0.6 × 4?", correct: "2.4", wrong: ["24","0.24","2.04"], explanation: "6×4=24, place one decimal." },
+  { type: "math", question: "Tom reads 18 pages each day. How many pages in a week?", correct: "126", wrong: ["108","116","136"], explanation: "18 × 7 = 126." },
+  { type: "math", question: "Convert 240 minutes to hours.", correct: "4", wrong: ["3","5","2.5"], explanation: "240 ÷ 60 = 4." },
+  { type: "math", question: "Which decimal equals ¾?", correct: "0.75", wrong: ["0.34","0.43","0.7"], explanation: "3 ÷ 4 = 0.75." },
+  { type: "math", question: "What is 612 + 489?", correct: "1,101", wrong: ["1,001","1,091","1,111"], explanation: "Add with carries: 1,101." },
+  { type: "math", question: "If 6 pencils cost $1.50, how much does 1 pencil cost?", correct: "$0.25", wrong: ["$0.15","$0.30","$0.20"], explanation: "$1.50 ÷ 6 = $0.25." },
+  { type: "math", question: "What is the value of the 5 in 4,568?", correct: "500", wrong: ["50","5","5,000"], explanation: "5 is in the hundreds place." },
+  { type: "math", question: "What is ⅜ + ⅜?", correct: "¾", wrong: ["⅝","6/16","⅓"], explanation: "3/8 + 3/8 = 6/8 = ¾." },
+  { type: "math", question: "Solve: x ÷ 4 = 9.", correct: "36", wrong: ["13","5","2.25"], explanation: "x = 9 × 4 = 36." },
+  { type: "math", question: "How many cups are in 2 quarts? (1 quart = 4 cups)", correct: "8", wrong: ["4","6","16"], explanation: "2 × 4 = 8." },
+  { type: "math", question: "What is 36 × 4?", correct: "144", wrong: ["124","134","154"], explanation: "30×4 + 6×4 = 144." },
+  { type: "math", question: "A quadrilateral has exactly one pair of parallel sides. What is it?", correct: "Trapezoid", wrong: ["Parallelogram","Rhombus","Square"], explanation: "Trapezoid has exactly one pair of parallel sides." },
+  { type: "math", question: "Order from least to greatest: 0.5, 0.05, 0.55, 0.505.", correct: "0.05, 0.5, 0.505, 0.55", wrong: ["0.05, 0.505, 0.5, 0.55","0.5, 0.05, 0.505, 0.55","0.55, 0.505, 0.5, 0.05"], explanation: "0.05 < 0.5 (= 0.500) < 0.505 < 0.55." },
+  { type: "math", question: "What is 10% of 250?", correct: "25", wrong: ["2.5","250","20"], explanation: "Divide by 10: 25." },
+  { type: "math", question: "Round 1,549 to the nearest hundred.", correct: "1,500", wrong: ["1,600","1,540","1,550"], explanation: "Tens digit 4, round down." },
+  { type: "math", question: "What is 7,000 − 2,453?", correct: "4,547", wrong: ["5,547","4,647","4,557"], explanation: "7,000 − 2,453 = 4,547." },
+  { type: "math", question: "Evaluate 4y − 1 when y = 6.", correct: "23", wrong: ["20","25","17"], explanation: "4(6) − 1 = 23." },
+  { type: "math", question: "Which angle is acute?", correct: "45°", wrong: ["90°","135°","180°"], explanation: "Acute < 90°." },
+  { type: "math", question: "What is 4/6 in simplest form?", correct: "⅔", wrong: ["½","¾","⅖"], explanation: "GCF is 2: 4/6 = 2/3." },
+  { type: "math", question: "A train leaves at 9:40 AM and arrives at 12:15 PM. How long is the trip?", correct: "2 hours 35 minutes", wrong: ["2 hours 25 minutes","3 hours 25 minutes","2 hours 75 minutes"], explanation: "9:40 → 12:40 = 3 hr; subtract 25 min for 12:15." },
+  { type: "math", question: "What is 273 ÷ 3?", correct: "91", wrong: ["81","93","71"], explanation: "3 × 91 = 273." },
+  { type: "math", question: "What is 2.5 + 3.75?", correct: "6.25", wrong: ["5.25","6.00","5.125"], explanation: "2.50 + 3.75 = 6.25." },
+  { type: "math", question: "A rectangle has area 48 cm² and width 6 cm. What is its length?", correct: "8 cm", wrong: ["7 cm","9 cm","12 cm"], explanation: "L = 48 ÷ 6 = 8." },
+  { type: "math", question: "Find the mean of 2, 6, 10, 4, 8.", correct: "6", wrong: ["5","7","30"], explanation: "Sum 30 ÷ 5 = 6." },
+  { type: "math", question: "How many feet are in 84 inches?", correct: "7", wrong: ["6","8","12"], explanation: "84 ÷ 12 = 7." },
+  { type: "math", question: "What is 8 × 7?", correct: "56", wrong: ["54","58","64"], explanation: "8 × 7 = 56." },
+  { type: "math", question: "Round 6,295 to the nearest ten.", correct: "6,300", wrong: ["6,290","6,200","6,000"], explanation: "Ones digit 5, round up." },
+  { type: "math", question: "What is ⅞ − ⅜?", correct: "½", wrong: ["⅖","⅝","⅜"], explanation: "(7−3)/8 = 4/8 = ½." },
+  { type: "math", question: "Solve: 8 = x + 3.", correct: "5", wrong: ["11","4","6"], explanation: "x = 8 − 3 = 5." },
+  { type: "math", question: "What is 3.6 − 1.45?", correct: "2.15", wrong: ["2.25","2.05","2.5"], explanation: "3.60 − 1.45 = 2.15." },
+  { type: "math", question: "If 5 books cost $20, how much do 8 books cost?", correct: "$32", wrong: ["$28","$30","$40"], explanation: "$4 each × 8 = $32." },
+  { type: "math", question: "What is 47 × 3?", correct: "141", wrong: ["131","121","151"], explanation: "40×3 + 7×3 = 141." },
+  { type: "math", question: "What is 11/3 as a mixed number?", correct: "3⅔", wrong: ["2⅔","3⅓","11/3"], explanation: "11 ÷ 3 = 3 r2 → 3⅔." },
+  { type: "math", question: "Convert 3 weeks to days.", correct: "21", wrong: ["14","18","28"], explanation: "3 × 7 = 21." },
+  { type: "math", question: "What is 18 × 5?", correct: "90", wrong: ["80","95","100"], explanation: "10×5 + 8×5 = 90." },
+  { type: "math", question: "A pizza is cut into 8 slices. Jess eats 3 slices. What fraction is left?", correct: "⅝", wrong: ["⅜","½","¾"], explanation: "8/8 − 3/8 = 5/8." },
+  { type: "math", question: "What is the area of a rectangle 7 ft by 6 ft?", correct: "42 ft²", wrong: ["26 ft²","13 ft²","49 ft²"], explanation: "7 × 6 = 42." },
+  { type: "math", question: "Find the mode of 1, 2, 3, 3, 5, 7.", correct: "3", wrong: ["1","7","2"], explanation: "3 appears twice." },
+  { type: "math", question: "What is 6³ (6 cubed)?", correct: "216", wrong: ["18","36","666"], explanation: "6 × 6 × 6 = 216." },
+  { type: "math", question: "Solve: 4x − 5 = 19.", correct: "6", wrong: ["3.5","7","5"], explanation: "4x = 24, x = 6." },
+  { type: "math", question: "What is 925 + 376?", correct: "1,301", wrong: ["1,201","1,291","1,311"], explanation: "Add with carries: 1,301." },
+  { type: "math", question: "A clock shows 4:50. What time will it be in 25 minutes?", correct: "5:15", wrong: ["5:25","5:05","4:75"], explanation: "4:50 + 10 = 5:00, + 15 = 5:15." },
+  { type: "math", question: "Which fraction is between ¼ and ½?", correct: "⅜", wrong: ["⅙","¾","⅕"], explanation: "In eighths: 2/8 < 3/8 < 4/8." },
+  { type: "math", question: "What is 100 − 37 − 28?", correct: "35", wrong: ["45","25","91"], explanation: "100 − 37 = 63; 63 − 28 = 35." },
+  { type: "math", question: "Simplify the ratio 10:25.", correct: "2:5", wrong: ["5:2","1:2","10:25"], explanation: "Divide both by 5." },
+  { type: "math", question: "What is the perimeter of a rectangle 15 cm by 7 cm?", correct: "44 cm", wrong: ["22 cm","105 cm","30 cm"], explanation: "2(15+7) = 44." },
+  { type: "math", question: "What is 5 × 0.4?", correct: "2.0", wrong: ["0.20","20","0.9"], explanation: "5 × 4 = 20, one decimal → 2.0." },
 ];
 
 const LOWER_READING = {
@@ -1271,6 +1702,175 @@ const WORDS = [
   { word: "stationary", correct: "motionless",  wrong: ["stationery", "moving", "stable"],    meaning: "not moving from one place at all" },
   { word: "principal",  correct: "main",        wrong: ["principle", "minor", "private"],     meaning: "most important or highest in rank" },
   { word: "allusion",   correct: "reference",   wrong: ["illusion", "argument", "alliance"],  meaning: "a brief mention that points to something else" },
+  // ── expansion batch 3 (adjectives) ──
+  { word: "apt",        correct: "suitable",    wrong: ["clumsy","reluctant","stubborn"],     meaning: "fitting or appropriate for a situation" },
+  { word: "austere",    correct: "stern",       wrong: ["cheerful","fancy","gentle"],         meaning: "very plain, strict, or without comfort" },
+  { word: "baffling",   correct: "puzzling",    wrong: ["obvious","boring","simple"],         meaning: "confusing and hard to understand" },
+  { word: "bizarre",    correct: "strange",     wrong: ["ordinary","tidy","familiar"],        meaning: "very odd or unusual" },
+  { word: "blissful",   correct: "joyful",      wrong: ["gloomy","tired","worried"],          meaning: "feeling perfect happiness" },
+  { word: "cordial",    correct: "friendly",    wrong: ["rude","shy","distant"],              meaning: "warm and polite in greeting others" },
+  { word: "crucial",    correct: "vital",       wrong: ["minor","extra","optional"],          meaning: "extremely important or necessary" },
+  { word: "defiant",    correct: "rebellious",  wrong: ["obedient","fearful","quiet"],        meaning: "openly refusing to obey authority" },
+  { word: "deft",       correct: "skillful",    wrong: ["clumsy","slow","weak"],              meaning: "quick and clever with the hands" },
+  { word: "demure",     correct: "modest",      wrong: ["bold","loud","flashy"],              meaning: "shy, quiet, and reserved in manner" },
+  { word: "devious",    correct: "sneaky",      wrong: ["honest","brave","plain"],            meaning: "using tricks to get what you want" },
+  { word: "dreary",     correct: "gloomy",      wrong: ["bright","lively","warm"],            meaning: "dull, dark, and depressing" },
+  { word: "dubious",    correct: "doubtful",    wrong: ["certain","eager","obvious"],         meaning: "not sure or unable to trust" },
+  { word: "durable",    correct: "long-lasting", wrong: ["fragile","fleeting","flimsy"],      meaning: "tough and able to last a long time" },
+  { word: "earnest",    correct: "sincere",     wrong: ["playful","fake","careless"],         meaning: "showing serious, honest feelings" },
+  { word: "eerie",      correct: "creepy",      wrong: ["cozy","cheerful","sturdy"],          meaning: "strange in a frightening way" },
+  { word: "elaborate",  correct: "detailed",    wrong: ["simple","brief","crude"],            meaning: "carefully worked out with many parts" },
+  { word: "elite",      correct: "superior",    wrong: ["common","weak","average"],           meaning: "the best of a group" },
+  { word: "eminent",    correct: "distinguished", wrong: ["unknown","imminent","ordinary"],   meaning: "famous and respected for achievement" },
+  { word: "imminent",   correct: "approaching", wrong: ["distant","eminent","delayed"],       meaning: "about to happen very soon" },
+  { word: "exquisite",  correct: "beautiful",   wrong: ["ugly","plain","rough"],              meaning: "extremely lovely and finely made" },
+  { word: "feeble",     correct: "weak",        wrong: ["sturdy","loud","brave"],             meaning: "lacking strength or power" },
+  { word: "flexible",   correct: "bendable",    wrong: ["rigid","heavy","brittle"],           meaning: "able to bend without breaking" },
+  { word: "flimsy",     correct: "fragile",     wrong: ["durable","heavy","sharp"],           meaning: "thin and easily broken or torn" },
+  { word: "frantic",    correct: "panicked",    wrong: ["calm","slow","bored"],               meaning: "wildly excited from fear or worry" },
+  { word: "futile",     correct: "useless",     wrong: ["fruitful","helpful","skilled"],      meaning: "having no chance of working" },
+  { word: "gallant",    correct: "brave",       wrong: ["cowardly","rude","selfish"],         meaning: "showing courage and noble manners" },
+  { word: "garish",     correct: "flashy",      wrong: ["subtle","dull","modest"],            meaning: "overly bright and showy in a tacky way" },
+  { word: "gigantic",   correct: "enormous",    wrong: ["tiny","narrow","light"],             meaning: "extremely large in size" },
+  { word: "glaring",    correct: "obvious",     wrong: ["hidden","subtle","faint"],           meaning: "very easy to see or notice" },
+  { word: "gleeful",    correct: "delighted",   wrong: ["miserable","tired","angry"],         meaning: "full of cheerful excitement" },
+  { word: "grim",       correct: "harsh",       wrong: ["cheery","gentle","warm"],            meaning: "stern, serious, or unpleasant" },
+  { word: "hardy",      correct: "tough",       wrong: ["frail","timid","loud"],              meaning: "strong enough to endure hard conditions" },
+  { word: "haughty",    correct: "snobby",      wrong: ["humble","kindly","shy"],             meaning: "acting like you are better than others" },
+  { word: "hideous",    correct: "ugly",        wrong: ["lovely","tiny","clever"],            meaning: "extremely unpleasant to look at" },
+  { word: "immune",     correct: "protected",   wrong: ["exposed","fragile","eager"],         meaning: "not affected by something harmful" },
+  { word: "impudent",   correct: "disrespectful", wrong: ["polite","timid","cheerful"],       meaning: "rude in a bold way" },
+  { word: "industrious", correct: "hardworking", wrong: ["lazy","sloppy","clumsy"],           meaning: "putting steady effort into work" },
+  { word: "inept",      correct: "clumsy",      wrong: ["skilled","graceful","alert"],        meaning: "not good at doing something" },
+  { word: "infamous",   correct: "notorious",   wrong: ["beloved","unknown","gentle"],        meaning: "famous for something bad" },
+  { word: "ingenious",  correct: "clever",      wrong: ["foolish","ingenuous","plain"],       meaning: "showing great cleverness or invention" },
+  { word: "ingenuous",  correct: "innocent",    wrong: ["sneaky","ingenious","wicked"],       meaning: "open and trusting in a childlike way" },
+  { word: "inquisitive", correct: "curious",    wrong: ["dull","bored","silent"],             meaning: "eager to learn or ask questions" },
+  { word: "intense",    correct: "extreme",     wrong: ["mild","weak","brief"],               meaning: "very strong in degree or feeling" },
+  { word: "irate",      correct: "furious",     wrong: ["pleased","calm","timid"],            meaning: "extremely angry" },
+  { word: "ironic",     correct: "unexpected",  wrong: ["predictable","obvious","sincere"],   meaning: "opposite of what you would expect" },
+  { word: "irrelevant", correct: "unrelated",   wrong: ["important","essential","obvious"],   meaning: "having nothing to do with the topic" },
+  { word: "judicious",  correct: "wise",        wrong: ["reckless","foolish","hasty"],        meaning: "showing good judgment in decisions" },
+  { word: "languid",    correct: "sluggish",    wrong: ["energetic","frantic","alert"],       meaning: "slow, weak, and lacking energy" },
+  { word: "lavish",     correct: "extravagant", wrong: ["stingy","simple","plain"],           meaning: "very rich, generous, or fancy" },
+  { word: "lenient",    correct: "merciful",    wrong: ["strict","harsh","cruel"],            meaning: "not strict in punishment or rules" },
+  { word: "listless",   correct: "lethargic",   wrong: ["lively","focused","cheerful"],       meaning: "without energy or interest" },
+  { word: "loathsome",  correct: "disgusting",  wrong: ["lovable","charming","plain"],        meaning: "deserving to be hated" },
+  { word: "lofty",      correct: "elevated",    wrong: ["lowly","humble","sunken"],           meaning: "very high or noble in style" },
+  { word: "loyal",      correct: "faithful",    wrong: ["traitorous","fickle","cruel"],       meaning: "always supporting someone you care about" },
+  { word: "ludicrous",  correct: "absurd",      wrong: ["sensible","serious","fair"],         meaning: "so silly it deserves laughter" },
+  { word: "malicious",  correct: "spiteful",    wrong: ["kindhearted","cheerful","honest"],   meaning: "wanting to cause harm to others" },
+  { word: "meek",       correct: "submissive",  wrong: ["bold","fierce","proud"],             meaning: "quiet, gentle, and easily led" },
+  { word: "merciless",  correct: "cruel",       wrong: ["gentle","fair","timid"],             meaning: "showing no kindness or pity" },
+  { word: "miserly",    correct: "stingy",      wrong: ["generous","wealthy","cheerful"],     meaning: "unwilling to share money or things" },
+  { word: "mournful",   correct: "sorrowful",   wrong: ["joyful","angry","calm"],             meaning: "full of sadness or grief" },
+  { word: "noble",      correct: "honorable",   wrong: ["shameful","selfish","petty"],        meaning: "showing fine character and ideals" },
+  { word: "opaque",     correct: "cloudy",      wrong: ["transparent","shiny","glassy"],      meaning: "not letting light pass through" },
+  { word: "optimistic", correct: "hopeful",     wrong: ["gloomy","fearful","unsure"],         meaning: "expecting good things to happen" },
+  { word: "ornate",     correct: "decorated",   wrong: ["plain","sturdy","tiny"],             meaning: "covered with fancy details" },
+  { word: "painstaking", correct: "careful",    wrong: ["careless","hasty","rough"],          meaning: "done with great effort and attention" },
+  { word: "paltry",     correct: "trivial",     wrong: ["enormous","valuable","fancy"],       meaning: "very small in amount and worth" },
+  { word: "perilous",   correct: "dangerous",   wrong: ["safe","calm","steady"],              meaning: "full of risk or danger" },
+  { word: "perpetual",  correct: "constant",    wrong: ["brief","rare","fleeting"],           meaning: "never stopping or changing" },
+  { word: "picturesque", correct: "scenic",     wrong: ["dreary","plain","busy"],             meaning: "pretty enough to be in a picture" },
+  { word: "placid",     correct: "peaceful",    wrong: ["stormy","tense","loud"],             meaning: "calm and quiet in nature" },
+  { word: "pompous",    correct: "self-important", wrong: ["modest","sincere","friendly"],    meaning: "acting overly proud and grand" },
+  { word: "potent",     correct: "powerful",    wrong: ["weak","mild","empty"],               meaning: "having strong effect or force" },
+  { word: "precarious", correct: "unstable",    wrong: ["secure","sturdy","steady"],          meaning: "dangerously likely to fall or fail" },
+  { word: "pristine",   correct: "pure",        wrong: ["filthy","worn","damaged"],           meaning: "perfectly clean and untouched" },
+  { word: "shrewd",     correct: "sharp",       wrong: ["dull","trusting","reckless"],        meaning: "showing quick, clever judgment" },
+  { word: "surly",      correct: "grumpy",      wrong: ["cheerful","polite","timid"],         meaning: "rude and bad-tempered" },
+  { word: "valiant",    correct: "courageous",  wrong: ["cowardly","weary","selfish"],        meaning: "showing great bravery in danger" },
+  { word: "whimsical",  correct: "fanciful",    wrong: ["serious","dull","stern"],            meaning: "playful and full of odd imagination" },
+  { word: "zealous",    correct: "enthusiastic", wrong: ["lazy","reluctant","jealous"],       meaning: "showing eager, passionate effort" },
+  { word: "complement", correct: "complete",    wrong: ["compliment","oppose","reduce"],      meaning: "something that finishes or matches well" },
+  { word: "ravenous",   correct: "starving",    wrong: ["stuffed","picky","thirsty"],         meaning: "extremely hungry" },
+  // ── expansion batch 3 (verbs and abstract nouns) ──
+  { word: "abate",      correct: "lessen",      wrong: ["worsen","linger","tighten"],         meaning: "to become less intense or strong" },
+  { word: "abhor",      correct: "detest",      wrong: ["admire","tolerate","ignore"],        meaning: "to hate something very strongly" },
+  { word: "admonish",   correct: "scold",       wrong: ["praise","ignore","pamper"],          meaning: "to warn or gently criticize someone" },
+  { word: "advocate",   correct: "support",     wrong: ["oppose","question","attack"],        meaning: "to publicly speak in favor of something" },
+  { word: "allay",      correct: "calm",        wrong: ["worsen","stir","provoke"],           meaning: "to make a worry or fear go down" },
+  { word: "amend",      correct: "revise",      wrong: ["erase","approve","extend"],          meaning: "to change something to make it better" },
+  { word: "annul",      correct: "cancel",      wrong: ["confirm","delay","enforce"],         meaning: "to officially end or undo something" },
+  { word: "apprehend",  correct: "capture",     wrong: ["release","question","follow"],       meaning: "to catch and arrest someone" },
+  { word: "ascertain",  correct: "determine",   wrong: ["assume","forget","predict"],         meaning: "to find out for certain" },
+  { word: "assail",     correct: "attack",      wrong: ["defend","retreat","ignore"],         meaning: "to attack strongly with words or force" },
+  { word: "assert",     correct: "declare",     wrong: ["doubt","question","withdraw"],       meaning: "to state something firmly" },
+  { word: "atone",      correct: "compensate",  wrong: ["accuse","repeat","ignore"],          meaning: "to make up for doing something wrong" },
+  { word: "bolster",    correct: "strengthen",  wrong: ["weaken","question","replace"],       meaning: "to support or boost something" },
+  { word: "captivate",  correct: "fascinate",   wrong: ["bore","release","puzzle"],           meaning: "to hold someone's attention completely" },
+  { word: "censure",    correct: "criticize",   wrong: ["praise","forgive","ignore"],         meaning: "to express strong disapproval of someone" },
+  { word: "chastise",   correct: "rebuke",      wrong: ["reward","comfort","excuse"],         meaning: "to scold or punish someone harshly" },
+  { word: "coax",       correct: "persuade",    wrong: ["force","threaten","ignore"],         meaning: "to gently talk someone into doing something" },
+  { word: "coerce",     correct: "force",       wrong: ["request","invite","allow"],          meaning: "to make someone do something by threats" },
+  { word: "concede",    correct: "admit",       wrong: ["deny","argue","claim"],              meaning: "to reluctantly accept that something is true" },
+  { word: "condone",    correct: "excuse",      wrong: ["punish","forbid","report"],          meaning: "to accept or allow bad behavior" },
+  { word: "confound",   correct: "confuse",     wrong: ["clarify","reveal","solve"],          meaning: "to puzzle someone completely" },
+  { word: "console",    correct: "comfort",     wrong: ["upset","ignore","distract"],         meaning: "to make someone feel better when sad" },
+  { word: "corroborate", correct: "confirm",    wrong: ["deny","question","invent"],          meaning: "to support a story with evidence" },
+  { word: "crave",      correct: "desire",      wrong: ["reject","dislike","forget"],         meaning: "to want something very badly" },
+  { word: "curtail",    correct: "shorten",     wrong: ["lengthen","approve","explain"],      meaning: "to cut something short or reduce it" },
+  { word: "debunk",     correct: "disprove",    wrong: ["confirm","ignore","praise"],         meaning: "to show that an idea is false" },
+  { word: "decipher",   correct: "decode",      wrong: ["scramble","hide","write"],           meaning: "to figure out the meaning of something hard to read" },
+  { word: "defer",      correct: "postpone",    wrong: ["finish","hurry","reject"],           meaning: "to put something off until later" },
+  { word: "defy",       correct: "resist",      wrong: ["obey","follow","accept"],            meaning: "to openly refuse to obey" },
+  { word: "deplete",    correct: "exhaust",     wrong: ["refill","save","store"],             meaning: "to use up most of a supply" },
+  { word: "deplore",    correct: "condemn",     wrong: ["celebrate","accept","ignore"],       meaning: "to strongly disapprove of something" },
+  { word: "deride",     correct: "mock",        wrong: ["admire","support","question"],       meaning: "to make fun of someone cruelly" },
+  { word: "deter",      correct: "discourage",  wrong: ["encourage","invite","ignore"],       meaning: "to keep someone from doing something" },
+  { word: "deviate",    correct: "stray",       wrong: ["follow","return","arrive"],          meaning: "to move away from a set path or plan" },
+  { word: "disperse",   correct: "scatter",     wrong: ["gather","collect","stack"],          meaning: "to spread out in different directions" },
+  { word: "dispel",     correct: "eliminate",   wrong: ["create","spread","keep"],            meaning: "to make a feeling or belief go away" },
+  { word: "distort",    correct: "twist",       wrong: ["clarify","straighten","reveal"],     meaning: "to change the shape or truth of something" },
+  { word: "elucidate",  correct: "explain",     wrong: ["confuse","hide","question"],         meaning: "to make something clear" },
+  { word: "emulate",    correct: "imitate",     wrong: ["ignore","invent","reject"],          meaning: "to try to be like someone you admire" },
+  { word: "endorse",    correct: "approve",     wrong: ["oppose","question","withdraw"],      meaning: "to publicly say you support something" },
+  { word: "eradicate",  correct: "eliminate",   wrong: ["spread","produce","preserve"],       meaning: "to completely get rid of something" },
+  { word: "exonerate",  correct: "clear",       wrong: ["accuse","convict","blame"],          meaning: "to officially declare someone not guilty" },
+  { word: "extol",      correct: "praise",      wrong: ["criticize","ignore","question"],     meaning: "to praise someone very highly" },
+  { word: "fabricate",  correct: "invent",      wrong: ["destroy","reveal","copy"],           meaning: "to make up a false story" },
+  { word: "falter",     correct: "hesitate",    wrong: ["proceed","decide","rush"],           meaning: "to lose strength or pause uncertainly" },
+  { word: "fathom",     correct: "understand",  wrong: ["forget","invent","question"],        meaning: "to fully grasp a difficult idea" },
+  { word: "flourish",   correct: "thrive",      wrong: ["wither","struggle","fade"],          meaning: "to grow strong and healthy" },
+  { word: "fortify",    correct: "reinforce",   wrong: ["weaken","abandon","reduce"],         meaning: "to make something stronger" },
+  { word: "glean",      correct: "gather",      wrong: ["discard","spread","ignore"],         meaning: "to collect bits of information slowly" },
+  { word: "hasten",     correct: "hurry",       wrong: ["delay","pause","cancel"],            meaning: "to move or act quickly" },
+  { word: "heed",       correct: "obey",        wrong: ["ignore","question","forget"],        meaning: "to pay careful attention to advice" },
+  { word: "impede",     correct: "obstruct",    wrong: ["assist","speed","ignore"],           meaning: "to slow down or block progress" },
+  { word: "implore",    correct: "beg",         wrong: ["demand","refuse","offer"],           meaning: "to ask for something desperately" },
+  { word: "incite",     correct: "provoke",     wrong: ["calm","prevent","ignore"],           meaning: "to stir up trouble or action" },
+  { word: "instill",    correct: "implant",     wrong: ["remove","question","destroy"],       meaning: "to gradually put an idea into someone's mind" },
+  { word: "lament",     correct: "mourn",       wrong: ["celebrate","forget","ignore"],       meaning: "to express deep sadness about something" },
+  { word: "mediate",    correct: "negotiate",   wrong: ["fight","ignore","escalate"],         meaning: "to help two sides settle a disagreement" },
+  { word: "muster",     correct: "summon",      wrong: ["scatter","release","waste"],         meaning: "to bring together strength or people" },
+  { word: "negate",     correct: "cancel",      wrong: ["approve","extend","support"],        meaning: "to make something have no effect" },
+  { word: "obscure",    correct: "hide",        wrong: ["reveal","clarify","brighten"],       meaning: "to make hard to see or understand" },
+  { word: "obstruct",   correct: "block",       wrong: ["clear","assist","follow"],           meaning: "to get in the way of something" },
+  { word: "pacify",     correct: "calm",        wrong: ["enrage","attack","ignore"],          meaning: "to make someone peaceful again" },
+  { word: "placate",    correct: "appease",     wrong: ["anger","ignore","threaten"],         meaning: "to make an angry person feel better" },
+  { word: "prevail",    correct: "triumph",     wrong: ["surrender","retreat","falter"],      meaning: "to win or be successful in the end" },
+  { word: "quell",      correct: "suppress",    wrong: ["start","ignore","reveal"],           meaning: "to put a stop to something forcefully" },
+  { word: "recoil",     correct: "flinch",      wrong: ["approach","attack","accept"],        meaning: "to jerk back in fear or disgust" },
+  { word: "relinquish", correct: "surrender",   wrong: ["grab","keep","demand"],              meaning: "to give something up willingly" },
+  { word: "renounce",   correct: "reject",      wrong: ["accept","keep","claim"],             meaning: "to formally give up a belief or claim" },
+  { word: "retaliate",  correct: "revenge",     wrong: ["forgive","ignore","reward"],         meaning: "to strike back after being harmed" },
+  { word: "revere",     correct: "respect",     wrong: ["despise","ignore","mock"],           meaning: "to feel deep admiration for someone" },
+  { word: "stifle",     correct: "suppress",    wrong: ["release","encourage","expand"],      meaning: "to hold back or smother" },
+  { word: "subside",    correct: "decrease",    wrong: ["intensify","begin","rise"],          meaning: "to become less intense over time" },
+  { word: "supplant",   correct: "replace",     wrong: ["retain","support","copy"],           meaning: "to take the place of someone else" },
+  { word: "surmise",    correct: "guess",       wrong: ["prove","ignore","deny"],             meaning: "to figure out from little evidence" },
+  { word: "undermine",  correct: "weaken",      wrong: ["strengthen","support","build"],      meaning: "to slowly damage something's foundation" },
+  { word: "anguish",    correct: "agony",       wrong: ["joy","comfort","calm"],              meaning: "extreme suffering or pain" },
+  { word: "candor",     correct: "honesty",     wrong: ["deceit","silence","flattery"],       meaning: "speaking openly and truthfully" },
+  { word: "dilemma",    correct: "predicament", wrong: ["solution","comfort","success"],      meaning: "a tough choice between two hard options" },
+  { word: "discord",    correct: "conflict",    wrong: ["harmony","agreement","peace"],       meaning: "disagreement between people" },
+  { word: "dread",      correct: "fear",        wrong: ["delight","courage","hope"],          meaning: "a strong feeling of worry about something coming" },
+  { word: "fervor",     correct: "passion",     wrong: ["coldness","boredom","calm"],         meaning: "intense excitement or enthusiasm" },
+  { word: "folly",      correct: "foolishness", wrong: ["wisdom","skill","caution"],          meaning: "a silly or unwise action" },
+  { word: "fortitude",  correct: "courage",     wrong: ["weakness","fear","panic"],           meaning: "the strength to face hard times" },
+  { word: "plight",     correct: "predicament", wrong: ["fortune","comfort","success"],       meaning: "a difficult or unfortunate situation" },
+  { word: "zeal",       correct: "enthusiasm",  wrong: ["apathy","doubt","boredom"],          meaning: "great energy for a cause or goal" },
 ];
 
 const SENTENCE_COMPLETIONS = [
@@ -1610,6 +2210,363 @@ const ESSAY_PROMPTS = [
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
+// BRIDGE LEVEL DATA (5th → 6th grade — between Lower and Middle)
+// ════════════════════════════════════════════════════════════════════════════
+
+const BRIDGE_WORDS = [
+  { word: "brisk",       correct: "quick",       wrong: ["clumsy","noisy","tired"],           meaning: "moving in a fast, lively way" },
+  { word: "dismay",      correct: "distress",    wrong: ["delight","boredom","anger"],        meaning: "a feeling of worry or sadness from something unexpected" },
+  { word: "fond",        correct: "affectionate", wrong: ["jealous","uneasy","strict"],       meaning: "having warm or loving feelings toward something" },
+  { word: "glimpse",     correct: "peek",        wrong: ["stare","shout","stride"],           meaning: "a quick look at something" },
+  { word: "hurl",        correct: "throw",       wrong: ["catch","drop","lift"],              meaning: "to throw something with great force" },
+  { word: "mingle",      correct: "mix",         wrong: ["separate","stack","freeze"],        meaning: "to blend or join together with others" },
+  { word: "plunge",      correct: "dive",        wrong: ["float","climb","wade"],             meaning: "to jump or drop quickly into something" },
+  { word: "quench",      correct: "satisfy",     wrong: ["ignite","stretch","delay"],         meaning: "to end a thirst or put out a fire" },
+  { word: "reluctant",   correct: "unwilling",   wrong: ["eager","joyful","calm"],            meaning: "not wanting to do something" },
+  { word: "scornful",    correct: "mocking",     wrong: ["admiring","shy","polite"],          meaning: "showing that you think someone or something is worthless" },
+  { word: "sluggish",    correct: "slow",        wrong: ["alert","noisy","tidy"],             meaning: "moving slowly and without energy" },
+  { word: "sparse",      correct: "thin",        wrong: ["crowded","smooth","heavy"],         meaning: "spread out with very little in between" },
+  { word: "startle",     correct: "surprise",    wrong: ["soothe","bore","praise"],           meaning: "to suddenly frighten or shock someone" },
+  { word: "surge",       correct: "rush",        wrong: ["trickle","pause","settle"],         meaning: "a sudden powerful forward movement" },
+  { word: "sustain",     correct: "support",     wrong: ["abandon","weaken","ignore"],        meaning: "to keep something going over time" },
+  { word: "taunt",       correct: "tease",       wrong: ["compliment","forgive","whisper"],   meaning: "to make fun of someone in a mean way" },
+  { word: "thrive",      correct: "flourish",    wrong: ["wither","stumble","pause"],         meaning: "to grow well and be successful" },
+  { word: "throng",      correct: "crowd",       wrong: ["loner","trickle","silence"],        meaning: "a large group of people gathered together" },
+  { word: "transparent", correct: "clear",       wrong: ["solid","rough","shiny"],            meaning: "easy to see through" },
+  { word: "vex",         correct: "annoy",       wrong: ["amuse","calm","praise"],            meaning: "to make someone slightly angry or worried" },
+  { word: "wary",        correct: "cautious",    wrong: ["reckless","cheerful","weary"],      meaning: "watchful and careful about possible danger" },
+  { word: "wholesome",   correct: "healthy",     wrong: ["spoiled","boring","harmful"],       meaning: "good for your body or mind" },
+  { word: "wretched",    correct: "miserable",   wrong: ["joyful","wealthy","graceful"],      meaning: "very unhappy or in very poor condition" },
+  { word: "yearn",       correct: "long",        wrong: ["dread","ignore","refuse"],          meaning: "to want something strongly" },
+  { word: "abundant",    correct: "plentiful",   wrong: ["lacking","tiny","rare"],            meaning: "existing in large amounts" },
+  { word: "accurate",    correct: "correct",     wrong: ["wrong","messy","vague"],            meaning: "free from mistakes; exact" },
+  { word: "ancient",     correct: "old",         wrong: ["modern","fresh","young"],           meaning: "from a very long time ago" },
+  { word: "attentive",   correct: "focused",     wrong: ["distracted","rude","lazy"],         meaning: "paying close attention" },
+  { word: "banish",      correct: "expel",       wrong: ["welcome","praise","follow"],        meaning: "to send away as punishment" },
+  { word: "beckon",      correct: "summon",      wrong: ["dismiss","shove","shout"],          meaning: "to signal someone to come closer" },
+  { word: "boast",       correct: "brag",        wrong: ["whisper","apologize","deny"],       meaning: "to talk proudly about yourself" },
+  { word: "cease",       correct: "stop",        wrong: ["start","speed","follow"],           meaning: "to come to an end" },
+  { word: "cherish",     correct: "treasure",    wrong: ["discard","scold","forget"],         meaning: "to care for something deeply" },
+  { word: "clutch",      correct: "grasp",       wrong: ["release","kick","drop"],            meaning: "to hold something tightly" },
+  { word: "confess",     correct: "admit",       wrong: ["deny","boast","argue"],             meaning: "to tell the truth about something you did" },
+  { word: "conquer",     correct: "defeat",      wrong: ["surrender","ignore","join"],        meaning: "to overcome or take control of" },
+  { word: "crave",       correct: "desire",      wrong: ["reject","loathe","share"],          meaning: "to want something very much" },
+  { word: "cunning",     correct: "clever",      wrong: ["foolish","honest","shy"],           meaning: "good at tricking people to get what you want" },
+  { word: "dazzle",      correct: "amaze",       wrong: ["bore","dim","scold"],               meaning: "to impress someone with brilliance" },
+  { word: "decay",       correct: "rot",         wrong: ["grow","shine","build"],             meaning: "to break down or become worse over time" },
+  { word: "decline",     correct: "refuse",      wrong: ["accept","request","demand"],        meaning: "to say no politely" },
+  { word: "deserve",     correct: "earn",        wrong: ["steal","borrow","lose"],            meaning: "to have a right to something because of what you did" },
+  { word: "devour",      correct: "consume",     wrong: ["nibble","share","spit"],            meaning: "to eat something quickly and hungrily" },
+  { word: "dread",       correct: "fear",        wrong: ["enjoy","accept","trust"],           meaning: "to feel great worry about something coming" },
+  { word: "eager",       correct: "enthusiastic", wrong: ["bored","afraid","rude"],           meaning: "very excited and ready to do something" },
+  { word: "endure",      correct: "withstand",   wrong: ["surrender","begin","avoid"],        meaning: "to put up with something hard for a long time" },
+  { word: "enormous",    correct: "huge",        wrong: ["small","narrow","average"],         meaning: "extremely large in size" },
+  { word: "fatigue",     correct: "exhaustion",  wrong: ["energy","courage","hunger"],        meaning: "very deep tiredness" },
+  { word: "ferocious",   correct: "savage",      wrong: ["gentle","playful","calm"],          meaning: "very fierce and dangerous" },
+  { word: "flexible",    correct: "bendable",    wrong: ["stiff","broken","heavy"],           meaning: "able to bend without breaking" },
+  { word: "fragile",     correct: "delicate",    wrong: ["sturdy","heavy","tough"],           meaning: "easily broken or damaged" },
+  { word: "frigid",      correct: "freezing",    wrong: ["warm","moist","muggy"],             meaning: "extremely cold" },
+  { word: "genuine",     correct: "real",        wrong: ["fake","broken","rare"],             meaning: "true and not pretend" },
+  { word: "grateful",    correct: "thankful",    wrong: ["angry","selfish","doubtful"],       meaning: "feeling that you want to thank someone" },
+  { word: "hasten",      correct: "hurry",       wrong: ["delay","pause","rest"],             meaning: "to move or act quickly" },
+  { word: "hinder",      correct: "block",       wrong: ["help","speed","guide"],             meaning: "to make it harder for something to happen" },
+  { word: "ignite",      correct: "kindle",      wrong: ["smother","soak","freeze"],          meaning: "to set on fire or start" },
+];
+
+const BRIDGE_SENTENCES = [
+  { sentence: "Although the path looked safe, Mia was ___ because she had heard noises in the woods earlier.", correct: "wary", wrong: ["reckless","drowsy","thrilled"], explanation: "Hearing noises makes her watchful and careful about possible danger." },
+  { sentence: "The runner felt a ___ of energy as she rounded the final curve of the race.", correct: "surge", wrong: ["trickle","shortage","pause"], explanation: "A sudden burst near the finish is a surge." },
+  { sentence: "Because the soil was so ___, the farmer's crops grew taller than ever before.", correct: "fertile", wrong: ["barren","frigid","sparse"], explanation: "Tall, healthy crops need rich soil." },
+  { sentence: "Liam was ___ to share his snack, but his sister's pleading finally won him over.", correct: "reluctant", wrong: ["eager","delighted","anxious"], explanation: "Needing convincing shows he was unwilling at first." },
+  { sentence: "Grandma's homemade soup is far more ___ than the salty chips in the vending machine.", correct: "wholesome", wrong: ["harmful","bland","spoiled"], explanation: "Contrast with junk food points to healthy." },
+  { sentence: "After hiking all morning, the campers felt ___ and stopped to drink water in the shade.", correct: "fatigued", wrong: ["energetic","alert","playful"], explanation: "Hiking all morning leads to deep tiredness." },
+  { sentence: "Even though the test was hard, Jonah's ___ studying paid off with a great score.", correct: "diligent", wrong: ["careless","brief","lazy"], explanation: "A great score after hard work shows steady study." },
+  { sentence: "The villagers were forced to ___ the burning huts and run to the river for safety.", correct: "abandon", wrong: ["repair","build","decorate"], explanation: "Running for safety means leaving the huts behind." },
+  { sentence: "Even after losing three games in a row, the team's ___ spirit kept them practicing daily.", correct: "defiant", wrong: ["timid","weary","fragile"], explanation: "Continuing despite losses shows refusal to give up." },
+  { sentence: "Maria likes to ___ over difficult math problems before she asks for help.", correct: "ponder", wrong: ["glance","shout","ignore"], explanation: "Working through hard problems alone means thinking carefully." },
+  { sentence: "Even though it was raining, the marching band played on with a ___ rhythm.", correct: "brisk", wrong: ["sluggish","weary","gentle"], explanation: "Marching well in rain calls for lively beat." },
+  { sentence: "Carlos was ___ when he realized he had left his science project on the bus.", correct: "dismayed", wrong: ["delighted","amused","relieved"], explanation: "Losing a project causes worried surprise." },
+  { sentence: "The rabbit took only a quick ___ of the garden before darting back into the bushes.", correct: "glimpse", wrong: ["stare","lecture","stride"], explanation: "A quick look before hiding is a brief glance." },
+  { sentence: "After the long drought, the steady rain helped the wilting plants ___ once again.", correct: "thrive", wrong: ["wither","vanish","stumble"], explanation: "Rain after drought lets plants grow strong again." },
+  { sentence: "The bully tried to ___ the new student, but she calmly walked away and ignored him.", correct: "taunt", wrong: ["praise","forgive","console"], explanation: "A bully tries to tease or mock others." },
+  { sentence: "Knights in the old story were known for their ___ behavior in battle and at court.", correct: "gallant", wrong: ["cowardly","selfish","lazy"], explanation: "Knights are remembered for bravery and good manners." },
+  { sentence: "Olivia's ___ for the violin grew stronger every year she practiced with her teacher.", correct: "fondness", wrong: ["dislike","boredom","fear"], explanation: "Growing stronger after practice shows warm feelings." },
+  { sentence: "The hungry wolves began to ___ the food the moment the campers turned their backs.", correct: "devour", wrong: ["nibble","share","stack"], explanation: "Hungry animals eat quickly and greedily." },
+  { sentence: "The old wooden bridge looked so ___ that no one dared to walk across it.", correct: "fragile", wrong: ["sturdy","massive","smooth"], explanation: "If no one will cross it, it seems easily broken." },
+  { sentence: "Because the room was crowded, the guests began to ___ and chat with new faces.", correct: "mingle", wrong: ["separate","scatter","hide"], explanation: "Chatting with new people in a crowd means mixing." },
+  { sentence: "The thirsty hikers stopped at the stream to ___ their thirst before climbing higher.", correct: "quench", wrong: ["ignite","stretch","delay"], explanation: "Drinking water satisfies thirst." },
+  { sentence: "Marcus was ___ to enter the science fair after winning first place last year.", correct: "eager", wrong: ["hesitant","fearful","annoyed"], explanation: "A past win makes him excited to try again." },
+  { sentence: "Although she was tiny, the kitten was ___ and chased the older dog around the yard.", correct: "bold", wrong: ["timid","fragile","weary"], explanation: "Chasing a bigger animal shows fearlessness." },
+  { sentence: "The teacher gave us ___ instructions so no one would be confused about the project.", correct: "clear", wrong: ["vague","secret","harsh"], explanation: "Instructions that prevent confusion must be easy to understand." },
+  { sentence: "The hero ___ the dragon after a long and exhausting battle in the cave.", correct: "conquered", wrong: ["surrendered","joined","ignored"], explanation: "After winning a battle, the hero defeats the enemy." },
+  { sentence: "Even though he was nervous, Theo gave a ___ apology that made his friend smile.", correct: "sincere", wrong: ["fake","rude","playful"], explanation: "An apology that fixes a friendship is heartfelt." },
+  { sentence: "Because the recipe called for ___ measurements, Dad used a scale instead of guessing.", correct: "precise", wrong: ["loose","vague","lazy"], explanation: "Using a scale shows the measurements must be exact." },
+  { sentence: "After the storm passed, the air felt ___ and the birds began singing again.", correct: "tranquil", wrong: ["chaotic","stormy","harsh"], explanation: "Birds after a storm suggests calm." },
+  { sentence: "The mountain peak was so ___ that climbers needed oxygen tanks to reach the top.", correct: "lofty", wrong: ["shallow","low","narrow"], explanation: "Needing extra oxygen means the peak is very high." },
+  { sentence: "Even though he had practiced for weeks, Ben felt his hands ___ before his solo.", correct: "tremble", wrong: ["steady","freeze","stiffen"], explanation: "Nervousness causes hands to shake." },
+  { sentence: "The mayor promised to ___ the new park even after the storm damaged the playground.", correct: "restore", wrong: ["demolish","abandon","ignore"], explanation: "A promise after damage means bringing back to original." },
+  { sentence: "The hikers were warned to ___ the bears and never leave food out at the campsite.", correct: "beware", wrong: ["ignore","approach","feed"], explanation: "A warning about bears tells them to be careful." },
+  { sentence: "Although the snake looked dangerous, the zookeeper said it was actually quite ___.", correct: "harmless", wrong: ["ferocious","deadly","savage"], explanation: "'Although' shows the snake is not dangerous despite looks." },
+  { sentence: "The puppy was ___ to learn tricks because she paid close attention to her trainer.", correct: "attentive", wrong: ["distracted","stubborn","playful"], explanation: "Paying close attention means focused." },
+  { sentence: "Because the road was so ___, Dad drove very slowly through the icy mountain pass.", correct: "treacherous", wrong: ["smooth","safe","clear"], explanation: "Driving slowly on ice shows the road was dangerous." },
+  { sentence: "The frightened deer ___ into the forest the moment it heard the hunter's footsteps.", correct: "vanished", wrong: ["appeared","lingered","shouted"], explanation: "A frightened animal disappears quickly from sight." },
+  { sentence: "Although the cookies looked perfect, they had a ___ taste because Mia forgot the sugar.", correct: "bland", wrong: ["sweet","spicy","rich"], explanation: "Forgetting sugar leaves cookies without much flavor." },
+  { sentence: "After hours in the desert, the travelers were ___ and desperate for shade.", correct: "parched", wrong: ["soaked","chilly","refreshed"], explanation: "Hours in the desert leave travelers extremely thirsty." },
+  { sentence: "Although it was only a sketch, the artist's drawing showed ___ detail in every leaf.", correct: "remarkable", wrong: ["ordinary","boring","sloppy"], explanation: "Praise for a sketch suggests impressive detail." },
+  { sentence: "Although the box looked heavy, it was actually quite ___ and easy to carry upstairs.", correct: "light", wrong: ["dense","bulky","sturdy"], explanation: "Easy to carry suggests it weighs little." },
+];
+
+const BRIDGE_QUANT = [
+  { type: "math", question: "Maya saves $4 each week from her allowance. How much will she have saved after 13 weeks?", correct: "$52", wrong: ["$48","$56","$42"], explanation: "4 × 13 = 52. So $52." },
+  { type: "math", question: "A pack of 8 markers costs $6. How much do 24 markers cost at the same rate?", correct: "$18", wrong: ["$14","$16","$24"], explanation: "24 ÷ 8 = 3 packs. 3 × $6 = $18." },
+  { type: "math", question: "Liam reads 25 pages per night. How many pages will he read in 14 nights?", correct: "350", wrong: ["325","375","300"], explanation: "25 × 14 = 350 pages." },
+  { type: "math", question: "A pizza is cut into 8 equal slices. Sara eats 3 slices and Tom eats 2. What fraction is left?", correct: "3/8", wrong: ["5/8","1/2","2/8"], explanation: "5 eaten of 8 → 3/8 remain." },
+  { type: "math", question: "What is 0.4 + 0.35?", correct: "0.75", wrong: ["0.39","0.045","0.075"], explanation: "0.40 + 0.35 = 0.75." },
+  { type: "math", question: "A rectangle has length 12 cm and width 5 cm. What is its area?", correct: "60 cm²", wrong: ["34 cm²","17 cm²","120 cm²"], explanation: "Area = 12 × 5 = 60 cm²." },
+  { type: "math", question: "What is 25% of 80?", correct: "20", wrong: ["25","40","16"], explanation: "25% = ¼. 80 ÷ 4 = 20." },
+  { type: "math", question: "Ethan ran 2.5 mi Mon, 3.25 Tue, 1.75 Wed. Total?", correct: "7.5", wrong: ["7.25","6.5","8.0"], explanation: "2.5 + 3.25 + 1.75 = 7.5." },
+  { type: "quantComparison", columnA: "3/4 of 24", columnB: "2/3 of 27", answer: "equal", explanation: "Both equal 18." },
+  { type: "math", question: "A bag has 6 red, 4 blue, 2 green marbles. P(red)?", correct: "1/2", wrong: ["6/10","1/3","1/6"], explanation: "6/12 = 1/2." },
+  { type: "math", question: "If x + 14 = 23, what is x?", correct: "9", wrong: ["37","11","8"], explanation: "x = 23 − 14 = 9." },
+  { type: "math", question: "A triangle has base 10 cm, height 6 cm. Area?", correct: "30 cm²", wrong: ["60 cm²","16 cm²","32 cm²"], explanation: "½ × 10 × 6 = 30 cm²." },
+  { type: "math", question: "Temp 12°F dropped to -5°F. How many degrees drop?", correct: "17°", wrong: ["7°","12°","17.5°"], explanation: "12 to 0 = 12, 0 to -5 = 5. Total 17°." },
+  { type: "math", question: "Jenna had $50. She spent $18.75 on a book and $12.50 on a snack. How much left?", correct: "$18.75", wrong: ["$19.25","$20.75","$18.25"], explanation: "$50 − $31.25 = $18.75." },
+  { type: "quantComparison", columnA: "0.6", columnB: "3/5", answer: "equal", explanation: "3/5 = 0.6. Equal." },
+  { type: "math", question: "Recipe needs 2/3 cup sugar. Triple recipe needs?", correct: "2 cups", wrong: ["1⅓ cups","1 cup","2⅓ cups"], explanation: "2/3 × 3 = 2 cups." },
+  { type: "math", question: "Mean of 8, 12, 10, 6, 14?", correct: "10", wrong: ["8","12","9"], explanation: "Sum 50 ÷ 5 = 10." },
+  { type: "math", question: "A box of cereal weighs 16 oz. How many oz in 5 boxes?", correct: "80 oz", wrong: ["75 oz","85 oz","21 oz"], explanation: "16 × 5 = 80 oz." },
+  { type: "math", question: "If 3 notebooks cost $7.50, how much for 1?", correct: "$2.50", wrong: ["$2.25","$3.00","$2.75"], explanation: "$7.50 ÷ 3 = $2.50." },
+  { type: "math", question: "Rectangle 25 m × 10 m. Perimeter?", correct: "70 m", wrong: ["250 m","35 m","60 m"], explanation: "2(25+10) = 70 m." },
+  { type: "quantComparison", columnA: "25% of 200", columnB: "50% of 100", answer: "equal", explanation: "50 vs 50. Equal." },
+  { type: "math", question: "Marcus scored 18, 22, 15, 18, 27 points. Mode?", correct: "18", wrong: ["20","22","15"], explanation: "18 appears twice. Mode = 18." },
+  { type: "math", question: "A pencil is 7.5 cm. 8 pencils end to end?", correct: "60 cm", wrong: ["56 cm","62.5 cm","15.5 cm"], explanation: "7.5 × 8 = 60 cm." },
+  { type: "math", question: "What is 3/4 ÷ 1/4?", correct: "3", wrong: ["1/3","3/16","1"], explanation: "3/4 × 4 = 3." },
+  { type: "math", question: "School has 480 students. 5/8 are boys. How many boys?", correct: "300", wrong: ["180","240","320"], explanation: "5/8 × 480 = 300." },
+  { type: "math", question: "Sam jogged 45 min/day for 6 days. Total hours?", correct: "4.5 hours", wrong: ["3 hours","5 hours","4 hours"], explanation: "270 min ÷ 60 = 4.5 hrs." },
+  { type: "quantComparison", columnA: "Area of square side 6", columnB: "Perimeter of square side 9", answer: "equal", explanation: "36 vs 36. Equal." },
+  { type: "math", question: "A juice bottle holds 1.5 L. 12 bottles total?", correct: "18 L", wrong: ["13.5 L","16.5 L","15 L"], explanation: "1.5 × 12 = 18 L." },
+  { type: "math", question: "Median of 3, 7, 9, 12, 15, 20, 22?", correct: "12", wrong: ["9","13","15"], explanation: "Middle of 7 sorted values is 12." },
+  { type: "math", question: "Movie 6:45 PM to 9:10 PM. Length?", correct: "2 hr 25 min", wrong: ["2 hr 35 min","2 hr 15 min","3 hr 25 min"], explanation: "2h to 8:45, then 25 min to 9:10." },
+  { type: "math", question: "2x = 18. x?", correct: "9", wrong: ["16","20","36"], explanation: "x = 9." },
+  { type: "math", question: "15 girls, 10 boys. Ratio girls:boys?", correct: "3:2", wrong: ["15:10","2:3","5:3"], explanation: "Divide by 5 → 3:2." },
+  { type: "quantComparison", columnA: "1/2 + 1/3", columnB: "1/2 + 1/4", answer: "a", explanation: "1/3 > 1/4." },
+  { type: "math", question: "Garden 8×5 ft. Double both dims. New area?", correct: "160 sq ft", wrong: ["80 sq ft","40 sq ft","320 sq ft"], explanation: "16 × 10 = 160." },
+  { type: "math", question: "Shirt $20, original $25. Percent saved?", correct: "20%", wrong: ["25%","5%","15%"], explanation: "5/25 = 20%." },
+  { type: "math", question: "4 oranges cost $3. 12 oranges?", correct: "$9", wrong: ["$7","$12","$8"], explanation: "3 × $3 = $9." },
+  { type: "math", question: "Cube with 4 cm edges. Volume?", correct: "64 cm³", wrong: ["16 cm³","48 cm³","12 cm³"], explanation: "4³ = 64 cm³." },
+  { type: "quantComparison", columnA: "3/8", columnB: "2/5", answer: "b", explanation: "Common 40: 15/40 vs 16/40. B greater." },
+  { type: "math", question: "Maria scored 85, 90, 78, 87. Range?", correct: "12", wrong: ["10","85","13"], explanation: "90 − 78 = 12." },
+  { type: "math", question: "Jake is 4 ft 8 in. In inches?", correct: "56 in", wrong: ["48 in","60 in","52 in"], explanation: "48 + 8 = 56 in." },
+  { type: "math", question: "Pet store has 36 fish. ¼ are goldfish. How many goldfish?", correct: "9", wrong: ["6","12","8"], explanation: "36 ÷ 4 = 9." },
+  { type: "math", question: "Tickets $8 each. Group spent $96. How many?", correct: "12", wrong: ["10","14","11"], explanation: "$96 ÷ $8 = 12." },
+  { type: "quantComparison", columnA: "2³", columnB: "3²", answer: "b", explanation: "8 vs 9. B greater." },
+  { type: "math", question: "Water tank 240 gallons, ¾ full. Gallons in tank?", correct: "180 gallons", wrong: ["60 gallons","120 gallons","200 gallons"], explanation: "¾ × 240 = 180." },
+  { type: "math", question: "Point A (2,5), B (2,1). Distance?", correct: "4 units", wrong: ["3 units","5 units","6 units"], explanation: "5 − 1 = 4." },
+  { type: "math", question: "Class of 24. 1/3 brought lunch. How many did NOT?", correct: "16", wrong: ["8","12","18"], explanation: "8 brought; 24 − 8 = 16." },
+  { type: "math", question: "What is 7.2 × 5?", correct: "36", wrong: ["35.1","37","3.6"], explanation: "7 × 5 = 35, +1 = 36." },
+  { type: "math", question: "Aquarium 3 × 2 × 2 ft. Volume?", correct: "12 cubic ft", wrong: ["7 cubic ft","14 cubic ft","10 cubic ft"], explanation: "3 × 2 × 2 = 12." },
+  { type: "quantComparison", columnA: "Inches in 2 feet", columnB: "Ounces in 1.5 pounds", answer: "equal", explanation: "24 inches vs 24 ounces. Equal." },
+  { type: "math", question: "3y − 4 = 11. y?", correct: "5", wrong: ["7","3","15"], explanation: "3y = 15 → y = 5." },
+  { type: "math", question: "Rectangle perim 30, length 9. Width?", correct: "6 cm", wrong: ["12 cm","21 cm","3 cm"], explanation: "30 = 2(9+W); W = 6." },
+  { type: "math", question: "Anna spent 1/4 on lunch, 1/3 on movie. Total fraction?", correct: "7/12", wrong: ["2/7","1/12","5/12"], explanation: "3/12 + 4/12 = 7/12." },
+  { type: "math", question: "Train 60 mph. Distance in 2.5 hours?", correct: "150 miles", wrong: ["120 miles","180 miles","125 miles"], explanation: "60 × 2.5 = 150." },
+  { type: "quantComparison", columnA: "Sides on hexagon", columnB: "Sides on pentagon + 1", answer: "equal", explanation: "6 vs 6. Equal." },
+  { type: "math", question: "Pet weighed 12.5 lbs, lost 1.75 lbs. New weight?", correct: "10.75 lbs", wrong: ["11.25 lbs","10.25 lbs","14.25 lbs"], explanation: "12.50 − 1.75 = 10.75." },
+  { type: "math", question: "5 shelves × 24 books. 1/4 are mysteries. How many?", correct: "30", wrong: ["24","20","36"], explanation: "Total 120; 1/4 = 30." },
+  { type: "quantComparison", columnA: "x where x+12=20", columnB: "y where 2y=18", answer: "b", explanation: "x=8 vs y=9. B greater." },
+  { type: "math", question: "Pizza shop sold 3/5 of 40 pizzas in afternoon. How many?", correct: "24", wrong: ["8","16","30"], explanation: "3/5 × 40 = 24." },
+  { type: "math", question: "What is 1.6 ÷ 4?", correct: "0.4", wrong: ["0.04","4","0.6"], explanation: "16 ÷ 4 = 4 → 0.4." },
+  { type: "quantComparison", columnA: "Triangle area base 8 height 5", columnB: "Rectangle area 4×5", answer: "equal", explanation: "20 vs 20. Equal." },
+];
+
+const BRIDGE_MATH = [
+  { type: "math", question: "What is 347 + 268?", correct: "615", wrong: ["605","525","625"], explanation: "Add with carries: 615." },
+  { type: "math", question: "What is 1,000 − 437?", correct: "563", wrong: ["573","663","553"], explanation: "1000 − 437 = 563." },
+  { type: "math", question: "What is 24 × 15?", correct: "360", wrong: ["340","390","345"], explanation: "24×10 + 24×5 = 240+120 = 360." },
+  { type: "math", question: "What is 144 ÷ 12?", correct: "12", wrong: ["11","13","14"], explanation: "12 × 12 = 144." },
+  { type: "math", question: "What is 5/6 − 1/3?", correct: "1/2", wrong: ["4/3","2/3","1/3"], explanation: "5/6 − 2/6 = 3/6 = 1/2." },
+  { type: "math", question: "What is 2/5 + 3/10?", correct: "7/10", wrong: ["5/15","1/2","5/10"], explanation: "4/10 + 3/10 = 7/10." },
+  { type: "math", question: "What is 2/3 × 3/4?", correct: "1/2", wrong: ["5/7","6/7","2/4"], explanation: "6/12 = 1/2." },
+  { type: "math", question: "What is 4/5 ÷ 2/3?", correct: "6/5", wrong: ["8/15","2/5","5/6"], explanation: "4/5 × 3/2 = 12/10 = 6/5." },
+  { type: "math", question: "What is 0.6 + 0.85?", correct: "1.45", wrong: ["0.91","1.35","0.145"], explanation: "0.60 + 0.85 = 1.45." },
+  { type: "math", question: "What is 5.4 − 2.7?", correct: "2.7", wrong: ["3.3","2.3","3.7"], explanation: "5.4 − 2.7 = 2.7." },
+  { type: "math", question: "What is 0.5 × 0.4?", correct: "0.2", wrong: ["2.0","0.9","0.02"], explanation: "5 × 4 = 20 → 0.20 = 0.2." },
+  { type: "math", question: "What is 3.6 ÷ 0.6?", correct: "6", wrong: ["0.6","60","0.06"], explanation: "36 ÷ 6 = 6." },
+  { type: "math", question: "What is 50% of 60?", correct: "30", wrong: ["6","25","120"], explanation: "Half of 60 = 30." },
+  { type: "math", question: "What is 10% of 250?", correct: "25", wrong: ["10","2.5","250"], explanation: "250 ÷ 10 = 25." },
+  { type: "math", question: "What is 75% of 40?", correct: "30", wrong: ["10","20","35"], explanation: "¾ × 40 = 30." },
+  { type: "math", question: "Round 6,847 to the nearest hundred.", correct: "6,800", wrong: ["6,900","6,850","7,000"], explanation: "Tens digit 4, round down." },
+  { type: "math", question: "Round 3.276 to the nearest tenth.", correct: "3.3", wrong: ["3.2","3.28","3.27"], explanation: "Hundredths 7, round up." },
+  { type: "math", question: "Which decimal equals 3/8?", correct: "0.375", wrong: ["0.38","0.35","0.83"], explanation: "3 ÷ 8 = 0.375." },
+  { type: "math", question: "Which fraction equals 0.25?", correct: "1/4", wrong: ["1/25","2/5","1/2"], explanation: "25/100 = 1/4." },
+  { type: "math", question: "What is 6² + 3?", correct: "39", wrong: ["15","18","81"], explanation: "36 + 3 = 39." },
+  { type: "math", question: "What is 8 × (4 + 2)?", correct: "48", wrong: ["34","14","36"], explanation: "8 × 6 = 48." },
+  { type: "math", question: "What is 20 − 3 × 4?", correct: "8", wrong: ["68","12","17"], explanation: "20 − 12 = 8." },
+  { type: "math", question: "GCF of 12 and 18?", correct: "6", wrong: ["2","3","36"], explanation: "Common factors: 1,2,3,6. Max = 6." },
+  { type: "math", question: "LCM of 4 and 6?", correct: "12", wrong: ["2","10","24"], explanation: "Multiples 4: 4,8,12; 6: 6,12. LCM 12." },
+  { type: "math", question: "3/5 as a percent?", correct: "60%", wrong: ["35%","53%","30%"], explanation: "3/5 = 60/100 = 60%." },
+  { type: "math", question: "80% as a fraction in simplest form?", correct: "4/5", wrong: ["8/10","1/8","80/10"], explanation: "80/100 = 4/5." },
+  { type: "math", question: "Solve: x − 7 = 15.", correct: "22", wrong: ["8","21","105"], explanation: "x = 22." },
+  { type: "math", question: "Solve: 5n = 45.", correct: "9", wrong: ["40","50","8"], explanation: "n = 9." },
+  { type: "math", question: "Solve: x/3 = 12.", correct: "36", wrong: ["4","15","9"], explanation: "x = 36." },
+  { type: "math", question: "Solve: 2x + 5 = 17.", correct: "6", wrong: ["11","7","12"], explanation: "2x=12, x=6." },
+  { type: "math", question: "Square side 7 cm. Perimeter?", correct: "28 cm", wrong: ["49 cm","14 cm","21 cm"], explanation: "4 × 7 = 28 cm." },
+  { type: "math", question: "Square side 9 cm. Area?", correct: "81 cm²", wrong: ["36 cm²","18 cm²","27 cm²"], explanation: "9² = 81." },
+  { type: "math", question: "Triangle base 12, height 5. Area?", correct: "30", wrong: ["60","17","34"], explanation: "½ × 12 × 5 = 30." },
+  { type: "math", question: "Volume of 4×3×2 prism?", correct: "24", wrong: ["9","12","18"], explanation: "4 × 3 × 2 = 24." },
+  { type: "math", question: "Right angle is how many degrees?", correct: "90°", wrong: ["45°","180°","60°"], explanation: "Right = 90°." },
+  { type: "math", question: "Angle 120° is what kind?", correct: "obtuse", wrong: ["acute","right","straight"], explanation: "90° < 120° < 180° → obtuse." },
+  { type: "math", question: "Angles in a triangle sum to?", correct: "180°", wrong: ["90°","360°","270°"], explanation: "Interior angles sum to 180°." },
+  { type: "math", question: "Two triangle angles: 50°, 70°. Third?", correct: "60°", wrong: ["120°","80°","70°"], explanation: "180 − 50 − 70 = 60." },
+  { type: "math", question: "Inches in 4 feet?", correct: "48", wrong: ["40","44","52"], explanation: "4 × 12 = 48." },
+  { type: "math", question: "Ounces in 3 pounds?", correct: "48", wrong: ["36","24","30"], explanation: "3 × 16 = 48." },
+  { type: "math", question: "Milliliters in 2.5 L?", correct: "2,500", wrong: ["250","25","25,000"], explanation: "2.5 × 1000 = 2500." },
+  { type: "math", question: "Minutes in 3¼ hours?", correct: "195", wrong: ["180","190","215"], explanation: "180 + 15 = 195." },
+  { type: "math", question: "Mean of 4, 8, 6, 10, 12?", correct: "8", wrong: ["6","10","7"], explanation: "Sum 40 ÷ 5 = 8." },
+  { type: "math", question: "Median of 3, 5, 7, 9, 11?", correct: "7", wrong: ["5","9","8"], explanation: "Middle = 7." },
+  { type: "math", question: "Mode of 2, 4, 4, 5, 6, 4, 7?", correct: "4", wrong: ["7","5","2"], explanation: "4 three times. Mode = 4." },
+  { type: "math", question: "Range of 12, 18, 7, 22, 15?", correct: "15", wrong: ["10","12","22"], explanation: "22 − 7 = 15." },
+  { type: "math", question: "Spinner sections 1-5. P(spinning a 3)?", correct: "1/5", wrong: ["1/3","3/5","1/2"], explanation: "1 of 5." },
+  { type: "math", question: "Coin flip. P(heads)?", correct: "1/2", wrong: ["1/4","1","1/3"], explanation: "1 of 2 outcomes." },
+  { type: "math", question: "3 right, 2 up from origin. Coordinates?", correct: "(3, 2)", wrong: ["(2, 3)","(-3, 2)","(3, -2)"], explanation: "(3, 2)." },
+  { type: "math", question: "Greater: 5/8 or 3/5?", correct: "5/8", wrong: ["3/5","they are equal","neither"], explanation: "25/40 vs 24/40. 5/8 greater." },
+  { type: "math", question: "Largest: 0.6, 0.65, 0.605, 0.56?", correct: "0.65", wrong: ["0.6","0.605","0.56"], explanation: "0.65 > 0.605 > 0.6 > 0.56." },
+  { type: "math", question: "What is 3½ + 2¼?", correct: "5¾", wrong: ["5½","5⅓","6¼"], explanation: "3+2=5; ½+¼ = ¾. → 5¾." },
+  { type: "math", question: "What is 5 − 2⅓?", correct: "2⅔", wrong: ["3⅓","2⅓","3⅔"], explanation: "4⅓ minus 2⅓ = wait — 5 = 4 3/3. 4 3/3 − 2 1/3 = 2 2/3." },
+  { type: "math", question: "Convert 7/4 to mixed.", correct: "1¾", wrong: ["1¼","7¼","2¼"], explanation: "7 ÷ 4 = 1 r3." },
+  { type: "math", question: "Convert 2⅗ to improper.", correct: "13/5", wrong: ["6/5","10/5","11/5"], explanation: "2 × 5 + 3 = 13." },
+  { type: "math", question: "Value of 7 in 4,732,109?", correct: "700,000", wrong: ["7,000","70,000","7,000,000"], explanation: "Hundred-thousands place." },
+  { type: "math", question: "Which is prime?", correct: "29", wrong: ["27","21","33"], explanation: "29 has no divisors except 1 and itself." },
+  { type: "math", question: "Composite number?", correct: "15", wrong: ["7","11","13"], explanation: "15 = 3 × 5." },
+  { type: "math", question: "What is 6 × (-4)?", correct: "-24", wrong: ["24","-10","-2"], explanation: "Pos × neg = neg." },
+  { type: "math", question: "What is -8 + 3?", correct: "-5", wrong: ["5","-11","11"], explanation: "-8 + 3 = -5." },
+];
+
+const BRIDGE_READING = {
+  passages: [
+    { id: "bp1", title: "The Saturday Inventor", genre: "fiction",
+      text: `Maya spread her supplies across the kitchen table: rubber bands, cardboard tubes, three plastic spoons, and a roll of tape that was already losing its stick. The school's Invention Fair was Monday, and so far her best idea was a "self-stirring" cereal bowl that did not actually stir anything.
+
+Her older brother Theo wandered in, took one look at the mess, and snorted. "Let me guess. Another cereal bowl?"
+
+"It's a marble launcher," Maya said firmly, even though she had only decided this five seconds ago. She taped two spoons to a cardboard tube, stretched a rubber band between them, and dropped a marble in. When she pulled back and let go, the marble flew exactly four inches before rolling sadly off the table.
+
+Theo laughed, but then he sat down. "The rubber band's too loose. And your spoons are pointing the wrong way." He flipped one spoon around so it cupped the marble instead of letting it slide off.
+
+Maya tried again. This time the marble shot across the kitchen and bounced off the refrigerator with a satisfying ping. She grinned so wide her cheeks hurt.
+
+"Okay," Theo said, pretending not to be impressed. "But you need a target. Inventions need a point."
+
+By dinner, Maya had built a cardboard castle with paper soldiers on top. The launcher knocked them down one by one.` },
+    { id: "bp2", title: "The Night Shift in the Garden", genre: "nonfiction",
+      text: `When the sun goes down, most flowers close their petals and rest. But a small group of plants does the opposite. These night-blooming flowers wait until darkness falls, then open wide to greet a very different crowd of visitors.
+
+During the day, gardens are busy with bees, butterflies, and hummingbirds. These animals find flowers using bright colors and sweet smells. At night, however, those colorful petals would be useless. Most night creatures cannot see red or yellow in the dark. So night-blooming plants take a different approach. Their petals are usually white or pale, which reflects what little moonlight there is. Their scents are also much stronger, sometimes carrying for hundreds of feet through the still night air.
+
+The visitors these flowers attract are surprising. Moths are the most common pollinators, fluttering from bloom to bloom on dusty wings. In some parts of the world, bats also do the job. Even certain beetles get involved, crawling into wide blossoms and staying the night.
+
+Scientists believe night blooming evolved because the daytime competition for pollinators is fierce. By opening after dark, these plants find quieter customers and avoid the crowd.` },
+    { id: "bp3", title: "The Boy Who Mapped the Cold", genre: "biography",
+      text: `Matthew Henson grew up in Maryland in the 1870s, the son of free Black farmers. By the time he was twelve, both his parents had died, and he set out on his own. He walked to Washington, then to Baltimore, where he talked his way onto a merchant ship as a cabin boy. The captain taught him to read charts, handle ropes, and navigate by the stars. By the time Henson was a young man, he had sailed across three oceans.
+
+In 1887, he met an explorer named Robert Peary, who was planning trips to the Arctic. Peary needed someone strong, clever, and willing to face brutal cold. Henson agreed. Over the next twenty-two years, the two men made several attempts to reach the North Pole.
+
+Henson became the team's most skilled member. He learned the Inuktitut language from the Inuit people of Greenland, who shared their knowledge of sled-building, dog handling, and surviving on the ice.
+
+In April 1909, after weeks of brutal travel across drifting sea ice, a small group reached what they believed was the North Pole. Henson was at the front, breaking trail. For decades, history books gave most of the credit to Peary alone. Today his name appears in museums, on stamps, and in books that finally tell the whole story.` },
+    { id: "bp4", title: "How a Snowflake Gets Its Shape", genre: "informational",
+      text: `No two snowflakes are exactly alike, but every single one starts the same way: with a speck of dust floating high in a cloud. When the air around that speck is cold enough, water vapor freezes onto it, forming a tiny six-sided crystal. From that moment on, the snowflake begins a long, twisting journey toward the ground.
+
+The six-sided shape is not an accident. Water molecules naturally lock together at angles that produce hexagons. As the crystal falls, more water vapor freezes onto its edges, and tiny arms begin to grow outward from each of the six corners.
+
+The exact shape a snowflake takes depends on the temperature and humidity of every layer of air it passes through. A flake that drifts through warmer, wetter air may grow wide, flat plates. One that travels through colder, drier air may sprout long needles instead. Because no two snowflakes follow the exact same path, no two end up looking exactly the same.
+
+Each flake in your hand carries a tiny record of the sky it just fell through.` },
+    { id: "bp5", title: "The Treehouse Vote", genre: "fiction",
+      text: `Jordan and his cousins had been working on the treehouse all summer. By August, the platform was finally finished, and the four of them sat on it, sweaty and proud. Now came the hard part: deciding what to put inside.
+
+"A reading corner," said Priya, who always had a book in her backpack. "With pillows."
+
+"A snack station," said Marcus, who always had crumbs on his shirt. "With a cooler."
+
+"A lookout tower," said Jordan. He had wanted a lookout tower since he first saw the tree.
+
+The fourth cousin, little Ezra, was only seven. He pulled at his shoelaces and said quietly, "A place where everybody can fit."
+
+Nobody answered right away. The platform was big, but not huge. They could not have all three things, and four people meant any vote would end in a tie.
+
+Priya sighed first. "Okay. What if the reading corner is also the snack spot? Pillows are good for sitting and eating."
+
+Marcus shrugged. "Fine by me, as long as the cooler fits."
+
+Jordan stared up through the leaves. A lookout tower would have been amazing. But he pictured himself sitting alone in it while the others laughed below. "We could put a window on that side," he said, pointing. "Anyone can look out."
+
+Ezra grinned and bounced on his heels. They spent the rest of the afternoon arguing about pillow colors, which felt, somehow, like a victory.` },
+    { id: "bp6", title: "The Town Under the Sand", genre: "informational",
+      text: `In the deserts of southern Africa lies a place called Kolmanskop. Today it is silent. Sand pours through broken windows and piles up against doors that have not opened in decades. But a hundred years ago, Kolmanskop was one of the richest towns in the region.
+
+The story began in 1908, when a railway worker noticed something glittering in the sand. It turned out to be a diamond. Word spread quickly, and within months, miners and their families had rushed in to dig for more.
+
+The town that grew up around the diamond fields was unlike anything else in the desert. Kolmanskop had a hospital with the first X-ray machine in southern Africa. It had a bowling alley, a theater, an ice factory, and even a tram that carried fresh water from the coast.
+
+But the diamonds did not last forever. By the 1930s, miners began finding larger deposits farther south. People packed up and left, taking what they could carry. The desert wasted no time. Wind carried sand through every open window, and dunes climbed slowly up staircases and into bedrooms.
+
+Today Kolmanskop is a ghost town that visitors can tour.` }
+  ],
+  questions: [
+    { passageId: "bp1", question: "What is the main idea of the passage?", correct: 1, choices: ["Maya wins the Invention Fair with a marble launcher.","With Theo's help, Maya turns a failing project into something she's proud of.","Theo teaches Maya that engineering is harder than it looks.","Maya's family always supports her projects."], explanation: "The story shows Maya's project transforming with Theo's quiet help." },
+    { passageId: "bp1", question: "What was Maya's first idea?", correct: 2, choices: ["A cardboard castle","A target practice game","A self-stirring cereal bowl","A rubber band slingshot"], explanation: "Her best idea was a cereal bowl that didn't stir." },
+    { passageId: "bp1", question: "What change did Theo make that helped the launcher work?", correct: 0, choices: ["He flipped a spoon so it cupped the marble.","He replaced the rubber band with tape.","He added a second cardboard tube.","He moved the launcher closer to the refrigerator."], explanation: "Flipping the spoon to cup the marble fixed it." },
+    { passageId: "bp1", question: "Based on the passage, how does Theo most likely feel by the end?", correct: 2, choices: ["Annoyed at being asked to help.","She should have picked a better idea.","Proud of her but not showing it directly.","He wishes he'd built his own invention."], explanation: "He pretends not to be impressed but keeps helping." },
+    { passageId: "bp1", question: "'snorted' in the second paragraph suggests Theo was", correct: 1, choices: ["surprised","amused or teasing","angry","trying not to wake their mother"], explanation: "A snort here shows light teasing." },
+    { passageId: "bp1", question: "What is the author's purpose?", correct: 3, choices: ["To explain how to build a marble launcher.","To warn about messy kitchen projects.","To describe Invention Fair rules.","To show how a small bit of help turns frustration into success."], explanation: "The author celebrates how Theo's small help transforms Maya's project." },
+    { passageId: "bp2", question: "What is the passage mostly about?", correct: 2, choices: ["Bees and butterflies pollinate flowers during the day.","Most flowers close their petals at night.","How and why some flowers bloom only after dark.","Different colors of flowers around the world."], explanation: "The passage centers on night-blooming flowers — how and why." },
+    { passageId: "bp2", question: "Why are most night-blooming flowers white or pale?", correct: 1, choices: ["Colors fade in cold night air.","Pale petals reflect moonlight and are easier to see in the dark.","Bright colors would scare bats away.","White flowers produce more nectar."], explanation: "Pale petals reflect the little moonlight available." },
+    { passageId: "bp2", question: "Which animals visit night-blooming flowers?", correct: 3, choices: ["Hummingbirds","Honeybees","Butterflies","Moths, bats, and certain beetles"], explanation: "The passage names moths, bats, and beetles as night pollinators." },
+    { passageId: "bp2", question: "You can infer night-blooming plants probably", correct: 0, choices: ["face less competition for pollinators than daytime flowers.","produce more seeds than daytime flowers.","cannot survive in hot climates.","are pollinated only by moths."], explanation: "Night blooming evolved partly to escape daytime competition." },
+    { passageId: "bp2", question: "'carrying' in 'scents carrying for hundreds of feet' means", correct: 2, choices: ["lifting","holding","traveling or spreading","transporting by hand"], explanation: "Scents traveling/spreading through air." },
+    { passageId: "bp2", question: "The author's tone is best described as", correct: 1, choices: ["worried","curious and inviting","strictly factual","sad"], explanation: "The author invites readers to notice nature curiously." },
+    { passageId: "bp3", question: "Best summary of Henson's life:", correct: 2, choices: ["He became a farmer in Maryland.","He sailed but was forgotten.","He overcame hardship to become a skilled Arctic explorer who helped reach the North Pole.","He worked with the Inuit to map Greenland."], explanation: "His journey from orphan to Arctic explorer and finally recognition." },
+    { passageId: "bp3", question: "Who taught Henson to read charts and navigate by stars?", correct: 0, choices: ["A ship captain","Robert Peary","An Inuit guide","His father"], explanation: "The captain taught him." },
+    { passageId: "bp3", question: "What did Henson learn from the Inuit?", correct: 3, choices: ["Ship repair","Map reading","Seal hunting","Sled-building, dog handling, and surviving on the ice"], explanation: "Inuit shared knowledge of sleds, dogs, and ice survival." },
+    { passageId: "bp3", question: "Why did Henson not get proper credit for years?", correct: 1, choices: ["He never asked for credit.","History books gave most credit to Peary alone.","He returned to sailing and disappeared.","He couldn't prove he reached the Pole."], explanation: "History books for decades credited only Peary." },
+    { passageId: "bp3", question: "'brutal' in 'brutal cold' means", correct: 2, choices: ["unfamiliar","interesting","extremely harsh","slightly chilly"], explanation: "'Brutal' here means extremely harsh." },
+    { passageId: "bp3", question: "The author's purpose in the last paragraph is to", correct: 0, choices: ["Show that Henson's contributions are now being remembered.","Explain how the Pole was finally mapped.","Criticize past history books.","Describe modern museum exhibits."], explanation: "The paragraph highlights his contemporary recognition." },
+    { passageId: "bp4", question: "Main idea?", correct: 2, choices: ["Snowflakes are always six-sided because of cold air.","Scientists grow snowflakes in labs.","A snowflake's shape depends on its journey through the sky.","Every snowflake starts with a piece of ice."], explanation: "Shape comes from the journey through varying air." },
+    { passageId: "bp4", question: "Every snowflake begins with...", correct: 1, choices: ["A drop of rain","A speck of dust","A grain of pollen","A piece of older ice"], explanation: "A speck of dust floating in a cloud." },
+    { passageId: "bp4", question: "What kind of air produces long, needle-shaped flakes?", correct: 3, choices: ["Warm and wet","Warm and dry","Cold and wet","Cold and dry"], explanation: "Colder, drier air produces needles." },
+    { passageId: "bp4", question: "Two flakes falling the same day in the same town", correct: 0, choices: ["may still look very different because of slightly different paths.","will look identical to each other.","will be the same shape if they land at the same time.","must be the same temperature when they form."], explanation: "Different paths → different shapes, even nearby." },
+    { passageId: "bp4", question: "'hexagons' refers to shapes with", correct: 2, choices: ["four sides","five sides","six sides","eight sides"], explanation: "Hexagons have six sides." },
+    { passageId: "bp4", question: "The author's purpose is to", correct: 1, choices: ["Convince readers snow is dangerous.","Explain how snowflakes form and why they look different.","Compare snowflakes with raindrops.","Describe one scientist's life."], explanation: "Primarily explanatory: how and why snowflakes vary." },
+    { passageId: "bp5", question: "Main lesson?", correct: 1, choices: ["Older cousins always know best.","Working together sometimes means giving up part of what you want.","Treehouses should be built in groups of four.","Reading and snacking go well together."], explanation: "Each cousin compromises to fit everyone." },
+    { passageId: "bp5", question: "Why did the cousins struggle to decide?", correct: 2, choices: ["Their parents wouldn't let them buy supplies.","The platform was too small for anything.","Four cousins but only enough room for some ideas.","Ezra refused to vote."], explanation: "Big but not huge; four people = tie possible." },
+    { passageId: "bp5", question: "How did Priya and Marcus solve part of the problem?", correct: 0, choices: ["They combined the reading corner and snack station.","They skipped the snack station.","They let Jordan have a small lookout tower.","They asked Ezra to decide."], explanation: "Priya proposed combining; Marcus agreed." },
+    { passageId: "bp5", question: "What changed Jordan's mind about the tower?", correct: 3, choices: ["His cousins said it was dangerous.","The platform was too weak.","He realized a tower would have a bad view.","He pictured himself sitting alone in it."], explanation: "Imagining sitting alone made the tower less appealing." },
+    { passageId: "bp5", question: "'victory' in 'felt like a victory' suggests", correct: 2, choices: ["They won a game against another team.","They had defeated Ezra's quiet suggestion.","The disagreement felt friendly because the bigger problem was solved.","Jordan finally got his lookout tower."], explanation: "Small arguments after working through the big issue feel triumphant." },
+    { passageId: "bp5", question: "The author's purpose is to", correct: 1, choices: ["Teach how to build a real treehouse.","Show how compromise leads to a better group decision.","Explain why families often disagree.","Warn against letting younger kids vote."], explanation: "The story models cooperative compromise." },
+    { passageId: "bp6", question: "What is the passage mostly about?", correct: 1, choices: ["The history of diamond mining around the world.","How a once-rich desert town rose, fell, and was claimed by the sand.","Why German settlers came to southern Africa.","Animals that live in abandoned desert towns."], explanation: "The passage traces Kolmanskop's discovery, growth, decline, and burial." },
+    { passageId: "bp6", question: "What did a railway worker find in 1908?", correct: 0, choices: ["A diamond glittering in the sand.","Gold in nearby rocks.","An underground river.","A forgotten village."], explanation: "Something glittering turned out to be a diamond." },
+    { passageId: "bp6", question: "Which of these did Kolmanskop have?", correct: 2, choices: ["An airport and university.","A large harbor for ships.","A hospital with the first X-ray machine in southern Africa.","A famous diamond museum."], explanation: "X-ray machine: first in southern Africa." },
+    { passageId: "bp6", question: "Why did people leave Kolmanskop in the 1930s?", correct: 3, choices: ["Sand became too dangerous.","The government closed the town.","Disease spread.","Larger diamond deposits were discovered farther south."], explanation: "Bigger deposits south drew miners away." },
+    { passageId: "bp6", question: "'wasted no time' in 'the desert wasted no time' means", correct: 1, choices: ["was careful and slow.","acted quickly.","destroyed nothing important.","became completely silent."], explanation: "Idiom for acting quickly." },
+    { passageId: "bp6", question: "The tone of the final paragraph is", correct: 2, choices: ["Cheerful and excited.","Angry and critical.","Reflective and a little sad.","Frightened and uneasy."], explanation: "A 'ghost town' with sand-filled hallways evokes wistful sadness." }
+  ]
+};
+
+const BRIDGE_ESSAY_PROMPTS = [
+  "Write about a time you helped a younger sibling, friend, or classmate with something. What did you do, and how did it make you feel?",
+  "If you could have any superpower for one day, what would it be and how would you use it?",
+  "Describe your perfect day, from when you wake up to when you go to sleep.",
+  "Tell about something you learned recently that surprised you. Why did it stick with you?",
+  "If you could change one rule at home or at school, what would it be and why?",
+  "Write about a teacher, coach, or family member who has made a difference in your life.",
+  "If you started your own business, what would it be? Describe how it would work and who it would help.",
+  "Describe a tradition your family has, and explain why it matters to you.",
+  "Tell about a moment when you felt proud of yourself. What did you accomplish, and how did you get there?",
+  "Imagine your school could go on one big field trip this year. Where should it go, and what would you do there?",
+];
+
+// ════════════════════════════════════════════════════════════════════════════
 // GRADE LEVELS — pools + per-grade test timings
 // Test counts/durations are roughly half the real section, which is enough
 // to drill timing without exhausting the student.
@@ -1632,6 +2589,26 @@ const GRADES = {
       quant_reasoning:   { questionCount: 19, durationSec: 17 * 60 },   // ~half of 38/35min
       math_achievement:  { questionCount: 15, durationSec: 15 * 60 },   // half of 30/30min
       reading:           { questionCount: 10, durationSec: 10 * 60 },   // 2 passages × 5
+      essay:             { questionCount:  1, durationSec: 30 * 60 },
+    },
+  },
+  bridge: {
+    label: "Bridge Level",
+    sub: "Grade 5 → 6",
+    pools: {
+      words: BRIDGE_WORDS,
+      sentences: BRIDGE_SENTENCES,
+      quant: BRIDGE_QUANT,
+      math: BRIDGE_MATH,
+      reading: BRIDGE_READING,
+      essays: BRIDGE_ESSAY_PROMPTS,
+    },
+    tests: {
+      verbal_synonyms:   { questionCount: 12, durationSec:  7 * 60 },
+      verbal_completion: { questionCount: 12, durationSec:  7 * 60 },
+      quant_reasoning:   { questionCount: 18, durationSec: 16 * 60 },
+      math_achievement:  { questionCount: 18, durationSec: 18 * 60 },
+      reading:           { questionCount: 12, durationSec: 12 * 60 },   // 2 passages × 6
       essay:             { questionCount:  1, durationSec: 30 * 60 },
     },
   },
@@ -1708,13 +2685,16 @@ const state = {
   practiceCurrent: null,
   practiceAnswered: false,
   // Test
-  testQueue: [],
-  testIdx: 0,
+  testQueue: [],            // ordered list of questions (immutable after start)
+  testAnswers: [],          // parallel to testQueue; each entry tracks picked/skipped/skipCount
+  testOrder: [],            // indices into testQueue, mutable (skipped Qs get pushed to end)
+  testOrderPos: 0,          // current position in testOrder
   testCurrent: null,
-  testAnswers: [],
   testStartMs: 0,
   testEndMs: 0,
   timerInterval: null,
+  // Two-step submit: which option is currently selected (-1 = none)
+  selectedIdx: -1,
   // Review
   reviewQueue: [],
   reviewIdx: 0,
@@ -1727,6 +2707,7 @@ const state = {
   // Persistent — separate per grade level
   lifetimes: {
     lower:  { score: 0, total: 0, streak: 0, best: 0, mistakes: {} },
+    bridge: { score: 0, total: 0, streak: 0, best: 0, mistakes: {} },
     middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {} },
   },
 };
@@ -1865,7 +2846,7 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   }
   if (entry.sentence) {
     const choices = shuffle([entry.correct, ...entry.wrong]);
-    const sentenceHtml = escapeHtml(entry.sentence).replace(/_{3,}/, `<span class="blank"></span>`);
+    const sentenceHtml = escapeHtml(entry.sentence).replace(/_{3,}/, `<span class="blank" data-blank></span>`);
     return {
       id, sectionKey, entry,
       promptHtml: `<div class="prompt">Select the word that, when inserted in the sentence, best fits the meaning of the sentence as a whole.</div>
@@ -1891,6 +2872,43 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
 
 function renderChoiceText(choice) {
   return fmtFractions(escapeHtml(choice).replace(/-/g, " "));
+}
+
+// Two-step submit helpers ─────────────────────────────────────────
+function currentQuestion() {
+  return state.mode === "test"   ? state.testCurrent
+       : state.mode === "review" ? state.reviewCurrent
+       :                           state.practiceCurrent;
+}
+function isAnswered() {
+  return (state.mode === "practice" && state.practiceAnswered) ||
+         (state.mode === "review"   && state.reviewAnswered);
+}
+function selectOption(i) {
+  const q = currentQuestion();
+  if (!q) return;
+  if (i < 0 || i >= q.choices.length) return;
+  if (isAnswered()) return;          // can't change after feedback shown
+  state.selectedIdx = i;
+  renderQuiz();
+}
+function submitSelected() {
+  if (state.selectedIdx < 0) return;
+  if (isAnswered()) return;
+  const i = state.selectedIdx;
+  if (state.mode === "test")        testAnswer(i);
+  else if (state.mode === "review") reviewAnswer(i);
+  else                              practiceAnswer(i);
+}
+function nextOrSubmit() {
+  // Enter/Space and the right-hand button both call this — they "submit" if
+  // a selection is pending, or "advance to next" if feedback is already shown.
+  if (isAnswered()) {
+    if (state.mode === "practice") practiceNext();
+    else if (state.mode === "review") reviewAdvance();
+  } else {
+    submitSelected();
+  }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1955,6 +2973,7 @@ function showView(name) {
 function renderHome() {
   // Grade pills
   $("gradeLower").classList.toggle("active", state.gradeLevel === "lower");
+  $("gradeBridge").classList.toggle("active", state.gradeLevel === "bridge");
   $("gradeMiddle").classList.toggle("active", state.gradeLevel === "middle");
 
   // Mode toggle
@@ -2027,9 +3046,11 @@ function startPractice() {
   state.practicePool = shuffle(pool.map((_, i) => i));
   state.practiceCurrent = null;
   state.practiceAnswered = false;
+  state.selectedIdx = -1;
   $("timer").classList.add("hidden");
   $("streakStat").classList.remove("hidden");
   $("skipBtn").classList.add("hidden");
+  $("finishBtn").classList.add("hidden");
   $("masterBtn").classList.add("hidden");
   showView("quiz");
   practiceNext();
@@ -2041,6 +3062,7 @@ function practiceNext() {
   const idx = state.practicePool.pop();
   state.practiceCurrent = makeQuestion(pool[idx], state.section.key, idx);
   state.practiceAnswered = false;
+  state.selectedIdx = -1;
   renderQuiz();
 }
 
@@ -2097,18 +3119,21 @@ function startTest() {
   }
 
   state.testQueue = questions;
-  state.testIdx = 0;
-  state.testCurrent = state.testQueue[0];
   state.testAnswers = state.testQueue.map(q => ({
     id: q.id, sectionKey: q.sectionKey, displayLabel: q.displayLabel,
     choices: q.choices, correctIdx: q.answerIdx, feedbackHtml: q.feedbackHtml,
-    picked: null, skipped: false,
+    picked: null, skipped: false, skipCount: 0,
   }));
+  state.testOrder = state.testQueue.map((_, i) => i);
+  state.testOrderPos = 0;
+  state.testCurrent = state.testQueue[0];
+  state.selectedIdx = -1;
   state.testStartMs = Date.now();
   state.testEndMs = state.testStartMs + t.durationSec * 1000;
   $("timer").classList.remove("hidden");
   $("streakStat").classList.add("hidden");
   $("skipBtn").classList.remove("hidden");
+  $("finishBtn").classList.remove("hidden");
   $("masterBtn").classList.add("hidden");
   startTimer();
   showView("quiz");
@@ -2135,21 +3160,38 @@ function tickTimer() {
 }
 
 function testAnswer(i) {
-  state.testAnswers[state.testIdx].picked = i;
-  state.testAnswers[state.testIdx].skipped = false;
+  const qIdx = state.testOrder[state.testOrderPos];
+  state.testAnswers[qIdx].picked = i;
+  state.testAnswers[qIdx].skipped = false;
   advanceTest();
 }
 function testSkip() {
-  if (state.testAnswers[state.testIdx].picked === null) {
-    state.testAnswers[state.testIdx].skipped = true;
+  // First skip: push the question to the end of the queue for another chance.
+  // Second skip on the same question: counts as a final skip (no recycle).
+  const qIdx = state.testOrder[state.testOrderPos];
+  const ans = state.testAnswers[qIdx];
+  ans.skipCount = (ans.skipCount || 0) + 1;
+  if (ans.skipCount < 2) {
+    state.testOrder.push(qIdx);
+    ans.skipped = false;       // not final yet — will revisit
+  } else {
+    ans.skipped = true;        // final skip
   }
   advanceTest();
 }
 function advanceTest() {
-  state.testIdx += 1;
-  if (state.testIdx >= state.testQueue.length) { finishTest(); return; }
-  state.testCurrent = state.testQueue[state.testIdx];
+  state.selectedIdx = -1;
+  state.testOrderPos += 1;
+  if (state.testOrderPos >= state.testOrder.length) { finishTest(); return; }
+  state.testCurrent = state.testQueue[state.testOrder[state.testOrderPos]];
   renderQuiz();
+}
+function finishTestEarly() {
+  // Mark any unanswered questions as final skips, then finish.
+  for (const ans of state.testAnswers) {
+    if (ans.picked === null) ans.skipped = true;
+  }
+  finishTest();
 }
 function finishTest() {
   stopTimer();
@@ -2174,9 +3216,11 @@ function startReview() {
   state.reviewCurrent = null;
   state.reviewAnswered = false;
   state.reviewSession = { seen: 0, correct: 0, wrong: 0, mastered: 0 };
+  state.selectedIdx = -1;
   $("timer").classList.add("hidden");
   $("streakStat").classList.add("hidden");
   $("skipBtn").classList.add("hidden");
+  $("finishBtn").classList.add("hidden");
   $("masterBtn").classList.remove("hidden");
   showView("quiz");
   reviewNext();
@@ -2195,6 +3239,7 @@ function reviewNext() {
       state.reviewCurrent = makeQuestion(reg.entry, reg.sectionKey, idx, reg.gradeLevel);
       state.reviewAnswered = false;
       state.reviewJustMastered = false;
+      state.selectedIdx = -1;
       renderQuiz();
       return;
     }
@@ -2252,9 +3297,11 @@ function renderQuiz(picked = -1) {
   // Progress / streak
   if (mode === "test") {
     const total = state.testQueue.length;
-    const n = state.testIdx + 1;
-    $("progressLabel").textContent = `Question ${n} of ${total}`;
-    $("progressFill").style.width = `${(state.testIdx / total) * 100}%`;
+    const answered = state.testAnswers.filter(a => a.picked !== null).length;
+    const skippedFinal = state.testAnswers.filter(a => a.picked === null && a.skipped).length;
+    const skippedHint = skippedFinal > 0 ? ` · ${skippedFinal} skipped` : "";
+    $("progressLabel").textContent = `${answered} of ${total} answered${skippedHint}`;
+    $("progressFill").style.width = `${(answered / total) * 100}%`;
   } else if (mode === "review") {
     const total = state.reviewQueue.length;
     const n = Math.min(state.reviewIdx + 1, total);
@@ -2282,6 +3329,21 @@ function renderQuiz(picked = -1) {
 
   const showFeedback = (mode === "practice" && state.practiceAnswered) ||
                        (mode === "review"   && state.reviewAnswered);
+
+  // Fill the sentence-completion blank with the currently selected word as a preview.
+  // After submission, also show the picked word but without italic style.
+  const blankEl = $("promptBlock").querySelector("[data-blank]");
+  if (blankEl) {
+    let blankIdx = -1;
+    if (showFeedback) blankIdx = picked >= 0 ? picked : state.selectedIdx;
+    else blankIdx = state.selectedIdx;
+    if (blankIdx >= 0 && blankIdx < q.choices.length) {
+      blankEl.textContent = q.choices[blankIdx];
+      blankEl.classList.add("filled");
+      if (showFeedback) blankEl.classList.add("committed");
+    }
+  }
+
   const optsEl = $("options");
   optsEl.innerHTML = "";
   q.choices.forEach((choice, i) => {
@@ -2292,12 +3354,10 @@ function renderQuiz(picked = -1) {
     if (showFeedback) {
       if (i === q.answerIdx) btn.classList.add("correct");
       else if (i === picked) btn.classList.add("wrong");
+    } else if (i === state.selectedIdx) {
+      btn.classList.add("selected");
     }
-    btn.addEventListener("click", () => {
-      if (mode === "test") testAnswer(i);
-      else if (mode === "review") reviewAnswer(i);
-      else practiceAnswer(i);
-    });
+    btn.addEventListener("click", () => selectOption(i));
     optsEl.appendChild(btn);
   });
 
@@ -2327,17 +3387,15 @@ function renderQuiz(picked = -1) {
     nextBtn.textContent = "Next →";
     masterBtn.classList.toggle("hidden", mode !== "review");
     nextBtn.focus();
-  } else if (mode === "test") {
-    fbEl.className = "feedback";
-    fbEl.innerHTML = "";
-    nextBtn.classList.add("hidden");
-    masterBtn.classList.add("hidden");
   } else {
+    // Pre-submit state — button reads "Submit" and is enabled only when a
+    // selection has been made.
     fbEl.className = "feedback";
     fbEl.innerHTML = "";
     nextBtn.classList.remove("hidden");
-    nextBtn.disabled = true;
-    masterBtn.classList.toggle("hidden", mode !== "review");
+    nextBtn.textContent = "Submit";
+    nextBtn.disabled = state.selectedIdx < 0;
+    masterBtn.classList.add("hidden");
   }
 }
 
@@ -2535,16 +3593,22 @@ function renderMistakesList() {
 // EVENT WIRING
 // ════════════════════════════════════════════════════════════════════════════
 $("gradeLower").addEventListener("click", () => setGrade("lower"));
+$("gradeBridge").addEventListener("click", () => setGrade("bridge"));
 $("gradeMiddle").addEventListener("click", () => setGrade("middle"));
 
 $("modePractice").addEventListener("click", () => { state.mode = "practice"; renderHome(); });
 $("modeTest").addEventListener("click", () => { state.mode = "test"; renderHome(); });
 
-$("nextBtn").addEventListener("click", () => {
-  if (state.mode === "practice") practiceNext();
-  else if (state.mode === "review") reviewAdvance();
-});
+$("nextBtn").addEventListener("click", nextOrSubmit);
 $("skipBtn").addEventListener("click", () => { if (state.mode === "test") testSkip(); });
+$("finishBtn").addEventListener("click", () => {
+  if (state.mode !== "test") return;
+  const unanswered = state.testAnswers.filter(a => a.picked === null).length;
+  const msg = unanswered > 0
+    ? `Finish test now? ${unanswered} unanswered question${unanswered === 1 ? "" : "s"} will be counted as skipped.`
+    : "Finish test now?";
+  if (confirm(msg)) finishTestEarly();
+});
 $("masterBtn").addEventListener("click", () => { if (state.mode === "review") reviewMarkMastered(); });
 
 $("startReviewBtn").addEventListener("click", startReview);
@@ -2598,16 +3662,10 @@ document.addEventListener("keydown", (e) => {
   if (e.key >= "1" && e.key <= "4") pickIdx = parseInt(e.key, 10) - 1;
   else if (/^[a-dA-D]$/.test(e.key)) pickIdx = e.key.toUpperCase().charCodeAt(0) - 65;
   if (pickIdx >= 0) {
-    const q = state.mode === "test"   ? state.testCurrent
-            : state.mode === "review" ? state.reviewCurrent
-            :                           state.practiceCurrent;
-    if (!q || pickIdx >= q.choices.length) return;
-    if (state.mode === "test") testAnswer(pickIdx);
-    else if (state.mode === "review") { if (!state.reviewAnswered) reviewAnswer(pickIdx); }
-    else if (!state.practiceAnswered) practiceAnswer(pickIdx);
+    selectOption(pickIdx);          // select-only; does NOT submit
   } else if (e.key === " " || e.key === "Enter") {
-    if (state.mode === "practice" && state.practiceAnswered) { e.preventDefault(); practiceNext(); }
-    else if (state.mode === "review" && state.reviewAnswered) { e.preventDefault(); reviewAdvance(); }
+    e.preventDefault();
+    nextOrSubmit();                  // submit if pending, otherwise advance
   } else if (e.key === "s" || e.key === "S") {
     if (state.mode === "test") testSkip();
   } else if (e.key === "m" || e.key === "M") {
