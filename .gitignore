@@ -1,0 +1,7 @@
+# Editor / OS junk
+.DS_Store
+*.swp
+*~
+
+# Claude Code local config (per-user settings, dev server config)
+.claude/
