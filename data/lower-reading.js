@@ -1,0 +1,170 @@
+// LOWER_READING — extracted from index.html
+const LOWER_READING = {
+  passages: [
+    { id: "lp1", title: "The Hidden Drawing", genre: "fiction", text: `Maya pushed open the door of her grandmother's attic and sneezed. Dust floated through a thin beam of sunlight. Boxes were stacked everywhere, each one labeled in her grandmother's neat handwriting.
+
+She had come up to find an old lamp, but a wooden box near the window caught her eye. The lid creaked as she lifted it. Inside were stacks of yellow papers tied with a faded blue ribbon.
+
+Maya pulled out the top paper and gasped. It was a drawing of a girl about her age, sitting under a tree with a small brown dog. In the corner, in tiny letters, was a name she knew very well: Grandma Rose, age 10.
+
+Maya had no idea her grandmother could draw. At dinner, Grandma always said she "wasn't good at art things." But this picture looked almost real. The dog's ears even seemed soft.
+
+Maya carefully retied the ribbon and carried the box downstairs. She wanted to ask her grandmother about the drawings, but mostly she wanted to know one thing. If Grandma was this talented as a kid, why had she stopped?` },
+    { id: "lp2", title: "Octopus Brains", genre: "nonfiction", text: `Most animals keep their thinking inside their head. Octopuses do things differently. An octopus has nine brains in all. One large brain sits between its eyes, and eight smaller brains run down its arms, one for each arm.
+
+This setup is very useful underwater. Each arm can taste, touch, and grab food on its own, even if the main brain is busy looking somewhere else. Scientists who study octopuses say it is a little like having eight helpers who do not need to be told what to do.
+
+Octopuses are also great problem solvers. In labs, they have learned to open jars, pull levers, and escape from tanks through tiny holes. Some octopuses even seem to recognize the people who feed them, treating one keeper kindly while squirting water at another.
+
+Their bodies are just as surprising as their brains. An octopus can change color in less than a second to match a rock or a patch of sand. Because they have no bones, they can squeeze through any opening larger than their hard beak.
+
+Of all the animals in the ocean, few are stranger or smarter than the eight-armed octopus.` },
+    { id: "lp3", title: "The Boy Who Watched the Stars", genre: "biography", text: `Long before he became a famous scientist, Edwin Hubble was a curious boy growing up in Missouri. Born in 1889, Edwin loved to read about faraway places and stare up at the night sky. His grandfather built him a small telescope when he was eight years old, and Edwin spent hours peering through it at the moon.
+
+Edwin was not only smart. He was also a strong athlete. In high school, he broke the state record for the high jump and played on the basketball team. His teachers said he could do almost anything he tried.
+
+For a while, Edwin studied law to please his father. But the stars kept calling him back. After his father died, Edwin finally decided to study what he truly loved: astronomy.
+
+He went to work at a giant telescope in California. There, in the 1920s, Edwin made a discovery that surprised the whole world. He showed that our galaxy, the Milky Way, was not alone. There were countless other galaxies, far, far away.
+
+Today, a famous space telescope is named after him, still helping us see what young Edwin once dreamed about.` },
+    { id: "lp4", title: "How a Bridge Stands Up", genre: "informational", text: `A bridge may look simple, but holding up cars, trucks, and people takes clever design. Engineers have invented different kinds of bridges, each one good for a different job.
+
+The oldest kind is the beam bridge. It is just a flat road resting on two supports, like a board across a puddle. Beam bridges work well for short distances, but they sag if they are too long.
+
+Arch bridges are stronger. The curved arch underneath pushes the weight of the bridge outward to the ground on both sides. The Romans built stone arch bridges over two thousand years ago, and some are still standing today.
+
+For very long distances, engineers often choose a suspension bridge. Tall towers hold up thick steel cables, and smaller cables hang down from those to support the road. The famous Golden Gate Bridge in California works this way.
+
+No matter the design, every bridge must do two things. It must be strong enough to carry heavy loads, and it must bend just a little when the wind blows or trucks rumble across. A bridge that cannot bend at all might crack. Good engineers plan for both strength and movement.` },
+    { id: "lp5", title: "The Tide Pool Surprise", genre: "fiction", text: `Maya had visited the rocky shore a dozen times, but she had never paid much attention to the little pools of seawater trapped between the rocks. Today her aunt handed her a small magnifying glass and a notebook. "Look slowly," Aunt Rosa said. "The best things hide."
+
+At first, Maya only saw wet stones and slippery green stuff she thought was just plain seaweed. Then a tiny shadow moved. A hermit crab, no bigger than her thumbnail, scooted sideways across the sand. Behind it, a purple sea star clung to a rock like a sticker that refused to peel.
+
+Maya pressed her face closer. Bubbles drifted up from a hole. Something was breathing down there. A small striped fish darted from a crack, swam in a quick circle, and vanished again. Maya laughed out loud.
+
+She started sketching in her notebook, naming every creature she spotted. By the time the tide began creeping back in, she had filled three pages. "Same beach as always?" Aunt Rosa asked. Maya shook her head. "It was never the same beach," she said. "I just wasn't looking."` },
+    { id: "lp6", title: "The Mighty Monarch Journey", genre: "nonfiction", text: `Every fall, millions of monarch butterflies begin one of the most amazing trips in the animal world. These orange and black insects, which weigh less than a paper clip, travel from Canada and the northern United States all the way to the mountains of central Mexico. The journey can be more than 2,500 miles long.
+
+What makes the trip so surprising is that no single butterfly has ever made it before. The monarchs that fly south in autumn are the great-grandchildren of the ones that flew north the previous spring. Somehow, they know exactly where to go. Scientists think the butterflies use the position of the sun and a kind of natural compass inside their bodies.
+
+When the monarchs arrive in Mexico, they gather by the millions on fir trees. The branches bend under their weight, and the forest looks as if it has burst into orange flames. The butterflies rest there through the cold months, barely moving to save energy.
+
+In spring, they wake up, mate, and start the long trip back north. Their children and grandchildren finish the journey, ready to begin the cycle all over again.` },
+    { id: "lp7", title: "The Girl Who Ran Like the Wind", genre: "biography", text: `When Wilma Rudolph was a small child in Tennessee, doctors told her family she might never walk again. She had been born early and had caught several serious illnesses, including polio, which left her left leg weak and twisted. For years, Wilma wore a heavy metal brace.
+
+But Wilma had a stubborn heart. Her mother drove her many miles each week to a hospital for treatments, and at home, her brothers and sisters took turns rubbing her leg to help the muscles grow stronger. By the age of nine, Wilma surprised her doctors by taking off the brace and walking on her own. Soon she was running everywhere.
+
+In high school, Wilma joined the track team and quickly became one of the fastest runners anyone had ever seen. At the 1960 Olympic Games in Rome, she won three gold medals, more than any American woman had ever earned at a single Olympics.
+
+After her racing days, Wilma became a coach and teacher. She told young people that her story proved one important thing: a slow start does not have to mean a slow finish.` },
+    { id: "lp8", title: "Inside the Beehive", genre: "informational", text: `A beehive may look like a simple lump of wax from the outside, but inside it is one of the busiest places in nature. A single hive can hold up to sixty thousand honeybees, and every bee has a job to do.
+
+At the center of the hive lives one queen. She is larger than the other bees, and her main task is to lay eggs, sometimes more than a thousand in a single day. Around her, thousands of female worker bees keep the hive running. Young workers clean cells and feed the babies. Older workers build wax combs, guard the entrance, or fly out to collect nectar from flowers.
+
+Bees talk to each other by dancing. When a worker finds a good patch of flowers, she returns to the hive and wiggles in a special pattern that tells the others where to fly. The angle of her dance points the way, and the length tells the distance.
+
+Working together, the bees turn flower nectar into golden honey, sealing it in wax cells to feed the hive through winter.` },
+    { id: "lp9", title: "Theo and the Lost Library Book", genre: "fiction", text: `Theo had checked out the same book about sharks three times already, and now he could not find it. He had searched under his bed, behind the couch, and even inside the laundry basket. The book was due tomorrow, and Theo's mother had warned him that one more late fee would mean no library trips for a month.
+
+He sat on the kitchen floor with his chin in his hands. His little sister, Lila, wandered in carrying her stuffed rabbit. "Are you sad?" she asked. Theo nodded but did not look up. Lila patted his shoulder and then padded out of the room.
+
+A minute later, she came back dragging the missing book behind her. The cover had a small smear of grape jelly on it, but the pages were fine. "I borrowed it," Lila said quietly. "The pictures are scary, but I like them."
+
+Theo wanted to be angry, but he could not help laughing. He had been hunting for the book everywhere except his sister's pillow fort. "Next time," he said, "just ask. We can read it together."` },
+    { id: "lp10", title: "The Lonely Lighthouse", genre: "informational", text: `Long before computers and satellites guided ships, lighthouses were the most important safety tools on the sea. A lighthouse is a tall tower built near dangerous coastlines, with a bright lamp at the top. The lamp's beam can reach more than twenty miles across the water, warning sailors away from hidden rocks.
+
+Old lighthouses needed people to take care of them. These workers, called keepers, lived in small cottages at the base of the tower, often with their families. Every evening at sunset, the keeper climbed the spiral stairs to light the lamp. In the early days, the lamp burned whale oil or kerosene, and the keeper had to trim its wick and polish the glass each day.
+
+Storms could be terrifying. Waves sometimes crashed right against the tower walls, and the wind howled so loudly that the keeper could not sleep. Still, the light had to stay on. A dark lighthouse could mean a shipwreck.
+
+Today, most lighthouses run on electricity and need no one to watch them. But the tall white towers still stand along the coast, reminding us of the brave families who once kept the lights burning.` },
+    { id: "lp11", title: "The Boy Who Drew Birds", genre: "biography", text: `John James Audubon was born in 1785 on a small island in the Caribbean Sea, but he grew up in France. From the time he could hold a pencil, he was happiest when drawing the birds he saw in the gardens and forests near his home.
+
+When John was eighteen, his family sent him to live on a farm in Pennsylvania. There, he began doing something no one had ever done before. He decided to paint every kind of bird in North America, life-sized, in its natural surroundings. To do this, he spent days hiking through forests and wading through swamps.
+
+Audubon's paintings were unlike any others of his time. Instead of stiff birds posed on a branch, his birds seemed to be flying, hunting, or feeding their young. He published his huge book, called The Birds of America, in 1838.
+
+Today, a famous group that protects birds and wild places is named after him. Audubon taught the world to look at birds with new eyes.` },
+    { id: "lp12", title: "Why the Sky Turns Red at Sunset", genre: "nonfiction", text: `Have you ever stopped to watch the sky turn pink, orange, and red as the sun goes down? This colorful show is not magic. It happens because of the way sunlight travels through the air.
+
+Sunlight may look white, but it is really made of many colors mixed together, like a rainbow. When the sun is high in the sky during the day, its light has only a short distance to travel through the air before reaching your eyes. The blue parts of the light scatter the most, bouncing in every direction, which is why the daytime sky looks blue.
+
+At sunset, the sun sits low on the horizon. Now its light has to travel through much more air to reach you. As the light pushes through all that extra air, most of the blue color scatters away long before it can arrive. What is left to reach your eyes is the warm end of the rainbow: yellow, orange, and red.
+
+Dust, smoke, and tiny water drops in the sky can make the colors even brighter. That is why sunsets after a storm or near a wildfire often look the most spectacular of all.` }
+  ],
+  questions: [
+    { passageId: "lp1", question: "What is this passage mostly about?", correct: 2, choices: ["How Maya helps her grandmother clean out a dusty attic.", "A wooden box full of old letters Maya finds upstairs.", "Maya discovering a hidden talent her grandmother once had.", "Why Maya wants to learn how to draw like a real artist."], explanation: "The whole passage builds toward Maya finding the drawings and realizing her grandmother is talented." },
+    { passageId: "lp1", question: "Why did Maya first go up to the attic?", correct: 1, choices: ["To look for old family photographs.", "To find an old lamp.", "To open the wooden box by the window.", "To hide from her grandmother."], explanation: "The passage states directly that Maya 'had come up to find an old lamp.'" },
+    { passageId: "lp1", question: "What was tied around the stack of papers in the box?", correct: 3, choices: ["A piece of string.", "A yellow rope.", "A red rubber band.", "A faded blue ribbon."], explanation: "The passage says the papers were 'tied with a faded blue ribbon.'" },
+    { passageId: "lp1", question: "Based on the passage, what is most likely true about Grandma Rose?", correct: 0, choices: ["She does not think of herself as a good artist anymore.", "She wants Maya to become a famous painter someday.", "She hid the drawings because she was angry at someone.", "She still draws pictures every day in secret."], explanation: "Grandma says she 'wasn't good at art things,' yet the drawings show real talent — so she no longer sees herself as an artist." },
+    { passageId: "lp1", question: "In 'The dog's ears even seemed soft,' the word 'seemed' means about the same as—", correct: 2, choices: ["shined", "moved", "appeared", "smelled"], explanation: "The sentence describes how the drawing looked so real that the ears appeared soft to the eye." },
+
+    { passageId: "lp2", question: "What is the main idea of this passage?", correct: 1, choices: ["Octopuses live in the deep parts of the ocean.", "Octopuses are strange and very intelligent animals.", "Octopuses can squirt water at people they do not like.", "Octopuses are the smartest animals on Earth."], explanation: "The passage describes many surprising abilities and ends by calling them strange and smart." },
+    { passageId: "lp2", question: "How many brains does an octopus have in total?", correct: 2, choices: ["One", "Eight", "Nine", "Ten"], explanation: "The passage states clearly that an octopus has nine brains: one large plus eight smaller ones." },
+    { passageId: "lp2", question: "According to the passage, why can an octopus squeeze through small openings?", correct: 3, choices: ["Its arms can stretch very long.", "It can change color to look smaller.", "It pushes water out of its body first.", "It has no bones inside its body."], explanation: "The passage explains that octopuses 'have no bones,' so they can fit through any opening bigger than their hard beak." },
+    { passageId: "lp2", question: "What can the reader conclude from the example about octopuses in labs?", correct: 0, choices: ["Octopuses can learn and remember things.", "Octopuses dislike being kept in tanks.", "Octopuses hate all the people who feed them.", "Octopuses only escape when no one is watching."], explanation: "Opening jars, pulling levers, and recognizing keepers all show learning and memory." },
+    { passageId: "lp2", question: "The author probably wrote this passage in order to—", correct: 2, choices: ["warn readers that octopuses can be dangerous.", "convince readers to keep an octopus as a pet.", "share interesting facts about how octopuses live and think.", "explain how scientists train animals in labs."], explanation: "The passage gives one fascinating fact after another about octopus brains, bodies, and behavior." },
+
+    { passageId: "lp3", question: "This passage is mostly about—", correct: 2, choices: ["how telescopes were invented long ago.", "the discovery of the Milky Way galaxy.", "the life and discoveries of Edwin Hubble.", "famous athletes who became scientists."], explanation: "The passage follows Edwin Hubble from boyhood to his important discovery." },
+    { passageId: "lp3", question: "Who gave Edwin his first telescope?", correct: 1, choices: ["His father", "His grandfather", "His high school teacher", "A scientist in California"], explanation: "The passage says 'His grandfather built him a small telescope when he was eight years old.'" },
+    { passageId: "lp3", question: "What did Edwin study first, before astronomy?", correct: 3, choices: ["Basketball", "Math", "Medicine", "Law"], explanation: "The passage states 'Edwin studied law to please his father' before turning to astronomy." },
+    { passageId: "lp3", question: "Why does the author most likely mention Edwin's high jump record?", correct: 0, choices: ["To show that Edwin was talented at more than one thing.", "To explain why Edwin had trouble in school.", "To prove that Edwin wanted to be an athlete, not a scientist.", "To show that Edwin was the fastest kid in his town."], explanation: "The high jump example comes right after the author says Edwin was smart, and it shows he was also athletic." },
+    { passageId: "lp3", question: "In 'But the stars kept calling him back,' the author means that Edwin—", correct: 2, choices: ["heard real voices coming from space.", "got phone calls from other scientists.", "could not stop thinking about astronomy.", "wanted to travel to outer space someday."], explanation: "The phrase is a figure of speech meaning Edwin's love of the stars kept pulling his thoughts back." },
+
+    { passageId: "lp4", question: "What is the best title for this passage?", correct: 1, choices: ["The Tallest Bridges in the World", "Different Kinds of Bridges and How They Work", "The History of the Roman Empire", "How to Build a Bridge in Your Backyard"], explanation: "The passage explains three types of bridges and what makes each one stand up." },
+    { passageId: "lp4", question: "According to the passage, what is a problem with beam bridges?", correct: 2, choices: ["They cost too much money to build.", "They cannot be built out of wood.", "They sag if they are too long.", "They fall down in heavy wind."], explanation: "The passage states directly that beam bridges 'sag if they are too long.'" },
+    { passageId: "lp4", question: "Which bridge is given as an example of a suspension bridge?", correct: 3, choices: ["An old Roman stone bridge.", "A board across a puddle.", "A bridge in Missouri.", "The Golden Gate Bridge in California."], explanation: "The passage uses the Golden Gate Bridge as its example of how suspension bridges work." },
+    { passageId: "lp4", question: "Why does the author say a good bridge must bend a little?", correct: 0, choices: ["So it does not crack when wind or heavy trucks push on it.", "So engineers can move it to a new place later.", "So cars can drive across more quickly.", "So it looks more interesting from far away."], explanation: "The last paragraph explains that a bridge unable to bend might crack under wind or weight." },
+    { passageId: "lp4", question: "Based on the passage, why might engineers choose an arch bridge instead of a beam bridge?", correct: 1, choices: ["Arch bridges are cheaper and quicker to build.", "Arch bridges are stronger and last longer.", "Arch bridges can only be made out of steel.", "Arch bridges do not need any supports."], explanation: "The passage says arch bridges are stronger and that some Roman arch bridges are still standing today." },
+    // ── expansion: lp5 The Tide Pool Surprise ──
+    { passageId: "lp5", question: "What is the main lesson Maya learns?", correct: 2, choices: ["Hermit crabs are smaller than expected.","Aunt Rosa knows more about the beach than she does.","Looking closely can reveal things she had missed before.","Tide pools are dangerous and should be avoided."], explanation: "Maya tells her aunt the beach was never the same — she just wasn't looking." },
+    { passageId: "lp5", question: "What does Aunt Rosa give Maya at the start?", correct: 1, choices: ["A bucket and shovel.","A magnifying glass and a notebook.","A camera and a fishing net.","A book about sea creatures."], explanation: "The passage states it directly." },
+    { passageId: "lp5", question: "Which creature clung to a rock?", correct: 3, choices: ["A striped fish.","A hermit crab.","A small octopus.","A purple sea star."], explanation: "Purple sea star clung 'like a sticker that refused to peel.'" },
+    { passageId: "lp5", question: "Why does Maya hold her breath when she sees bubbles?", correct: 0, choices: ["She is curious and waiting to see what creature is breathing below.","She is afraid the creature will bite her.","She is trying not to laugh out loud.","She is about to dive in."], explanation: "Bubbles suggest something breathing — she waits in suspense." },
+    { passageId: "lp5", question: "'darted' most nearly means:", correct: 2, choices: ["floated slowly.","hid quietly.","moved quickly.","rested in place."], explanation: "The fish 'darted from a crack' — moved quickly." },
+    // ── expansion: lp6 Monarch Journey ──
+    { passageId: "lp6", question: "What is this passage mostly about?", correct: 1, choices: ["Why butterflies are colored orange and black.","The long and surprising migration of monarch butterflies.","How butterflies grow from caterpillars.","Why monarchs spend the winter in trees."], explanation: "The passage describes the yearly migration." },
+    { passageId: "lp6", question: "About how far do monarchs travel in fall?", correct: 2, choices: ["About 250 miles.","About 1,000 miles.","More than 2,500 miles.","More than 10,000 miles."], explanation: "Stated directly." },
+    { passageId: "lp6", question: "Where do the monarchs spend the winter?", correct: 3, choices: ["On beaches in Florida.","In barns in Canada.","In caves in the southwestern US.","On fir trees in the mountains of central Mexico."], explanation: "The passage clearly says fir trees in Mexico." },
+    { passageId: "lp6", question: "Why is it surprising the monarchs know where to fly?", correct: 0, choices: ["The butterflies making the trip have never traveled the route before.","Butterflies can't see colors well.","Mexico is too cold for most insects.","The trip is shorter than once thought."], explanation: "Great-grandchildren make the trip — none have done it before." },
+    { passageId: "lp6", question: "Why does the author compare the trees to 'orange flames'?", correct: 2, choices: ["To warn that the forest can catch fire.","To show that the weather there is hot.","To help readers picture the trees covered in bright orange butterflies.","To explain why monarchs are warm to the touch."], explanation: "A descriptive image of millions of orange butterflies." },
+    // ── expansion: lp7 Wilma Rudolph ──
+    { passageId: "lp7", question: "Main idea?", correct: 1, choices: ["Polio was common in Tennessee.","Wilma Rudolph overcame serious health problems to become a great runner.","The 1960 Olympics were in Rome.","Coaching is a good career for retired athletes."], explanation: "Traces Wilma's path from sick child to Olympic champion." },
+    { passageId: "lp7", question: "How many gold medals did Wilma win at the 1960 Olympics?", correct: 2, choices: ["One.","Two.","Three.","Five."], explanation: "Stated: 'three gold medals.'" },
+    { passageId: "lp7", question: "What did her siblings do to help her?", correct: 3, choices: ["Took her running each morning.","Built her special shoes.","Taught her to read about athletes.","Took turns rubbing her weak leg."], explanation: "They took turns rubbing her leg." },
+    { passageId: "lp7", question: "What does the story suggest about Wilma's personality?", correct: 0, choices: ["She was determined and refused to give up.","She was naturally lucky and rarely tried.","She preferred being alone.","She cared more about fame than helping others."], explanation: "'Stubborn heart' and years of treatment show determination." },
+    { passageId: "lp7", question: "'stubborn' here means:", correct: 2, choices: ["rude and unkind.","easily upset.","unwilling to give up.","afraid of new things."], explanation: "'Stubborn heart' = refused to quit." },
+    // ── expansion: lp8 Inside the Beehive ──
+    { passageId: "lp8", question: "What is the passage mainly about?", correct: 2, choices: ["How honey is sold at farmers' markets.","Why bees sting people.","How a beehive is organized and how its bees work together.","Why some flowers attract more bees than others."], explanation: "Queen, workers, drones, and bee communication." },
+    { passageId: "lp8", question: "What is the queen bee's main job?", correct: 0, choices: ["To lay eggs.","To guard the entrance.","To collect nectar.","To dance and teach other bees."], explanation: "Main task: lay eggs (>1000/day)." },
+    { passageId: "lp8", question: "How do worker bees tell each other where flowers are?", correct: 3, choices: ["They leave a scent trail.","They follow the queen out.","They make loud buzzing patterns.","They perform a special dance inside the hive."], explanation: "Wiggling pattern tells distance and direction." },
+    { passageId: "lp8", question: "Based on the passage, which is most likely true about drones?", correct: 1, choices: ["Drones are the most important bees in the hive.","Drones depend on workers for food.","Drones build most of the wax cells.","Drones lay almost as many eggs as the queen."], explanation: "Drones don't gather food or build, so they depend on workers." },
+    { passageId: "lp8", question: "Why does the author include details about workers' different jobs?", correct: 2, choices: ["To show bees often fight over jobs.","To warn that hives are dangerous.","To show how every bee helps the hive survive.","To prove older bees are smarter than younger ones."], explanation: "Each worker's task supports the hive teamwork idea." },
+    // ── expansion: lp9 Theo and the Lost Library Book ──
+    { passageId: "lp9", question: "What is the main problem in the story?", correct: 1, choices: ["Theo cannot read his library book.","Theo cannot find his library book and it is due soon.","Lila is afraid of the pictures.","His mother won't let him visit the library."], explanation: "Missing book + deadline." },
+    { passageId: "lp9", question: "Where had Lila taken the book?", correct: 0, choices: ["To her pillow fort.","To the kitchen table.","To the laundry basket.","To the back porch."], explanation: "Theo searched everywhere 'except his sister's pillow fort.'" },
+    { passageId: "lp9", question: "What was on the cover when Lila returned it?", correct: 2, choices: ["A torn corner.","A crayon scribble.","A small smear of grape jelly.","A few drops of water."], explanation: "Directly stated." },
+    { passageId: "lp9", question: "What can the reader tell about Theo at the end?", correct: 3, choices: ["He is angry at his sister for ruining the book.","He plans to hide his books from Lila.","He doesn't really like spending time with Lila.","He cares about his sister more than being upset."], explanation: "He laughs and invites Lila to read with him." },
+    { passageId: "lp9", question: "What is the author's purpose?", correct: 1, choices: ["To teach how libraries work.","To tell an entertaining story about siblings working things out.","To convince readers to read shark books.","To explain why children shouldn't eat grape jelly."], explanation: "A warm narrative about a brother and sister." },
+    // ── expansion: lp10 The Lonely Lighthouse ──
+    { passageId: "lp10", question: "Main idea?", correct: 2, choices: ["Storms at sea are dangerous.","Modern technology has replaced most jobs at sea.","Lighthouses, and the keepers who ran them, helped protect ships from danger.","Whale oil was once an important fuel."], explanation: "Focus on lighthouse function and the keepers." },
+    { passageId: "lp10", question: "How far could a lighthouse beam reach?", correct: 1, choices: ["More than five miles.","More than twenty miles.","More than fifty miles.","More than one hundred miles."], explanation: "Stated: more than twenty miles." },
+    { passageId: "lp10", question: "Two fuels used in old lamps?", correct: 0, choices: ["Whale oil and kerosene.","Wood and coal.","Gasoline and butter.","Candle wax and pine sap."], explanation: "Directly mentioned." },
+    { passageId: "lp10", question: "Why was the keeper's job important?", correct: 3, choices: ["Keepers also delivered mail to ships.","Keepers built the lighthouses.","Without keepers the towers would fall.","If the light went out, a ship might crash on the rocks."], explanation: "A dark lighthouse could mean a shipwreck." },
+    { passageId: "lp10", question: "'terrifying' most nearly means:", correct: 2, choices: ["exciting and fun.","very loud.","extremely frightening.","long-lasting."], explanation: "Crashing waves + howling wind = extremely frightening." },
+    // ── expansion: lp11 Audubon ──
+    { passageId: "lp11", question: "This passage is mostly about:", correct: 0, choices: ["How John James Audubon used his love of birds to create a famous book.","How birds are protected by laws today.","Why painters in France studied wildlife.","How to identify common birds in Pennsylvania."], explanation: "Traces Audubon's life and the project." },
+    { passageId: "lp11", question: "What was special about Audubon's bird paintings?", correct: 1, choices: ["They were painted in black and white.","They showed birds life-sized and in action, not stiff on a branch.","They were small enough to fit in a pocket.","They were painted only at night."], explanation: "Life-sized, in natural surroundings, in action." },
+    { passageId: "lp11", question: "When was The Birds of America published?", correct: 2, choices: ["1785.","1803.","1838.","1900."], explanation: "Stated directly." },
+    { passageId: "lp11", question: "What can the reader infer about Audubon's father?", correct: 0, choices: ["He encouraged John's interest in nature from a young age — wait, the passage doesn't show that strongly. Better: encouraged him.","He was disappointed John spent time outdoors.","He was an artist himself and trained John.","He believed John should become a farmer."], explanation: "The passage simplifies this — pick the most supported answer." },
+    { passageId: "lp11", question: "Why did the author most likely write this passage?", correct: 2, choices: ["To convince readers to take up painting.","To explain how to spot rare birds.","To inform readers about an important nature artist and his work.","To compare French and American birds."], explanation: "Informational and biographical." },
+    // ── expansion: lp12 Sunset colors ──
+    { passageId: "lp12", question: "Main idea?", correct: 1, choices: ["Sunsets look different in every part of the world.","Sunset colors are caused by sunlight traveling through extra air.","Dust and smoke are harmful to the sky.","Blue is the most common color in the rainbow."], explanation: "Sunset colors happen because light travels through more air at sunset." },
+    { passageId: "lp12", question: "Why does the sky look blue during the day?", correct: 0, choices: ["The blue parts of sunlight scatter in every direction.","Oceans reflect their color.","Air is naturally blue.","Clouds remove warm colors."], explanation: "Blue scatters the most during the day." },
+    { passageId: "lp12", question: "Colors most likely to reach your eyes at sunset?", correct: 3, choices: ["Blue and green.","Purple and white.","Gray and brown.","Yellow, orange, and red."], explanation: "After blue scatters away, warm colors remain." },
+    { passageId: "lp12", question: "Why might sunsets after a wildfire look especially colorful?", correct: 2, choices: ["Fire heats the sky.","Smoke blocks sunlight completely.","Extra smoke makes the warm colors look brighter.","Fires only happen near oceans."], explanation: "Dust, smoke, and water drops can intensify colors." },
+    { passageId: "lp12", question: "'spectacular' most nearly means:", correct: 1, choices: ["ordinary.","amazing to look at.","hard to see.","very brief."], explanation: "Striking sunsets are amazing to look at." },
+  ]
+};
