@@ -676,6 +676,67 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+  /* ─── Stats page ─── */
+  .stats-section {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin-bottom: 14px;
+  }
+  .stats-section h3 {
+    margin: 0 0 14px;
+    font-size: 18px;
+    color: var(--text);
+    font-weight: 700;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+  }
+  .stats-grid .stat-cell {
+    background: rgba(255,255,255,.04);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stats-grid .stat-cell .num {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .stats-grid .stat-cell .num.good { color: var(--good); }
+  .stats-grid .stat-cell .num.flame { color: #f97316; }
+  .stats-grid .stat-cell .label {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .stats-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .stats-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,.04);
+    border-radius: 10px;
+    font-size: 15px;
+  }
+  .stats-row .left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .stats-row .left .emoji { font-size: 20px; line-height: 1; }
+  .stats-row .left .name { color: var(--text); }
+  .stats-row .right { color: var(--muted); text-align: right; flex-shrink: 0; }
+  .stats-row .right strong { color: var(--text); font-weight: 700; }
+  .stats-row .right .pct { color: var(--good); font-weight: 700; }
+  .stats-row .right .pct.dim { color: var(--muted); }
+  .stats-row.muted { opacity: 0.55; }
   /* ─── Confetti canvas overlay ─── */
   #confettiCanvas {
     position: fixed;
@@ -830,7 +891,10 @@
       <span id="gradeBadgeStats">—</span> · Progress: <strong id="lifetimeScore">0 / 0</strong>
       &nbsp;·&nbsp; Best streak: <strong id="lifetimeBest">0</strong>
     </div>
-    <button id="resetProgress">Reset this level</button>
+    <div style="display:flex; gap:8px;">
+      <button id="viewStatsBtn">📊 Stats</button>
+      <button id="resetProgress">Reset this level</button>
+    </div>
   </div>
 </div>
 
@@ -933,6 +997,38 @@
     <button class="ghost" id="mistakesHomeBtn">Back to home</button>
   </div>
   <div class="review-list" id="mistakesList"></div>
+</div>
+
+<!-- ─── STATS VIEW ─── -->
+<div class="view-results hidden" id="viewStats">
+  <div class="results-summary">
+    <div class="sub" id="statsGradeLabel">Your stats</div>
+    <div class="big" id="statsHeadline">—</div>
+    <div class="sub" id="statsSubhead">—</div>
+  </div>
+  <div class="results-actions">
+    <button class="ghost" id="statsHomeBtn">Back to home</button>
+  </div>
+
+  <div class="stats-section">
+    <h3>Tests &amp; streaks</h3>
+    <div class="stats-grid" id="statsLifetime"></div>
+  </div>
+
+  <div class="stats-section">
+    <h3>Best score per section</h3>
+    <div class="stats-rows" id="statsBestRows"></div>
+  </div>
+
+  <div class="stats-section">
+    <h3>Question bank — what's available</h3>
+    <div class="stats-rows" id="statsPoolRows"></div>
+  </div>
+
+  <div class="stats-section">
+    <h3>All grade levels</h3>
+    <div class="stats-rows" id="statsAllGrades"></div>
+  </div>
 </div>
 
 <script src="data/lower-words.js"></script>
@@ -1483,6 +1579,7 @@ function showView(name) {
   $("viewResults").classList.toggle("hidden", name !== "results");
   $("viewMistakes").classList.toggle("hidden", name !== "mistakes");
   $("viewEssay").classList.toggle("hidden", name !== "essay");
+  $("viewStats").classList.toggle("hidden", name !== "stats");
   $("backBtn").classList.toggle("hidden", name === "home");
 }
 
@@ -1533,13 +1630,13 @@ function renderHome() {
     const poolCount = section.isEssay ? currentGrade().pools.essays.length : poolFor(section).length;
     const available = !!(t && (section.isEssay || poolCount > 0));
     card.disabled = !available;
+    // Section cards stay clean and focused — full pool sizes live on the
+    // Stats page so the kid isn't distracted by big numbers here.
     const metaLine = state.mode === "test"
       ? (section.isEssay
-          ? `1 prompt · ${fmtTime(t.durationSec)} · ${poolCount} prompts to choose from`
-          : `${t.questionCount} of ${poolCount} questions · ${fmtTime(t.durationSec)}`)
-      : (section.isEssay
-          ? `${poolCount} prompts · ${section.parent}`
-          : `${poolCount} questions · ${section.parent}`);
+          ? `1 prompt · ${fmtTime(t.durationSec)}`
+          : `${t.questionCount} questions · ${fmtTime(t.durationSec)}`)
+      : section.parent;
     card.innerHTML = `
       <div class="emoji">${SECTION_EMOJI[section.key] || "•"}</div>
       <div class="title">${section.name}</div>
@@ -1553,6 +1650,98 @@ function renderHome() {
   $("gradeBadgeStats").textContent = currentGrade().label;
   $("lifetimeScore").textContent = `${L().score} / ${L().total}`;
   $("lifetimeBest").textContent = `${L().best}`;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// STATS VIEW
+// ════════════════════════════════════════════════════════════════════════════
+function renderStats() {
+  const SECTION_EMOJI = {
+    verbal_synonyms:   "🔤",
+    verbal_completion: "✏️",
+    quant_reasoning:   "📊",
+    math_achievement:  "🔢",
+    reading:           "📖",
+    essay:             "📝",
+  };
+  const lt = L();
+  const g  = currentGrade();
+  const stats = mistakeStats();
+
+  // Headline
+  $("statsGradeLabel").textContent = `${g.label} stats`;
+  const accuracy = lt.total > 0 ? Math.round((lt.score / lt.total) * 100) : 0;
+  $("statsHeadline").textContent = `${lt.score} / ${lt.total}`;
+  $("statsHeadline").className = "big " + (accuracy >= 80 ? "good" : accuracy >= 60 ? "ok" : "");
+  $("statsSubhead").textContent = lt.total > 0
+    ? `${accuracy}% lifetime accuracy across all practice and tests`
+    : "No questions answered yet — pick a section to get started.";
+
+  // Lifetime tests + streak grid
+  const lifeCells = [
+    { num: lt.totalTests || 0,                  label: "tests taken" },
+    { num: lt.perfectTests || 0,                label: "perfect scores", cls: lt.perfectTests > 0 ? "good" : "" },
+    { num: lt.longestTestStreak || 0,           label: "longest test streak", cls: lt.longestTestStreak >= 5 ? "flame" : "" },
+    { num: lt.best || 0,                        label: "longest practice streak", cls: lt.best >= 10 ? "flame" : "" },
+    { num: stats.active,                        label: "mistakes to drill" },
+    { num: stats.mastered,                      label: "mistakes mastered", cls: stats.mastered > 0 ? "good" : "" },
+  ];
+  $("statsLifetime").innerHTML = lifeCells.map(c => `
+    <div class="stat-cell">
+      <div class="num ${c.cls || ""}">${c.num}</div>
+      <div class="label">${c.label}</div>
+    </div>
+  `).join("");
+
+  // Best score per section
+  const bestRows = [];
+  for (const section of SECTIONS) {
+    if (section.isEssay) continue; // essays aren't scored
+    const best = (lt.bestByTest && lt.bestByTest[section.key]) || 0;
+    const cls = best === 100 ? "pct" : best >= 80 ? "pct" : best > 0 ? "pct" : "pct dim";
+    const display = best > 0 ? `${best}%` : "—";
+    bestRows.push(`
+      <div class="stats-row ${best === 0 ? "muted" : ""}">
+        <div class="left"><span class="emoji">${SECTION_EMOJI[section.key] || "•"}</span><span class="name">${section.name}</span></div>
+        <div class="right"><span class="${cls}">${display}</span></div>
+      </div>
+    `);
+  }
+  $("statsBestRows").innerHTML = bestRows.join("");
+
+  // Pool sizes — what's available to draw from
+  const poolRows = [];
+  for (const section of SECTIONS) {
+    const count = section.isEssay ? g.pools.essays.length : poolFor(section).length;
+    const noun = section.isEssay ? "prompts"
+               : section.isReading ? "questions across passages"
+               : "questions";
+    poolRows.push(`
+      <div class="stats-row">
+        <div class="left"><span class="emoji">${SECTION_EMOJI[section.key] || "•"}</span><span class="name">${section.name}</span></div>
+        <div class="right"><strong>${count}</strong> ${noun}</div>
+      </div>
+    `);
+  }
+  $("statsPoolRows").innerHTML = poolRows.join("");
+
+  // All grade levels at a glance
+  const allRows = [];
+  for (const key of ["lower", "bridge", "middle"]) {
+    const gg = GRADES[key];
+    const llt = state.lifetimes[key];
+    const acc = llt.total > 0 ? Math.round((llt.score / llt.total) * 100) : 0;
+    const isCur = key === state.gradeLevel;
+    const accStr = llt.total > 0 ? ` · ${acc}% accuracy` : "";
+    const perfStr = (llt.perfectTests || 0) > 0 ? ` · 🎉 ${llt.perfectTests} perfect` : "";
+    allRows.push(`
+      <div class="stats-row ${llt.total === 0 ? "muted" : ""}">
+        <div class="left"><span class="name">${isCur ? "<strong>" + gg.label + " ← current</strong>" : gg.label}</span></div>
+        <div class="right"><strong>${llt.score}</strong> / ${llt.total}${accStr}${perfStr}</div>
+      </div>
+    `);
+  }
+  $("statsAllGrades").innerHTML = allRows.join("");
 }
 
 function startSection(section) {
@@ -2240,6 +2429,8 @@ $("masterBtn").addEventListener("click", () => { if (state.mode === "review") re
 
 $("startReviewBtn").addEventListener("click", startReview);
 $("viewMistakesBtn").addEventListener("click", () => { renderMistakesList(); showView("mistakes"); });
+$("viewStatsBtn").addEventListener("click", () => { renderStats(); showView("stats"); });
+$("statsHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
 $("drillFromListBtn").addEventListener("click", startReview);
 $("mistakesHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
 
