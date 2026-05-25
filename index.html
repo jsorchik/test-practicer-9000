@@ -2145,7 +2145,12 @@ function renderQuiz(picked = -1) {
       const pips = Array.from({ length: MASTERY_THRESHOLD }, (_, i) =>
         `<span class="pip ${i < streak ? "filled" : ""}"></span>`
       ).join("");
-      html += `<div class="streak-line">Mastery streak: ${pips} <span>(${Math.min(streak, MASTERY_THRESHOLD)} of ${MASTERY_THRESHOLD})</span></div>`;
+      const shown = Math.min(streak, MASTERY_THRESHOLD);
+      const remaining = MASTERY_THRESHOLD - shown;
+      const tail = remaining === 0
+        ? "mastered!"
+        : `${remaining} more in a row to master`;
+      html += `<div class="streak-line">${pips} <span>${shown} of ${MASTERY_THRESHOLD} correct — ${tail}</span></div>`;
       if (state.reviewJustMastered) {
         html += `<div class="mastered-banner">Mastered! This question will leave the review pool.</div>`;
       }
@@ -2380,7 +2385,7 @@ function renderMistakesList() {
   for (const [id, m] of entries) {
     const section = SECTIONS.find(s => s.key === m.sectionKey);
     const cls = m.mastered ? "mastered" : "wrong";
-    const label = m.mastered ? "Mastered" : `Streak ${m.correctStreak}/${MASTERY_THRESHOLD}`;
+    const label = m.mastered ? "Mastered" : `${m.correctStreak} / ${MASTERY_THRESHOLD} to master`;
     const item = document.createElement("div");
     item.className = `review-item ${cls}`;
     item.innerHTML = `
