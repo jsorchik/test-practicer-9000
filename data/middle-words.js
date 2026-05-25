@@ -285,7 +285,7 @@ const WORDS = [
   { word: "recoil",     correct: "flinch",      wrong: ["approach","attack","accept"],        meaning: "to jerk back in fear or disgust" },
   { word: "relinquish", correct: "surrender",   wrong: ["grab","keep","demand"],              meaning: "to give something up willingly" },
   { word: "renounce",   correct: "reject",      wrong: ["accept","keep","claim"],             meaning: "to formally give up a belief or claim" },
-  { word: "retaliate",  correct: "revenge",     wrong: ["forgive","ignore","reward"],         meaning: "to strike back after being harmed" },
+  { word: "retaliate",  correct: "avenge",      wrong: ["forgive","ignore","reward"],         meaning: "to strike back after being harmed" },
   { word: "revere",     correct: "respect",     wrong: ["despise","ignore","mock"],           meaning: "to feel deep admiration for someone" },
   { word: "stifle",     correct: "suppress",    wrong: ["release","encourage","expand"],      meaning: "to hold back or smother" },
   { word: "subside",    correct: "decrease",    wrong: ["intensify","begin","rise"],          meaning: "to become less intense over time" },

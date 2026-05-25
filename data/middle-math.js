@@ -160,7 +160,7 @@ const MATH_ACHIEVEMENT = [
   { type: "math", question: "20 students: 12 like math. Ratio of math-likers to total?", correct: "3:5", wrong: ["12:8","3:2","2:3"], explanation: "12:20 = 3:5." },
   { type: "math", question: "Solve: −3x = 21", correct: "−7", wrong: ["7","−24","24"], explanation: "x = 21 ÷ −3 = −7." },
   { type: "math", question: "Mean of 8, 11, 13, 16?", correct: "12", wrong: ["11","13","10"], explanation: "Sum 48 ÷ 4 = 12." },
-  { type: "math", question: "What is 6 ÷ 3/4?", correct: "8", wrong: ["4.5","2","9/2"], explanation: "6 × 4/3 = 8." },
+  { type: "math", question: "What is 6 ÷ 3/4?", correct: "8", wrong: ["4.5","2","18"], explanation: "6 × 4/3 = 8 (multiply by the reciprocal of 3/4)." },
   { type: "math", question: "Evaluate 5a − 2b when a = 4 and b = 3.", correct: "14", wrong: ["18","26","10"], explanation: "20 − 6 = 14." },
   { type: "math", question: "Volume of a cylinder with radius 3 and height 10 (use π)?", correct: "90π", wrong: ["30π","60π","300π"], explanation: "πr²h = π(9)(10) = 90π." },
   { type: "math", question: "Quadrilateral angles: 90°, 110°, 70°, ?", correct: "90°", wrong: ["100°","80°","120°"], explanation: "360 − 270 = 90°." },

@@ -52,7 +52,7 @@ const BRIDGE_MATH = [
   { type: "math", question: "Greater: 5/8 or 3/5?", correct: "5/8", wrong: ["3/5","they are equal","neither"], explanation: "25/40 vs 24/40. 5/8 greater." },
   { type: "math", question: "Largest: 0.6, 0.65, 0.605, 0.56?", correct: "0.65", wrong: ["0.6","0.605","0.56"], explanation: "0.65 > 0.605 > 0.6 > 0.56." },
   { type: "math", question: "What is 3½ + 2¼?", correct: "5¾", wrong: ["5½","5⅓","6¼"], explanation: "3+2=5; ½+¼ = ¾. → 5¾." },
-  { type: "math", question: "What is 5 − 2⅓?", correct: "2⅔", wrong: ["3⅓","2⅓","3⅔"], explanation: "4⅓ minus 2⅓ = wait — 5 = 4 3/3. 4 3/3 − 2 1/3 = 2 2/3." },
+  { type: "math", question: "What is 5 − 2⅓?", correct: "2⅔", wrong: ["3⅓","2⅓","3⅔"], explanation: "Rewrite 5 as 4 + 3/3. Then 4 3/3 − 2 1/3 = 2 2/3." },
   { type: "math", question: "Convert 7/4 to mixed.", correct: "1¾", wrong: ["1¼","7¼","2¼"], explanation: "7 ÷ 4 = 1 r3." },
   { type: "math", question: "Convert 2⅗ to improper.", correct: "13/5", wrong: ["6/5","10/5","11/5"], explanation: "2 × 5 + 3 = 13." },
   { type: "math", question: "Value of 7 in 4,732,109?", correct: "700,000", wrong: ["7,000","70,000","7,000,000"], explanation: "Hundred-thousands place." },
