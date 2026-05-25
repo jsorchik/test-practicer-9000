@@ -1665,8 +1665,10 @@ function startTest() {
   state.testStreak = 0;
   state.testLongestStreak = 0;
   $("timer").classList.remove("hidden");
-  $("streakStat").classList.remove("hidden");
-  $("streak").textContent = "0";
+  // Streak is intentionally hidden in test mode — a visible counter that
+  // resets would tip off the test-taker that they got a question wrong
+  // (you don't see per-question feedback during a real test).
+  $("streakStat").classList.add("hidden");
   $("skipBtn").classList.remove("hidden");
   $("finishBtn").classList.remove("hidden");
   $("masterBtn").classList.add("hidden");
@@ -1699,19 +1701,14 @@ function testAnswer(i) {
   const ans = state.testAnswers[qIdx];
   ans.picked = i;
   ans.skipped = false;
-  // Update test-mode streak + fire milestone celebrations
+  // Track streak silently — no UI update during the test (visible feedback
+  // would tip the kid off about whether the answer was right). The longest
+  // streak gets revealed on the results screen.
   if (i === ans.correctIdx) {
     state.testStreak += 1;
     if (state.testStreak > state.testLongestStreak) state.testLongestStreak = state.testStreak;
-    $("streak").textContent = String(state.testStreak);
-    pulseStreakChip();
-    const STREAK_MILESTONES = { 5: "🔥 5 in a row!", 10: "🔥🔥 10 in a row!", 15: "🔥🔥🔥 15 in a row — unstoppable!", 20: "🚀 20 in a row! Incredible!", 25: "👑 25 in a row! Vocab royalty!" };
-    if (STREAK_MILESTONES[state.testStreak]) {
-      showStreakToast(STREAK_MILESTONES[state.testStreak]);
-    }
   } else {
     state.testStreak = 0;
-    $("streak").textContent = "0";
   }
   advanceTest();
 }
@@ -1727,9 +1724,8 @@ function testSkip() {
   } else {
     ans.skipped = true;        // final skip
   }
-  // Skipping breaks the streak
+  // Skipping breaks the streak (tracked silently — no DOM update)
   state.testStreak = 0;
-  $("streak").textContent = "0";
   advanceTest();
 }
 function advanceTest() {
