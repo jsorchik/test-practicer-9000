@@ -755,6 +755,60 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+  /* ─── Essays history list ─── */
+  .essays-list { display: flex; flex-direction: column; gap: 10px; }
+  .essay-card {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .essay-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    flex-wrap: wrap;
+  }
+  .essay-card-head .badge {
+    padding: 2px 8px;
+    background: rgba(96,165,250,.15);
+    color: var(--accent);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .essay-card-prompt {
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 8px;
+    font-style: italic;
+    line-height: 1.4;
+  }
+  .essay-card details summary {
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 4px 0;
+  }
+  .essay-card details summary:hover { color: var(--text); }
+  .essay-card details[open] summary { color: var(--text); margin-bottom: 8px; }
+  .essay-card-text {
+    background: rgba(255,255,255,.03);
+    padding: 12px 14px;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.55;
+    max-height: 400px;
+    overflow-y: auto;
+  }
   /* ─── Mock Test Day card (lives in the section grid, but glistens) ─── */
   .section-card.mock-test-day {
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 35%, #f97316 70%, #ec4899 100%);
@@ -1060,6 +1114,34 @@
   .review-item .mark.bad { color: var(--bad); }
   .review-item .detail { color: var(--muted); font-size: 15px; line-height: 1.55; }
   .review-item .detail b { color: var(--text); }
+  .review-item .defs-correct {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(34,197,94,.10);
+    border-left: 3px solid var(--good);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 14px;
+  }
+  .review-item .defs-correct strong { color: var(--good); }
+  .review-item .defs-others {
+    margin-top: 6px;
+    font-size: 13px;
+  }
+  .review-item .defs-others summary {
+    cursor: pointer;
+    padding: 4px 0;
+    color: var(--muted);
+    list-style-position: inside;
+  }
+  .review-item .defs-others summary:hover { color: var(--text); }
+  .review-item .defs-others ul {
+    margin: 6px 0 0;
+    padding-left: 22px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .review-item .defs-others ul strong { color: var(--text); }
   .review-item .section-tag {
     font-size: 12px;
     text-transform: uppercase;
@@ -1193,6 +1275,7 @@
     </div>
     <div style="display:flex; gap:8px;">
       <button id="viewStatsBtn">📊 Stats</button>
+      <button id="viewEssaysBtn">📝 Essays</button>
       <button id="resetProgress">Reset this level</button>
     </div>
   </div>
@@ -1373,6 +1456,19 @@
   </div>
 </div>
 
+<!-- ─── ESSAYS HISTORY VIEW ─── -->
+<div class="view-results hidden" id="viewEssays">
+  <div class="results-summary">
+    <div class="sub" id="essaysGradeLabel">Your essays</div>
+    <div class="big" id="essaysHeadline">0</div>
+    <div class="sub" id="essaysSubhead">essays saved</div>
+  </div>
+  <div class="results-actions">
+    <button class="ghost" id="essaysHomeBtn">Back to home</button>
+  </div>
+  <div class="essays-list" id="essaysList"></div>
+</div>
+
 <canvas id="confettiCanvas"></canvas>
 <div class="streak-toast" id="streakToast">🔥 5 in a row!</div>
 
@@ -1473,6 +1569,7 @@
 <script src="data/bridge-math.js"></script>
 <script src="data/bridge-reading.js"></script>
 <script src="data/bridge-essays.js"></script>
+<script src="data/definitions.js"></script>
 <script>
 // ════════════════════════════════════════════════════════════════════════════
 // LOWER LEVEL DATA (4th → 5th grade)
@@ -1633,6 +1730,10 @@ function sectionEmoji(key) { return SECTION_EMOJI[key] || "•"; }
 // ════════════════════════════════════════════════════════════════════════════
 const QUESTION_REGISTRY = {};   // id (with grade prefix) → { entry, sectionKey, gradeLevel }
 const PASSAGE_LOOKUP = {};      // passage id (e.g. "p1", "lp1") → passage object
+const DICTIONARY = {};          // lowercase word → meaning (built from synonym headwords + data/definitions.js)
+function defLookup(word) {
+  return DICTIONARY[(word||"").toLowerCase()] || null;
+}
 
 function entryId(gradeLevel, sectionKey, idx) {
   return `${gradeLevel}-${sectionKey}-${idx}`;
@@ -1653,6 +1754,19 @@ function buildRegistries() {
       });
     }
     g.pools.reading.passages.forEach(p => { PASSAGE_LOOKUP[p.id] = p; });
+    // Build the dictionary: every synonym headword and its meaning go in.
+    for (const w of g.pools.words) {
+      if (w.word && w.meaning && !DICTIONARY[w.word.toLowerCase()]) {
+        DICTIONARY[w.word.toLowerCase()] = w.meaning;
+      }
+    }
+  }
+  // Layer in any extra definitions from data/definitions.js for words used in
+  // sentence completion entries that aren't synonym headwords.
+  if (typeof EXTRA_DEFINITIONS !== "undefined") {
+    for (const [k, v] of Object.entries(EXTRA_DEFINITIONS)) {
+      if (!DICTIONARY[k.toLowerCase()]) DICTIONARY[k.toLowerCase()] = v;
+    }
   }
 }
 
@@ -1723,9 +1837,9 @@ const state = {
   essay: { prompt: "", text: "", startMs: 0, endMs: 0, timerInterval: null, isTest: false },
   // Persistent — separate per grade level
   lifetimes: {
-    lower:  { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {} },
-    bridge: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {} },
-    middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {} },
+    lower:  { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], rewardsBanked: 0 },
+    bridge: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], rewardsBanked: 0 },
+    middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], rewardsBanked: 0 },
   },
 };
 // Shortcut accessor for current grade's lifetime stats
@@ -1952,6 +2066,8 @@ function loadProgress() {
       if (L.totalTests === undefined)       L.totalTests = 0;
       if (L.longestTestStreak === undefined) L.longestTestStreak = 0;
       if (!L.bestByTest)                    L.bestByTest = {};
+      if (!Array.isArray(L.essays))         L.essays = [];
+      if (L.rewardsBanked === undefined)    L.rewardsBanked = 0;
     }
   } catch (_) {}
 }
@@ -2140,6 +2256,7 @@ function showView(name) {
   $("viewStats").classList.toggle("hidden", name !== "stats");
   $("viewBatteryTransition").classList.toggle("hidden", name !== "batteryTransition");
   $("viewBatteryResults").classList.toggle("hidden", name !== "batteryResults");
+  $("viewEssays").classList.toggle("hidden", name !== "essays");
   // Hide home button during battery (kid is locked in) and on the home view.
   const hideBack = name === "home" || state.battery.active;
   $("backBtn").classList.toggle("hidden", hideBack);
@@ -2352,6 +2469,42 @@ function renderStats() {
     `);
   }
   $("statsAllGrades").innerHTML = allRows.join("");
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ESSAYS HISTORY VIEW
+// ════════════════════════════════════════════════════════════════════════════
+function renderEssaysHistory() {
+  const essays = (L().essays || []).slice().reverse();  // newest first
+  const grade = currentGrade();
+  $("essaysGradeLabel").textContent = `${grade.label} essays`;
+  $("essaysHeadline").textContent = essays.length;
+  $("essaysHeadline").className = "big";
+  $("essaysSubhead").textContent = essays.length === 0
+    ? "Take an essay test to start your history."
+    : `Most recent ${essays.length === 1 ? "essay" : "essays"} shown first`;
+  if (essays.length === 0) {
+    $("essaysList").innerHTML = `<div style="text-align:center;color:var(--muted);padding:40px 20px;">No essays yet. Start one from the home view.</div>`;
+    return;
+  }
+  const fmtDate = (ms) => {
+    const d = new Date(ms);
+    const opts = { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" };
+    return d.toLocaleString(undefined, opts);
+  };
+  $("essaysList").innerHTML = essays.map(e => `
+    <div class="essay-card">
+      <div class="essay-card-head">
+        <span>${fmtDate(e.dateMs)} · ${e.words} word${e.words === 1 ? "" : "s"} · ${fmtTime(e.durationSec)}</span>
+        ${e.isTest ? '<span class="badge">Timed</span>' : '<span class="badge" style="background:rgba(148,163,184,.15);color:var(--muted);">Practice</span>'}
+      </div>
+      <div class="essay-card-prompt">${escapeHtml(e.prompt)}</div>
+      <details>
+        <summary>Read full response</summary>
+        <div class="essay-card-text">${escapeHtml(e.text)}</div>
+      </details>
+    </div>
+  `).join("");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -2665,6 +2818,10 @@ function renderBatteryFinal() {
   const r = calculateBatteryReward();
   const elapsedSec = Math.floor((Date.now() - state.battery.startMs) / 1000);
   const pct = r.total > 0 ? Math.round(r.accuracy * 100) : 0;
+  // Bank the Mock Test Day reward into the same rewards bank as individual
+  // tests so parent has a single running total to pay out.
+  L().rewardsBanked = (L().rewardsBanked || 0) + r.total$;
+  saveProgress();
 
   // Headline + banner
   $("batteryRewardAmount").textContent = `$${r.total$.toFixed(2)}`;
@@ -2961,6 +3118,15 @@ function finishTest() {
   state.lastTestPerfect = (pct === 100 && total > 0);
   state.lastTestPersonalBest = isPersonalBest;
   state.lastTestPrevBest = prevBest;
+  // Per-test payout: correct × per-correct rate (no base, no bonuses — those
+  // are exclusive to Mock Test Day). Bank the amount so parent can pay later.
+  const perTestEarned = correct * state.payoutConfig.perCorrect;
+  if (perTestEarned > 0) {
+    lt.rewardsBanked = (lt.rewardsBanked || 0) + perTestEarned;
+    state.lastTestEarned = perTestEarned;
+  } else {
+    state.lastTestEarned = 0;
+  }
   saveProgress();
   // Battery mode: instead of showing the standard results screen, record the
   // section result and advance the queue.
@@ -3243,6 +3409,21 @@ function finishEssay() {
   const words = countWords(state.essay.text);
   const elapsed = Math.floor((Date.now() - state.essay.startMs) / 1000);
   const goal = state.gradeLevel === "lower" ? 150 : 300;
+  // Save the essay to history (only if there's actual text — empty essays
+  // from accidental finishes are skipped).
+  if (state.essay.text.trim().length > 0) {
+    L().essays.push({
+      prompt: state.essay.prompt,
+      text: state.essay.text,
+      words,
+      dateMs: Date.now(),
+      isTest: !!state.essay.isTest,
+      durationSec: elapsed,
+    });
+    // Cap history at 100 most-recent so localStorage stays manageable
+    if (L().essays.length > 100) L().essays = L().essays.slice(-100);
+    saveProgress();
+  }
   // Battery mode: record and advance instead of rendering normal essay results.
   if (state.battery.active) {
     batteryRecordSectionResult(state.section.key, words, words, elapsed, true);
@@ -3327,6 +3508,12 @@ function renderTestResults() {
   const bestCell = lifeBest > 0
     ? `<div><strong>${lifeBest}%</strong>your best (${state.section.name.split(' ')[0]})</div>`
     : '';
+  const earnedCell = (state.lastTestEarned || 0) > 0
+    ? `<div><strong style="color:#fbbf24">💰 $${state.lastTestEarned.toFixed(2)}</strong>earned this test</div>`
+    : '';
+  const bankCell = (lt.rewardsBanked || 0) > 0
+    ? `<div><strong style="color:#fbbf24">$${lt.rewardsBanked.toFixed(2)}</strong>banked total</div>`
+    : '';
   $("resultRow").innerHTML = `
     <div><strong>${correct}</strong>correct</div>
     <div><strong>${wrong}</strong>wrong</div>
@@ -3334,6 +3521,8 @@ function renderTestResults() {
     <div><strong>${fmtTime(elapsed)}</strong>time used</div>
     ${streakCell}
     ${bestCell}
+    ${earnedCell}
+    ${bankCell}
   `;
   $("retryBtn").textContent = "Try another test";
   $("essayFinalWrapper").classList.add("hidden");
@@ -3356,10 +3545,32 @@ function renderTestResults() {
       <div class="detail">
         Your answer: <b>${yourAns}</b> · Correct: <b>${correctAns}</b><br/>
         <span style="opacity:.85">${a.feedbackHtml}</span>
+        ${buildDefinitionsBlock(a)}
       </div>
     `;
     list.appendChild(item);
   });
+}
+
+// For sentence-completion review items, surface the actual dictionary
+// definitions of the correct + (optionally) wrong choices. Helps the kid
+// learn what each word means, not just which one fit the blank.
+function buildDefinitionsBlock(a) {
+  if (a.sectionKey !== "verbal_completion") return "";
+  const correctWord = String(a.choices[a.correctIdx] || "");
+  const correctDef = defLookup(correctWord);
+  let html = "";
+  if (correctDef) {
+    html += `<div class="defs-correct"><strong>${escapeHtml(correctWord)}</strong> — ${escapeHtml(correctDef)}</div>`;
+  }
+  const wrongDefs = a.choices
+    .map((c, i) => i !== a.correctIdx ? { word: String(c||""), def: defLookup(c) } : null)
+    .filter(x => x && x.def);
+  if (wrongDefs.length > 0) {
+    const items = wrongDefs.map(d => `<li><strong>${escapeHtml(d.word)}</strong> — ${escapeHtml(d.def)}</li>`).join("");
+    html += `<details class="defs-others"><summary>Other choices (what they mean)</summary><ul>${items}</ul></details>`;
+  }
+  return html;
 }
 
 function renderReviewResults() {
@@ -3505,6 +3716,8 @@ $("startReviewBtn").addEventListener("click", startReview);
 $("viewMistakesBtn").addEventListener("click", () => { renderMistakesList(); showView("mistakes"); });
 $("viewStatsBtn").addEventListener("click", () => { renderStats(); showView("stats"); });
 $("statsHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
+$("viewEssaysBtn").addEventListener("click", () => { renderEssaysHistory(); showView("essays"); });
+$("essaysHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
 // (The Mock Test Day card is now dynamically created inside renderSectionsGrid
 //  with its click handler wired there — no static #batteryCTA element exists.)
 $("batteryModalCancel").addEventListener("click", () => $("batteryModal").classList.add("hidden"));
