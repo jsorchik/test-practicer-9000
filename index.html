@@ -1783,13 +1783,15 @@ function renderHome() {
   $("lifetimeScore").textContent = `${L().score} / ${L().total}`;
   $("lifetimeBest").textContent = `${L().best}`;
 
-  // Battery CTA — grade-specific time estimate
+  // Battery CTA — only relevant in Test Mode; hide it in Practice Mode where
+  // the whole point is no-pressure, no-timer learning.
   const batteryMins = batteryTotalMinutes();
   const batteryQs = BATTERY_SECTION_ORDER
     .filter(k => k !== "break" && k !== "essay")
     .reduce((sum, k) => sum + (currentGrade().tests[k]?.questionCount || 0), 0);
+  $("batteryCTA").classList.toggle("hidden", state.mode !== "test");
   $("batterySub").textContent =
-    `All ${state.mode === "test" ? "6" : "6"} sections back-to-back · ~${batteryMins} min · ${batteryQs} questions + essay · earn a money reward`;
+    `All 6 sections back-to-back · ~${batteryMins} min · ${batteryQs} questions + essay · earn a money reward`;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
