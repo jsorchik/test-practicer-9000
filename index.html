@@ -1248,6 +1248,30 @@
   </div>
 </div>
 
+<canvas id="confettiCanvas"></canvas>
+<div class="streak-toast" id="streakToast">🔥 5 in a row!</div>
+
+<!-- ─── Battery confirm modal ─── -->
+<div class="modal-backdrop hidden" id="batteryModal">
+  <div class="modal-card">
+    <div class="modal-title">🎯 Start Mock Test Day?</div>
+    <div class="modal-body">
+      <p id="batteryModalIntro">Full battery, all sections back-to-back.</p>
+      <ul class="modal-checklist">
+        <li>🕐 <span id="batteryModalTime">~60 minutes</span></li>
+        <li>📝 <span id="batteryModalQs">— questions + 1 essay</span></li>
+        <li>🧘 Two short breaks at the natural points</li>
+        <li>🔒 No quitting halfway — this is for real</li>
+        <li>💰 Finish and earn a real money reward</li>
+      </ul>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="batteryModalCancel">Maybe later</button>
+      <button class="primary" id="batteryModalGo">Start now →</button>
+    </div>
+  </div>
+</div>
+
 <script src="data/lower-words.js"></script>
 <script src="data/lower-sentences.js"></script>
 <script src="data/lower-quant.js"></script>
@@ -1314,13 +1338,13 @@ const GRADES = {
       reading: LOWER_READING,
       essays: LOWER_ESSAY_PROMPTS,
     },
-    tests: {
-      verbal_synonyms:   { questionCount:  9, durationSec:  5 * 60 },   // ~half of 17/10min real
+    tests: {                                                            // half-length (≈50% of full)
+      verbal_synonyms:   { questionCount:  9, durationSec:  5 * 60 },
       verbal_completion: { questionCount:  9, durationSec:  5 * 60 },
-      quant_reasoning:   { questionCount: 19, durationSec: 17 * 60 },   // ~half of 38/35min
-      math_achievement:  { questionCount: 15, durationSec: 15 * 60 },   // half of 30/30min
+      quant_reasoning:   { questionCount: 19, durationSec: 17 * 60 },
+      math_achievement:  { questionCount: 15, durationSec: 15 * 60 },
       reading:           { questionCount: 10, durationSec: 10 * 60 },   // 2 passages × 5
-      essay:             { questionCount:  1, durationSec: 30 * 60 },
+      essay:             { questionCount:  1, durationSec: 30 * 60 },   // essay is full-length either way
     },
     testsFull: {                                                        // real ISEE Lower timing
       verbal_synonyms:   { questionCount: 17, durationSec: 10 * 60 },   // 34 q / 20 min split
@@ -1342,12 +1366,12 @@ const GRADES = {
       reading: BRIDGE_READING,
       essays: BRIDGE_ESSAY_PROMPTS,
     },
-    tests: {
-      verbal_synonyms:   { questionCount: 12, durationSec:  7 * 60 },
-      verbal_completion: { questionCount: 12, durationSec:  7 * 60 },
-      quant_reasoning:   { questionCount: 18, durationSec: 16 * 60 },
-      math_achievement:  { questionCount: 18, durationSec: 18 * 60 },
-      reading:           { questionCount: 12, durationSec: 12 * 60 },   // 2 passages × 6
+    tests: {                                                            // half-length (≈50% of full)
+      verbal_synonyms:   { questionCount:  9, durationSec:  5 * 60 },
+      verbal_completion: { questionCount: 10, durationSec:  5 * 60 },
+      quant_reasoning:   { questionCount: 18, durationSec: 17 * 60 },
+      math_achievement:  { questionCount: 19, durationSec: 17 * 60 },
+      reading:           { questionCount: 12, durationSec: 15 * 60 },   // 2 passages × 6
       essay:             { questionCount:  1, durationSec: 30 * 60 },
     },
     testsFull: {                                                        // interpolated Lower→Middle timing
@@ -1370,12 +1394,12 @@ const GRADES = {
       reading: READING,
       essays: ESSAY_PROMPTS,
     },
-    tests: {
-      verbal_synonyms:   { questionCount: 20, durationSec: 10 * 60 },
-      verbal_completion: { questionCount: 20, durationSec: 10 * 60 },
-      quant_reasoning:   { questionCount: 18, durationSec: 17 * 60 },
-      math_achievement:  { questionCount: 23, durationSec: 20 * 60 },
-      reading:           { questionCount: 12, durationSec: 12 * 60 },
+    tests: {                                                            // half-length (≈50% of full)
+      verbal_synonyms:   { questionCount: 10, durationSec:  5 * 60 },
+      verbal_completion: { questionCount: 11, durationSec:  5 * 60 },
+      quant_reasoning:   { questionCount: 19, durationSec: 17 * 60 },
+      math_achievement:  { questionCount: 24, durationSec: 20 * 60 },
+      reading:           { questionCount: 18, durationSec: 17 * 60 },   // 3 passages × 6
       essay:             { questionCount:  1, durationSec: 30 * 60 },
     },
     testsFull: {                                                        // real ISEE Middle timing
@@ -3107,30 +3131,6 @@ loadProgress();
 renderHome();
 showView("home");
 </script>
-
-<canvas id="confettiCanvas"></canvas>
-<div class="streak-toast" id="streakToast">🔥 5 in a row!</div>
-
-<!-- ─── Battery confirm modal ─── -->
-<div class="modal-backdrop hidden" id="batteryModal">
-  <div class="modal-card">
-    <div class="modal-title">🎯 Start Mock Test Day?</div>
-    <div class="modal-body">
-      <p id="batteryModalIntro">Full battery, all sections back-to-back.</p>
-      <ul class="modal-checklist">
-        <li>🕐 <span id="batteryModalTime">~60 minutes</span></li>
-        <li>📝 <span id="batteryModalQs">— questions + 1 essay</span></li>
-        <li>🧘 Two short breaks at the natural points</li>
-        <li>🔒 No quitting halfway — this is for real</li>
-        <li>💰 Finish and earn a real money reward</li>
-      </ul>
-    </div>
-    <div class="modal-actions">
-      <button class="ghost" id="batteryModalCancel">Maybe later</button>
-      <button class="primary" id="batteryModalGo">Start now →</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
