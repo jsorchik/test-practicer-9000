@@ -119,17 +119,88 @@
     transition: background .15s, color .15s;
     font-family: inherit;
   }
+  .mode-toggle button {
+    position: relative;        /* for info-icon + badge positioning */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
   .mode-toggle button.active {
     background: var(--panel-2);
     color: var(--text);
     box-shadow: 0 2px 6px rgba(0,0,0,.2);
   }
-  .mode-desc {
+  .mode-toggle .mode-label { line-height: 1; }
+  .mode-toggle .info-icon {
+    background: transparent;
+    border: 0;
+    padding: 2px 4px;
     color: var(--muted);
-    font-size: 15px;
-    margin-bottom: 22px;
-    line-height: 1.5;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.15s, color 0.15s;
+    font-family: inherit;
   }
+  .mode-toggle .info-icon:hover { opacity: 1; color: var(--accent); }
+  .mode-toggle button.active .info-icon { opacity: 0.8; }
+  .mode-toggle .mode-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    border-radius: 11px;
+    background: var(--bad);
+    color: white;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .mode-popover {
+    background: var(--panel-2);
+    border: 1px solid rgba(96,165,250,.3);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-top: -10px;
+    margin-bottom: 22px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+    box-shadow: 0 6px 18px rgba(0,0,0,.25);
+    animation: popover-fade 0.15s ease;
+  }
+  .mode-popover .pop-title { font-weight: 700; margin-bottom: 4px; color: var(--accent); }
+  @keyframes popover-fade {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* ─── Review mode panel ─── */
+  .review-mode-panel {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 16px;
+    padding: 28px 24px;
+    margin-bottom: 16px;
+  }
+  .review-headline {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 18px;
+    line-height: 1.3;
+  }
+  .review-mode-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+  .review-breakdown { display: flex; flex-direction: column; gap: 8px; }
   /* ─── Volume toggle (Half / Full test length) ─── */
   .volume-toggle {
     display: flex;
@@ -169,25 +240,6 @@
     color: var(--text);
     box-shadow: 0 2px 6px rgba(0,0,0,.2);
   }
-  .review-panel {
-    background: var(--panel);
-    border: 1px solid rgba(245,158,11,.3);
-    border-left: 4px solid var(--warn);
-    border-radius: 12px;
-    padding: 16px 20px;
-    margin-bottom: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-  .review-panel .info { flex: 1; min-width: 200px; }
-  .review-panel .title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-  .review-panel .meta { font-size: 15px; color: var(--muted); }
-  .review-panel .meta strong { color: var(--text); }
-  .review-panel .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
   .sections {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -703,43 +755,21 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
-  /* ─── Battery CTA (mock test day button) ─── */
-  .battery-cta {
-    width: 100%;
-    margin: 16px 0 18px;
-    padding: 22px 24px;
-    border: 0;
-    border-radius: 20px;
+  /* ─── Mock Test Day card (lives in the section grid, but glistens) ─── */
+  .section-card.mock-test-day {
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 35%, #f97316 70%, #ec4899 100%);
     background-size: 200% 200%;
+    border-color: transparent;
     color: #1a1a2e;
-    font-family: inherit;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 18px;
-    box-shadow: 0 12px 36px rgba(249, 115, 22, 0.42), 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 24px rgba(249, 115, 22, 0.38);
     position: relative;
     overflow: hidden;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
     animation: battery-shimmer 6s ease infinite;
   }
-  .battery-cta:hover {
-    transform: translateY(-2px) scale(1.01);
-    box-shadow: 0 18px 48px rgba(249, 115, 22, 0.55), 0 4px 12px rgba(0,0,0,0.25);
-  }
-  .battery-cta:active { transform: translateY(0) scale(0.99); }
-  .battery-cta .battery-icon {
-    font-size: 32px;
-    line-height: 1;
-    animation: battery-bounce 2.2s ease-in-out infinite;
-  }
-  .battery-cta .battery-icon.right { animation-delay: 1.1s; }
-  .battery-cta .battery-text { display: flex; flex-direction: column; text-align: center; gap: 4px; }
-  .battery-cta .title { font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
-  .battery-cta .sub { font-size: 14px; font-weight: 600; opacity: 0.78; }
-  .battery-cta::before {
+  .section-card.mock-test-day .title,
+  .section-card.mock-test-day .meta { color: #1a1a2e; }
+  .section-card.mock-test-day .meta { font-weight: 600; opacity: 0.78; }
+  .section-card.mock-test-day::before {
     content: "";
     position: absolute;
     top: -50%; left: -50%;
@@ -748,13 +778,24 @@
     animation: battery-sparkle 3s linear infinite;
     pointer-events: none;
   }
+  .section-card.mock-test-day:hover:not(:disabled) {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 35%, #f97316 70%, #ec4899 100%);
+    background-size: 200% 200%;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(249, 115, 22, 0.55);
+  }
+  .section-card.mock-test-day .emoji {
+    font-size: 28px;
+    animation: battery-bounce 2.2s ease-in-out infinite;
+  }
   @keyframes battery-shimmer {
     0%, 100% { background-position: 0% 50%; }
     50%      { background-position: 100% 50%; }
   }
   @keyframes battery-bounce {
     0%, 100% { transform: translateY(0) scale(1); }
-    50%      { transform: translateY(-6px) scale(1.12); }
+    50%      { transform: translateY(-4px) scale(1.1); }
   }
   @keyframes battery-sparkle {
     0%   { transform: translateX(-30%) translateY(-30%); }
@@ -1113,37 +1154,38 @@
   </div>
 
   <div class="mode-toggle" role="tablist">
-    <button id="modePractice" class="active" role="tab">Practice Mode</button>
-    <button id="modeTest" role="tab">Test Mode</button>
+    <button id="modePractice" class="active" role="tab">
+      <span class="mode-label">Practice</span>
+      <button type="button" class="info-icon" data-mode="practice" aria-label="What's Practice mode?">ⓘ</button>
+    </button>
+    <button id="modeTest" role="tab">
+      <span class="mode-label">Test</span>
+      <button type="button" class="info-icon" data-mode="test" aria-label="What's Test mode?">ⓘ</button>
+    </button>
+    <button id="modeReview" role="tab">
+      <span class="mode-label">Review</span>
+      <span class="mode-badge hidden" id="reviewBadge">0</span>
+      <button type="button" class="info-icon" data-mode="review" aria-label="What's Review mode?">ⓘ</button>
+    </button>
   </div>
-  <div class="mode-desc" id="modeDesc"></div>
+  <div class="mode-popover hidden" id="modePopover"></div>
 
   <div class="volume-toggle hidden" id="volumeToggle" role="tablist">
     <button id="volumeHalf" class="active" role="tab">Half length<span class="sub">~10 min sections</span></button>
     <button id="volumeFull" role="tab">Full length<span class="sub">real ISEE timing</span></button>
   </div>
 
-  <div class="review-panel hidden" id="reviewPanel">
-    <div class="info">
-      <div class="title">Words &amp; Questions to Review</div>
-      <div class="meta" id="reviewPanelMeta">—</div>
+  <!-- Review-mode panel: replaces the section grid when Review is active -->
+  <div class="review-mode-panel hidden" id="reviewModePanel">
+    <div class="review-headline" id="reviewHeadline">—</div>
+    <div class="review-mode-actions">
+      <button class="primary" id="startReviewBtn">Start Review →</button>
+      <button class="ghost" id="viewMistakesBtn">Show the list</button>
     </div>
-    <div class="actions">
-      <button class="ghost" id="viewMistakesBtn">Show list</button>
-      <button class="primary" id="startReviewBtn">Review now</button>
-    </div>
+    <div class="review-breakdown" id="reviewBreakdown"></div>
   </div>
 
   <div class="sections" id="sectionsGrid"></div>
-
-  <button class="battery-cta" id="batteryCTA">
-    <span class="battery-icon">💰✨</span>
-    <span class="battery-text">
-      <span class="title">Mock Test Day</span>
-      <span class="sub" id="batterySub">All sections in a row · earn a money reward</span>
-    </span>
-    <span class="battery-icon right">✨💰</span>
-  </button>
   <div class="stats-summary">
     <div>
       <span id="gradeBadgeStats">—</span> · Progress: <strong id="lifetimeScore">0 / 0</strong>
@@ -2076,32 +2118,43 @@ function renderHome() {
   $("gradeBridge").classList.toggle("active", state.gradeLevel === "bridge");
   $("gradeMiddle").classList.toggle("active", state.gradeLevel === "middle");
 
-  // Mode toggle
-  $("modePractice").classList.toggle("active", state.mode !== "test");
+  // Mode tabs — three modes now: practice, test, review
+  $("modePractice").classList.toggle("active", state.mode === "practice");
   $("modeTest").classList.toggle("active", state.mode === "test");
-  $("modeDesc").textContent = state.mode === "test"
-    ? `Timed sections like the real test. You'll see your score at the end.`
-    : `No timer. Each answer is checked as you go, and missed questions come back so you can master them.`;
+  $("modeReview").classList.toggle("active", state.mode === "review");
 
   // Volume toggle — only meaningful in Test Mode
   $("volumeToggle").classList.toggle("hidden", state.mode !== "test");
   $("volumeHalf").classList.toggle("active", state.testVolume !== "full");
   $("volumeFull").classList.toggle("active", state.testVolume === "full");
 
-  // Review panel
+  // Mistakes count → badge on the Review tab
   const stats = mistakeStats();
-  const panel = $("reviewPanel");
-  if (stats.total === 0) {
-    panel.classList.add("hidden");
+  $("reviewBadge").classList.toggle("hidden", stats.active === 0);
+  $("reviewBadge").textContent = stats.active > 99 ? "99+" : String(stats.active);
+
+  // Hide the mode popover when re-rendering (any mode/grade change closes it)
+  $("modePopover").classList.add("hidden");
+
+  // Review mode swaps the section grid for a dedicated review panel
+  if (state.mode === "review") {
+    $("sectionsGrid").classList.add("hidden");
+    $("reviewModePanel").classList.remove("hidden");
+    renderReviewModePanel(stats);
   } else {
-    panel.classList.remove("hidden");
-    $("reviewPanelMeta").innerHTML = stats.active > 0
-      ? `<strong>${stats.active}</strong> active · <strong>${stats.mastered}</strong> mastered. Drill until each one sticks (${MASTERY_THRESHOLD} right in a row = mastered).`
-      : `All <strong>${stats.mastered}</strong> mastered. Nice work!`;
-    $("startReviewBtn").disabled = stats.active === 0;
+    $("reviewModePanel").classList.add("hidden");
+    $("sectionsGrid").classList.remove("hidden");
+    renderSectionsGrid();
   }
 
-  // Sections grid
+  // Lifetime stats badge
+  $("gradeBadgeStats").textContent = currentGrade().label;
+  $("lifetimeScore").textContent = `${L().score} / ${L().total}`;
+  $("lifetimeBest").textContent = `${L().best}`;
+}
+
+// Builds the section cards (and the Mock Test Day card, shown in test mode).
+function renderSectionsGrid() {
   const grid = $("sectionsGrid");
   grid.innerHTML = "";
   for (const section of SECTIONS) {
@@ -2111,8 +2164,6 @@ function renderHome() {
     const poolCount = section.isEssay ? currentGrade().pools.essays.length : poolFor(section).length;
     const available = !!(t && (section.isEssay || poolCount > 0));
     card.disabled = !available;
-    // Section cards stay clean and focused — full pool sizes live on the
-    // Stats page so the kid isn't distracted by big numbers here.
     const metaLine = state.mode === "test"
       ? (section.isEssay
           ? `1 prompt · ${fmtTime(t.durationSec)}`
@@ -2126,21 +2177,58 @@ function renderHome() {
     if (available) card.addEventListener("click", () => startSection(section));
     grid.appendChild(card);
   }
+  // Mock Test Day — sparkly card appended at the end of the grid in Test mode
+  if (state.mode === "test") {
+    const mins = batteryTotalMinutes();
+    const totalQ = BATTERY_SECTION_ORDER
+      .filter(k => k !== "break" && k !== "essay")
+      .reduce((sum, k) => sum + (testConfigFor(SECTIONS.find(s => s.key === k))?.questionCount || 0), 0);
+    const card = document.createElement("button");
+    card.className = "section-card mock-test-day";
+    card.innerHTML = `
+      <div class="emoji">💰</div>
+      <div class="title">Mock Test Day</div>
+      <div class="meta">~${mins} min · ${totalQ} questions + essay<br/>All sections + earn money when you finish</div>
+    `;
+    card.addEventListener("click", startBattery);
+    grid.appendChild(card);
+  }
+}
 
-  // Lifetime stats badge
-  $("gradeBadgeStats").textContent = currentGrade().label;
-  $("lifetimeScore").textContent = `${L().score} / ${L().total}`;
-  $("lifetimeBest").textContent = `${L().best}`;
+// Review-mode panel: big "Start Review" CTA + per-section breakdown.
+function renderReviewModePanel(stats) {
+  const headline = stats.active === 0
+    ? (stats.mastered === 0
+        ? `🎉 No mistakes to review yet — keep practicing!`
+        : `🌟 All ${stats.mastered} mastered. Nice work!`)
+    : `${stats.active} ${stats.active === 1 ? "thing" : "things"} to drill until they stick`;
+  $("reviewHeadline").textContent = headline;
+  $("startReviewBtn").disabled = stats.active === 0;
+  $("startReviewBtn").textContent = stats.active === 0 ? "Nothing to review" : `Start Review →`;
+  $("viewMistakesBtn").style.display = stats.mastered + stats.active > 0 ? "" : "none";
 
-  // Battery CTA — only relevant in Test Mode; hide it in Practice Mode where
-  // the whole point is no-pressure, no-timer learning.
-  const batteryMins = batteryTotalMinutes();
-  const batteryQs = BATTERY_SECTION_ORDER
-    .filter(k => k !== "break" && k !== "essay")
-    .reduce((sum, k) => sum + (testConfigFor(SECTIONS.find(s => s.key === k))?.questionCount || 0), 0);
-  $("batteryCTA").classList.toggle("hidden", state.mode !== "test");
-  $("batterySub").textContent =
-    `~${batteryMins} min · ${batteryQs} questions + 1 essay · ${state.testVolume === "full" ? "full ISEE length" : "half length"} · earn money when you finish`;
+  // Per-section breakdown of active mistakes for context
+  const counts = {};
+  for (const id of Object.keys(L().mistakes)) {
+    const m = L().mistakes[id];
+    if (m.mastered) continue;
+    counts[m.sectionKey] = (counts[m.sectionKey] || 0) + 1;
+  }
+  const breakdownRows = [];
+  for (const section of SECTIONS) {
+    if (section.isCombined) continue;
+    const n = counts[section.key] || 0;
+    if (n === 0) continue;
+    breakdownRows.push(`
+      <div class="stats-row">
+        <div class="left"><span class="emoji">${sectionEmoji(section.key)}</span><span class="name">${section.name}</span></div>
+        <div class="right"><strong>${n}</strong> to drill</div>
+      </div>
+    `);
+  }
+  $("reviewBreakdown").innerHTML = breakdownRows.length
+    ? `<div class="stats-section" style="margin-top:6px;padding:14px 18px;"><h3 style="margin-bottom:10px;">Breakdown</h3>${breakdownRows.join("")}</div>`
+    : "";
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -2928,7 +3016,13 @@ function reviewMarkMastered() {
   reviewNext();
 }
 function reviewAdvance() { state.reviewIdx += 1; reviewNext(); }
-function finishReview() { state.mode = "practice"; renderReviewResults(); showView("results"); }
+function finishReview() {
+  // Stay on the Review tab so the kid lands back on the review panel when
+  // they tap "Back to home" from the results view.
+  state.mode = "review";
+  renderReviewResults();
+  showView("results");
+}
 
 // ════════════════════════════════════════════════════════════════════════════
 // QUIZ RENDERING
@@ -3311,10 +3405,52 @@ $("gradeLower").addEventListener("click", () => setGrade("lower"));
 $("gradeBridge").addEventListener("click", () => setGrade("bridge"));
 $("gradeMiddle").addEventListener("click", () => setGrade("middle"));
 
-$("modePractice").addEventListener("click", () => { state.mode = "practice"; renderHome(); });
-$("modeTest").addEventListener("click", () => { state.mode = "test"; renderHome(); });
+$("modePractice").addEventListener("click", (e) => {
+  if (e.target.classList.contains("info-icon")) return;  // info icon handled separately
+  state.mode = "practice"; renderHome();
+});
+$("modeTest").addEventListener("click", (e) => {
+  if (e.target.classList.contains("info-icon")) return;
+  state.mode = "test"; renderHome();
+});
+$("modeReview").addEventListener("click", (e) => {
+  if (e.target.classList.contains("info-icon")) return;
+  state.mode = "review"; renderHome();
+});
 $("volumeHalf").addEventListener("click", () => { state.testVolume = "half"; saveProgress(); renderHome(); });
 $("volumeFull").addEventListener("click", () => { state.testVolume = "full"; saveProgress(); renderHome(); });
+
+// Tap an (i) icon on a mode tab → toggle a small popover with that mode's
+// description. Tap elsewhere to dismiss.
+const MODE_INFO = {
+  practice: { title: "Practice Mode", body: "No timer. Each answer is checked as you go, and missed questions come back so you can master them." },
+  test:     { title: "Test Mode",     body: "Timed sections like the real test. You'll see your score at the end, not as you go." },
+  review:   { title: "Review Mode",   body: `Drill the questions you've missed. Each one has to be answered correctly ${MASTERY_THRESHOLD} times in a row before it counts as mastered.` },
+};
+document.querySelectorAll(".mode-toggle .info-icon").forEach(icon => {
+  icon.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const mode = icon.getAttribute("data-mode");
+    const popover = $("modePopover");
+    // If the popover is currently showing THIS mode, dismiss
+    if (!popover.classList.contains("hidden") && popover.dataset.mode === mode) {
+      popover.classList.add("hidden");
+      return;
+    }
+    const info = MODE_INFO[mode];
+    popover.innerHTML = `<div class="pop-title">${info.title}</div><div>${info.body}</div>`;
+    popover.dataset.mode = mode;
+    popover.classList.remove("hidden");
+  });
+});
+// Dismiss the popover when the user taps anywhere else on the page
+document.addEventListener("click", (e) => {
+  const popover = $("modePopover");
+  if (popover.classList.contains("hidden")) return;
+  if (!e.target.classList.contains("info-icon") && !popover.contains(e.target)) {
+    popover.classList.add("hidden");
+  }
+});
 
 $("nextBtn").addEventListener("click", nextOrSubmit);
 $("skipBtn").addEventListener("click", () => { if (state.mode === "test") testSkip(); });
@@ -3383,7 +3519,7 @@ $("backBtn").addEventListener("click", () => {
   }
   stopTimer();
   stopEssayTimer();
-  state.mode = state.mode === "review" ? "practice" : state.mode;
+  // Review is now its own home-screen mode tab — no need to coerce it back to "practice"
   renderHome();
   showView("home");
 });
