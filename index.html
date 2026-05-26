@@ -831,12 +831,69 @@
   }
   /* ─── Monetized Mode toggle button + state styles ─── */
   #monetizedToggleBtn {
+    position: relative;
+    overflow: hidden;
     transition: all 0.15s;
+    background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(249,115,22,0.18));
+    border: 1px solid rgba(251,191,36,0.35);
+    color: #fbbf24;
+    font-weight: 700;
+  }
+  #monetizedToggleBtn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.20) 50%, transparent 65%);
+    transform: translateX(-100%);
+    animation: lite-shimmer 4s linear infinite;
+    pointer-events: none;
+  }
+  #monetizedToggleBtn:hover {
+    background: linear-gradient(135deg, rgba(251,191,36,0.28), rgba(249,115,22,0.28));
   }
   #monetizedToggleBtn.on {
-    background: linear-gradient(135deg, rgba(251,191,36,0.25), rgba(249,115,22,0.25));
-    border: 1px solid rgba(251,191,36,0.5);
+    background: linear-gradient(135deg, rgba(251,191,36,0.35), rgba(249,115,22,0.35));
+    border-color: rgba(251,191,36,0.7);
+    color: #fcd34d;
+    box-shadow: 0 0 12px rgba(251,191,36,0.25);
+  }
+  /* ─── Header callout when Monetized Mode is ON ─── */
+  #monetizedHeaderBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 12px;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, rgba(251,191,36,0.20), rgba(249,115,22,0.20));
+    border: 1px solid rgba(251,191,36,0.4);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fcd34d;
+    vertical-align: middle;
+    animation: badge-pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes badge-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4); }
+    50%      { box-shadow: 0 0 12px 2px rgba(251,191,36,0.3); }
+  }
+  /* ─── Payout chip on section cards ─── */
+  .payout-chip {
+    align-self: flex-start;
+    margin-top: 4px;
+    padding: 3px 10px;
+    background: rgba(251,191,36,0.18);
+    border: 1px solid rgba(251,191,36,0.4);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
     color: #fbbf24;
+    line-height: 1.4;
+  }
+  .payout-chip.mtd {
+    background: rgba(255,255,255,.25);
+    color: #1a1a2e;
+    border-color: rgba(0,0,0,0.2);
   }
   /* When monetized is ON, give individual section cards a subtle gold shimmer
      (way less than the Mock Test Day card, just a hint that they pay out). */
@@ -1116,6 +1173,15 @@
     border-radius: 10px;
     font-size: 14px;
     color: var(--text);
+    line-height: 1.7;
+  }
+  .payout-group-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
   }
   @media (max-width: 480px) {
     .payout-grid { grid-template-columns: 1fr; }
@@ -1335,7 +1401,7 @@
 <body>
 
 <header class="app">
-  <h1>Custom Test Practicer 9000</h1>
+  <h1>Custom Test Practicer 9000<span id="monetizedHeaderBadge" class="hidden">💰 Monetized</span></h1>
   <button class="back hidden" id="backBtn">← Home</button>
 </header>
 
@@ -1659,28 +1725,35 @@
 
     <!-- Stage 3: payout config -->
     <div id="batteryStageConfig" class="hidden">
-      <div class="modal-title">💰 Set the payout</div>
+      <div class="modal-title">💰 Monetized Mode — set the payout</div>
       <div class="modal-body">
-        <p>These rules apply to this test. Prefilled with your last values — adjust if you like.</p>
+        <p>These rules apply to every test and to each section within Mock Test Day. Prefilled with your last values — adjust if you like.</p>
+        <div class="payout-group-label">Per test (also each MTD section)</div>
         <div class="payout-grid">
-          <label>Base reward for finishing
-            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutBase" step="0.50" min="0" /></div>
+          <label>Base for finishing a test
+            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutBase" step="0.25" min="0" /></div>
           </label>
           <label>Per correct answer
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutPerCorrect" step="0.01" min="0" /></div>
           </label>
-          <label>Bonus if ≥85% overall
-            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGoodBonus" step="0.50" min="0" /></div>
+          <label>Bonus at ≥85% accuracy
+            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGoodBonus" step="0.25" min="0" /></div>
           </label>
-          <label>Bonus if ≥95% overall
-            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGreatBonus" step="0.50" min="0" /></div>
+          <label>Bonus at ≥95% accuracy
+            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGreatBonus" step="0.25" min="0" /></div>
           </label>
         </div>
-        <div class="payout-preview" id="payoutPreview">Typical 85% finish lands around $—.</div>
+        <div class="payout-group-label" style="margin-top:14px;">Mock Test Day bonus</div>
+        <div class="payout-grid" style="grid-template-columns:1fr;">
+          <label>Extra for finishing the whole MTD
+            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutMtdBonus" step="0.50" min="0" /></div>
+          </label>
+        </div>
+        <div class="payout-preview" id="payoutPreview">Sample payouts —</div>
       </div>
       <div class="modal-actions">
         <button class="ghost" id="batteryConfigBack">← Back</button>
-        <button class="primary" id="batteryConfigStart">Start the test →</button>
+        <button class="primary" id="batteryConfigStart">Enable Monetized Mode →</button>
       </div>
     </div>
 
@@ -1924,10 +1997,15 @@ const state = {
   monetized: false,
   parentPin: "6969",
   payoutConfig: {
-    base:        5.00,           // $ for finishing the whole battery
-    perCorrect:  0.05,           // $ per correct answer
-    goodBonus:   3.00,           // $ if overall accuracy ≥ 85%
-    greatBonus:  5.00,           // $ if overall accuracy ≥ 95%
+    // Per-test / per-MTD-segment rewards (apply to every individual test AND
+    // to each section within Mock Test Day):
+    testBase:       0.50,        // $ for completing any test (or one MTD section)
+    perCorrect:     0.05,        // $ per correct answer
+    testGoodBonus:  0.50,        // $ bonus if this test/section ≥ 85%
+    testGreatBonus: 1.00,        // $ bonus if this test/section ≥ 95%
+    // Extra reward layered on top of all section payouts when the kid
+    // finishes the whole MTD chain:
+    mtdCompletionBonus: 5.00,
   },
   section: null,
   // Practice
@@ -2187,8 +2265,17 @@ function loadProgress() {
     if (typeof data.parentPin === "string" && data.parentPin.length >= 4) state.parentPin = data.parentPin;
     if (typeof data.monetized === "boolean") state.monetized = data.monetized;
     if (data.payoutConfig && typeof data.payoutConfig === "object") {
-      for (const k of ["base","perCorrect","goodBonus","greatBonus"]) {
-        const v = Number(data.payoutConfig[k]);
+      const dp = data.payoutConfig;
+      // Migrate old field names → new
+      //   old `base`       (was MTD-completion-only) → `mtdCompletionBonus`
+      //   old `goodBonus`  (was MTD overall ≥85%)    → `testGoodBonus` (per segment)
+      //   old `greatBonus` (was MTD overall ≥95%)    → `testGreatBonus` (per segment)
+      if (dp.base !== undefined && dp.mtdCompletionBonus === undefined) state.payoutConfig.mtdCompletionBonus = Number(dp.base) || 0;
+      if (dp.goodBonus !== undefined && dp.testGoodBonus === undefined)  state.payoutConfig.testGoodBonus  = Number(dp.goodBonus) || 0;
+      if (dp.greatBonus !== undefined && dp.testGreatBonus === undefined) state.payoutConfig.testGreatBonus = Number(dp.greatBonus) || 0;
+      // Then layer in any explicitly-set new fields
+      for (const k of ["testBase","perCorrect","testGoodBonus","testGreatBonus","mtdCompletionBonus"]) {
+        const v = Number(dp[k]);
         if (Number.isFinite(v) && v >= 0) state.payoutConfig[k] = v;
       }
     }
@@ -2388,8 +2475,28 @@ function getActiveMistakeIds() {
 // ════════════════════════════════════════════════════════════════════════════
 // VIEW ROUTING
 // ════════════════════════════════════════════════════════════════════════════
+// Hash-routable views — these get a URL hash so browser back/forward + sharing
+// work. Transient views (quiz, results, essay views, battery transitions) are
+// excluded since they have no meaningful state to restore from a URL alone.
+const ROUTABLE_VIEWS = {
+  home:     "/",
+  stats:    "/stats",
+  essays:   "/essays",
+  mistakes: "/mistakes",
+};
+const PATH_TO_VIEW = Object.fromEntries(Object.entries(ROUTABLE_VIEWS).map(([k,v]) => [v, k]));
+let suppressHashUpdate = false;  // set true when handling popstate to avoid loops
+
 function showView(name) {
   state.view = name;
+  // Update browser URL for the routable views (home / stats / essays /
+  // mistakes). Doesn't run when this showView was triggered by popstate.
+  if (!suppressHashUpdate && ROUTABLE_VIEWS[name]) {
+    const newHash = "#" + ROUTABLE_VIEWS[name];
+    if (window.location.hash !== newHash) {
+      try { window.history.pushState({view: name}, "", newHash); } catch (_) {}
+    }
+  }
   $("viewHome").classList.toggle("hidden", name !== "home");
   $("viewQuiz").classList.toggle("hidden", name !== "quiz");
   $("viewResults").classList.toggle("hidden", name !== "results");
@@ -2455,6 +2562,9 @@ function renderMonetizedToggle() {
   if (!btn) return;
   btn.textContent = state.monetized ? "💰 Monetized: ON" : "💰 Monetized: OFF";
   btn.classList.toggle("on", state.monetized);
+  // Header badge — visible only when monetized is on
+  const badge = $("monetizedHeaderBadge");
+  if (badge) badge.classList.toggle("hidden", !state.monetized);
 }
 
 // Builds the section cards (and the Mock Test Day card, shown in test mode).
@@ -2482,10 +2592,19 @@ function renderSectionsGrid() {
           ? `1 prompt · ${fmtTime(t.durationSec)}`
           : `${t.questionCount} questions · ${fmtTime(t.durationSec)}`)
       : section.parent;
+    // Payout chip — shows max possible $ for a perfect score on this test
+    // (only when monetized + test mode)
+    let payoutChip = "";
+    if (state.monetized && state.mode === "test" && t) {
+      const qc = section.isEssay ? 0 : t.questionCount;
+      const max = maxTestEarnings(qc);
+      payoutChip = `<div class="payout-chip">💰 up to $${max.toFixed(2)}</div>`;
+    }
     card.innerHTML = `
       <div class="emoji">${sectionEmoji(section.key)}</div>
       <div class="title">${section.name}</div>
       <div class="meta">${metaLine}<br/>${section.description}</div>
+      ${payoutChip}
     `;
     if (available) card.addEventListener("click", () => startSection(section));
     grid.appendChild(card);
@@ -2499,13 +2618,31 @@ function renderSectionsGrid() {
     const card = document.createElement("button");
     card.className = "section-card mock-test-day";
     if (!state.monetized) card.classList.add("disabled-mtd");
+    // Compute the max MTD payout for the chip (sum of perfect-section
+    // payouts across all 5 testable sections + essay base + completion bonus)
+    let mtdPayoutChip = "";
+    if (state.monetized) {
+      const cfg = state.payoutConfig;
+      let maxSum = 0;
+      for (const k of BATTERY_SECTION_ORDER) {
+        if (k === "break") continue;
+        const section = SECTIONS.find(s => s.key === k);
+        const sCfg = testConfigFor(section);
+        if (!sCfg) continue;
+        if (section.isEssay) { maxSum += cfg.testBase; continue; }
+        maxSum += maxTestEarnings(sCfg.questionCount);
+      }
+      maxSum += cfg.mtdCompletionBonus;
+      mtdPayoutChip = `<div class="payout-chip mtd">💰 up to $${maxSum.toFixed(2)}</div>`;
+    }
     const subLine = state.monetized
-      ? `All sections + earn money when you finish`
+      ? `All sections + MTD bonus when you finish`
       : `🔒 Turn on Monetized Mode to unlock`;
     card.innerHTML = `
       <div class="emoji">💰</div>
       <div class="title">Mock Test Day</div>
       <div class="meta">~${mins} min · ${totalQ} questions + essay<br/>${subLine}</div>
+      ${mtdPayoutChip}
     `;
     card.addEventListener("click", startBattery);
     grid.appendChild(card);
@@ -2754,10 +2891,11 @@ function batteryShowStage(stage) {
   }
   if (stage === "config") {
     // Prefill from current state.payoutConfig
-    $("payoutBase").value        = state.payoutConfig.base.toFixed(2);
+    $("payoutBase").value        = state.payoutConfig.testBase.toFixed(2);
     $("payoutPerCorrect").value  = state.payoutConfig.perCorrect.toFixed(2);
-    $("payoutGoodBonus").value   = state.payoutConfig.goodBonus.toFixed(2);
-    $("payoutGreatBonus").value  = state.payoutConfig.greatBonus.toFixed(2);
+    $("payoutGoodBonus").value   = state.payoutConfig.testGoodBonus.toFixed(2);
+    $("payoutGreatBonus").value  = state.payoutConfig.testGreatBonus.toFixed(2);
+    $("payoutMtdBonus").value    = state.payoutConfig.mtdCompletionBonus.toFixed(2);
     updatePayoutPreview();
     // Submit button label depends on whether we're launching MTD after
     $("batteryConfigStart").textContent = state.monetizedFlowAfterEnable === "start-battery"
@@ -2779,28 +2917,49 @@ function tryUnlockPin() {
 
 function readPayoutConfigFromForm() {
   return {
-    base:        Math.max(0, Number($("payoutBase").value)        || 0),
-    perCorrect:  Math.max(0, Number($("payoutPerCorrect").value)  || 0),
-    goodBonus:   Math.max(0, Number($("payoutGoodBonus").value)   || 0),
-    greatBonus:  Math.max(0, Number($("payoutGreatBonus").value)  || 0),
+    testBase:           Math.max(0, Number($("payoutBase").value)        || 0),
+    perCorrect:         Math.max(0, Number($("payoutPerCorrect").value)  || 0),
+    testGoodBonus:      Math.max(0, Number($("payoutGoodBonus").value)   || 0),
+    testGreatBonus:     Math.max(0, Number($("payoutGreatBonus").value)  || 0),
+    mtdCompletionBonus: Math.max(0, Number($("payoutMtdBonus").value)    || 0),
   };
 }
 
 function updatePayoutPreview() {
-  // Estimate "typical 85% finish" using current form values + the question
-  // count of this grade's volume.
+  // Compute sample payouts using the values currently in the form, against
+  // the active grade level + test volume.
   const cfg = readPayoutConfigFromForm();
-  const totalQ = BATTERY_SECTION_ORDER
-    .filter(k => k !== "break" && k !== "essay")
-    .reduce((sum, k) => sum + (testConfigFor(SECTIONS.find(s => s.key === k))?.questionCount || 0), 0);
-  const at85 = cfg.base + Math.round(totalQ * 0.85) * cfg.perCorrect + cfg.goodBonus;
-  const at95 = cfg.base + Math.round(totalQ * 0.95) * cfg.perCorrect + cfg.goodBonus + cfg.greatBonus;
-  const at100 = cfg.base + totalQ * cfg.perCorrect + cfg.goodBonus + cfg.greatBonus;
+  // For "sample test" — use a typical mid-size section (the verbal_combined
+  // one, since it's the centerpiece). Falls back to 20 q if missing.
+  const verbalSec = SECTIONS.find(s => s.key === "verbal_combined");
+  const sampleQ = (verbalSec && testConfigFor(verbalSec)?.questionCount) || 20;
+  const oneTest = (correct, total) => {
+    if (total === 0) return cfg.testBase;
+    const acc = correct / total;
+    let v = cfg.testBase + correct * cfg.perCorrect;
+    if (acc >= 0.85) v += cfg.testGoodBonus;
+    if (acc >= 0.95) v += cfg.testGreatBonus;
+    return v;
+  };
+  const oneAt85   = oneTest(Math.round(sampleQ * 0.85), sampleQ);
+  const oneAt100  = oneTest(sampleQ, sampleQ);
+  // Full MTD: sum of section payouts at given accuracy + completion bonus
+  const mtdAt = (acc) => {
+    let sum = 0;
+    for (const k of BATTERY_SECTION_ORDER) {
+      if (k === "break") continue;
+      const section = SECTIONS.find(s => s.key === k);
+      const sCfg = testConfigFor(section);
+      if (!sCfg) continue;
+      if (section.isEssay) { sum += cfg.testBase; continue; }
+      const c = Math.round(sCfg.questionCount * acc);
+      sum += oneTest(c, sCfg.questionCount);
+    }
+    return sum + cfg.mtdCompletionBonus;
+  };
   $("payoutPreview").innerHTML =
-    `Sample payouts for this test (${totalQ} timed Qs):<br>` +
-    `&nbsp;&nbsp;85% → <strong>$${at85.toFixed(2)}</strong>` +
-    ` · 95% → <strong>$${at95.toFixed(2)}</strong>` +
-    ` · 100% → <strong>$${at100.toFixed(2)}</strong>`;
+    `<strong>Per test</strong> (${sampleQ}-q sample): 85% → <strong>$${oneAt85.toFixed(2)}</strong> · 100% → <strong>$${oneAt100.toFixed(2)}</strong><br>` +
+    `<strong>Full Mock Test Day</strong>: 85% → <strong>$${mtdAt(0.85).toFixed(2)}</strong> · 95% → <strong>$${mtdAt(0.95).toFixed(2)}</strong> · 100% → <strong>$${mtdAt(1).toFixed(2)}</strong>`;
 }
 
 function confirmStartBattery() {
@@ -2991,25 +3150,53 @@ function renderBatteryBreak() {
   }, 500);
 }
 
-function calculateBatteryReward() {
-  let correct = 0, total = 0;
-  for (const r of state.battery.results) {
-    if (r.isEssay) continue;  // essays don't count toward correct/total here
-    correct += r.correct;
-    total += r.total;
-  }
-  const accuracy = total > 0 ? correct / total : 0;
+// Calculate the dollar earnings for a single test/section. Used both for
+// standalone tests and for each segment within Mock Test Day. Pure function
+// — caller decides whether to actually award based on state.monetized.
+function calculateTestEarnings(correct, total) {
+  if (total === 0) return 0;
   const cfg = state.payoutConfig;
-  const baseReward = cfg.base;
-  const perCorrect = correct * cfg.perCorrect;
-  const goodBonus  = accuracy >= 0.85 ? cfg.goodBonus : 0;
-  const greatBonus = accuracy >= 0.95 ? cfg.greatBonus : 0;
-  const total$ = baseReward + perCorrect + goodBonus + greatBonus;
+  const acc = correct / total;
+  let earned = cfg.testBase + correct * cfg.perCorrect;
+  if (acc >= 0.85) earned += cfg.testGoodBonus;
+  if (acc >= 0.95) earned += cfg.testGreatBonus;
+  return earned;
+}
+
+// Highest payout possible for a test of `total` questions (perfect score).
+function maxTestEarnings(total) {
+  if (total === 0) return state.payoutConfig.testBase;  // essay just gets the base
+  const cfg = state.payoutConfig;
+  return cfg.testBase + total * cfg.perCorrect + cfg.testGoodBonus + cfg.testGreatBonus;
+}
+
+function calculateBatteryReward() {
+  // Sum per-section payouts; add the MTD completion bonus on top.
+  const cfg = state.payoutConfig;
+  let totalCorrect = 0, totalQ = 0, sectionPayouts = 0;
+  const segments = [];
+  for (const r of state.battery.results) {
+    if (r.isEssay) {
+      // Essays don't have a correct count, so they just get the test base.
+      const segEarned = cfg.testBase;
+      sectionPayouts += segEarned;
+      segments.push({ key: r.key, name: r.sectionName, isEssay: true, earned: segEarned });
+    } else {
+      const segEarned = calculateTestEarnings(r.correct, r.total);
+      sectionPayouts += segEarned;
+      totalCorrect += r.correct;
+      totalQ += r.total;
+      segments.push({ key: r.key, name: r.sectionName, correct: r.correct, total: r.total, earned: segEarned });
+    }
+  }
+  const completionBonus = cfg.mtdCompletionBonus;
+  const accuracy = totalQ > 0 ? totalCorrect / totalQ : 0;
   return {
-    correct, total, accuracy,
-    baseReward, perCorrect, goodBonus, greatBonus,
-    perCorrectRate: cfg.perCorrect,
-    total$,
+    correct: totalCorrect, total: totalQ, accuracy,
+    segments,
+    sectionPayouts,
+    completionBonus,
+    total$: sectionPayouts + completionBonus,
   };
 }
 
@@ -3059,15 +3246,28 @@ function renderBatteryFinal() {
   });
   $("batterySectionResults").innerHTML = sectionRows.join("");
 
-  // Reward breakdown
+  // Reward breakdown — one row per section showing its earnings, then the
+  // MTD-completion bonus on top, then the grand total.
   const fmt$ = n => `$${n.toFixed(2)}`;
-  const breakdown = [
-    `<div class="stats-row"><div class="left"><span class="name">Base reward for finishing</span></div><div class="right"><strong>${fmt$(r.baseReward)}</strong></div></div>`,
-    `<div class="stats-row"><div class="left"><span class="name">${r.correct} correct × $0.05</span></div><div class="right"><strong>${fmt$(r.perCorrect)}</strong></div></div>`,
-    `<div class="stats-row ${r.goodBonus > 0 ? '' : 'muted'}"><div class="left"><span class="name">Bonus: 85%+ overall accuracy</span></div><div class="right"><strong>${fmt$(r.goodBonus)}</strong></div></div>`,
-    `<div class="stats-row ${r.greatBonus > 0 ? '' : 'muted'}"><div class="left"><span class="name">Bonus: 95%+ overall accuracy</span></div><div class="right"><strong>${fmt$(r.greatBonus)}</strong></div></div>`,
-    `<div class="stats-row" style="background:rgba(251,191,36,0.15); border:1px solid rgba(251,191,36,0.3);"><div class="left"><span class="name"><strong>Total earned</strong></span></div><div class="right"><strong>${fmt$(r.total$)}</strong></div></div>`,
-  ];
+  const breakdown = [];
+  for (const seg of r.segments) {
+    const emoji = sectionEmoji(seg.key);
+    const detail = seg.isEssay
+      ? `essay base`
+      : `${seg.correct}/${seg.total} · ${Math.round((seg.correct/seg.total)*100)}%`;
+    breakdown.push(
+      `<div class="stats-row"><div class="left"><span class="emoji">${emoji}</span><span class="name">${seg.name} <span style="opacity:.6;font-size:12px">${detail}</span></span></div><div class="right"><strong>${fmt$(seg.earned)}</strong></div></div>`
+    );
+  }
+  breakdown.push(
+    `<div class="stats-row" style="margin-top:6px;border-top:1px solid rgba(255,255,255,.06);"><div class="left"><span class="name">Sections subtotal</span></div><div class="right"><strong>${fmt$(r.sectionPayouts)}</strong></div></div>`
+  );
+  breakdown.push(
+    `<div class="stats-row"><div class="left"><span class="name">🏁 Bonus for finishing the whole MTD</span></div><div class="right"><strong>${fmt$(r.completionBonus)}</strong></div></div>`
+  );
+  breakdown.push(
+    `<div class="stats-row" style="background:rgba(251,191,36,0.15); border:1px solid rgba(251,191,36,0.3);"><div class="left"><span class="name"><strong>Total earned</strong></span></div><div class="right"><strong>${fmt$(r.total$)}</strong></div></div>`
+  );
   $("batteryRewardBreakdown").innerHTML = breakdown.join("");
 
   showView("batteryResults");
@@ -3319,10 +3519,10 @@ function finishTest() {
   state.lastTestPerfect = (pct === 100 && total > 0);
   state.lastTestPersonalBest = isPersonalBest;
   state.lastTestPrevBest = prevBest;
-  // Per-test payout: correct × per-correct rate. Only when Monetized Mode is
-  // ON; no payouts in Practice Mode (this path is only reached in Test Mode
-  // anyway). Bank the amount so parent has a running total.
-  const perTestEarned = state.monetized ? correct * state.payoutConfig.perCorrect : 0;
+  // Per-test payout: testBase + correct × perCorrect + accuracy bonuses.
+  // Only when Monetized Mode is ON (this path is Test Mode only — Practice
+  // never pays out). Same formula applies inside MTD per section.
+  const perTestEarned = state.monetized ? calculateTestEarnings(correct, total) : 0;
   if (perTestEarned > 0) {
     lt.rewardsBanked = (lt.rewardsBanked || 0) + perTestEarned;
     state.lastTestEarned = perTestEarned;
@@ -4070,7 +4270,7 @@ $("monetizedToggleBtn").addEventListener("click", async () => {
   }
 });
 // Live-update the preview as parent edits any payout value
-for (const id of ["payoutBase","payoutPerCorrect","payoutGoodBonus","payoutGreatBonus"]) {
+for (const id of ["payoutBase","payoutPerCorrect","payoutGoodBonus","payoutGreatBonus","payoutMtdBonus"]) {
   document.addEventListener("input", (e) => { if (e.target && e.target.id === id) updatePayoutPreview(); });
 }
 $("batteryModal").addEventListener("click", (e) => {
@@ -4181,11 +4381,60 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+// Browser back/forward — handle the user navigating between routable views
+// via the address bar. For transient views (mid-test, results screens) we
+// fall back to the existing back-button confirm logic.
+window.addEventListener("popstate", (e) => {
+  const path = window.location.hash.replace(/^#/, "") || "/";
+  const targetView = PATH_TO_VIEW[path];
+  if (!targetView) return;  // unknown hash — ignore
+  // If user is mid-test and tries to back out, run the same confirm flow as
+  // the in-app back button. If they decline, push the test URL back so the
+  // address bar stays correct.
+  if (state.mode === "test" && (state.view === "quiz" || state.view === "essay")) {
+    const stayHash = window.location.hash;
+    appConfirm({
+      title: "Leave this test?",
+      body: "Your progress on this section will be lost.",
+      okLabel: "Yes, go home →",
+      cancelLabel: "Stay in the test",
+    }).then(ok => {
+      if (!ok) {
+        // Restore the URL — push the home hash forward
+        try { window.history.pushState(null, "", "#/"); } catch (_) {}
+        return;
+      }
+      stopTimer();
+      stopEssayTimer();
+      suppressHashUpdate = true;
+      renderHome();
+      showView(targetView === "home" ? "home" : "home"); // always home on test exit
+      suppressHashUpdate = false;
+    });
+    return;
+  }
+  // Normal navigation — render the target view
+  suppressHashUpdate = true;
+  if (targetView === "home") { renderHome(); showView("home"); }
+  else if (targetView === "stats") { renderStats(); showView("stats"); }
+  else if (targetView === "essays") { renderEssaysHistory(); showView("essays"); }
+  else if (targetView === "mistakes") { renderMistakesList(); showView("mistakes"); }
+  suppressHashUpdate = false;
+});
+
 // BOOT
 buildRegistries();
 loadProgress();
+// Honor an initial deep-link in the URL hash (e.g. someone bookmarked /stats).
+const initialPath = window.location.hash.replace(/^#/, "") || "/";
+const initialView = PATH_TO_VIEW[initialPath] || "home";
 renderHome();
-showView("home");
+suppressHashUpdate = true;
+if (initialView === "stats")    { renderStats();          showView("stats"); }
+else if (initialView === "essays")   { renderEssaysHistory();   showView("essays"); }
+else if (initialView === "mistakes") { renderMistakesList();    showView("mistakes"); }
+else                                  { showView("home"); }
+suppressHashUpdate = false;
 </script>
 
 </body>
