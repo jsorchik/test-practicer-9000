@@ -1233,6 +1233,36 @@
   .review-item .ans-row { color: var(--muted); margin-bottom: 4px; }
   .review-item .ans-row b { color: var(--text); }
   .review-item .ans-row b.green { color: var(--good); }
+  /* Mistakes-list per-item reveal pattern (active recall) */
+  .review-item .reveal-btn {
+    background: transparent;
+    color: var(--accent);
+    border: 1px dashed rgba(96,165,250,.4);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 8px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .review-item .reveal-btn:hover {
+    background: rgba(96,165,250,.10);
+    border-style: solid;
+  }
+  .review-item .reveal-answer {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background: rgba(34,197,94,.10);
+    border-left: 3px solid var(--good);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .review-item .reveal-answer strong { color: var(--good); }
+  .review-item .mistakes-meta { font-size: 13px; }
   .review-item .section-tag {
     font-size: 12px;
     text-transform: uppercase;
@@ -3879,18 +3909,47 @@ function renderMistakesList() {
     const label = m.mastered ? "Mastered" : `${m.correctStreak} / ${MASTERY_THRESHOLD} to master`;
     const item = document.createElement("div");
     item.className = `review-item ${cls}`;
+    // Look up the entry to surface the correct answer + definition behind
+    // a reveal toggle. Pedagogically: active recall > passive reading, so
+    // the answer stays hidden until the kid commits to peeking.
+    const reg = QUESTION_REGISTRY[id];
+    const entry = reg && reg.entry;
+    let answerHtml = "";
+    if (entry && (m.sectionKey === "verbal_synonyms" || m.sectionKey === "verbal_completion")) {
+      const correct = entry.correct;
+      let def = defLookup(correct);
+      if (!def && m.sectionKey === "verbal_synonyms" && entry.meaning) def = entry.meaning;
+      const defText = def ? ` — ${escapeHtml(def)}` : "";
+      answerHtml = `<button class="reveal-btn" data-reveal-id="${escapeHtml(id)}">👁 Reveal answer</button>
+                    <div class="reveal-answer hidden" id="reveal-${escapeHtml(id)}">
+                      <strong>${escapeHtml(correct)}</strong>${defText}
+                    </div>`;
+    }
     item.innerHTML = `
       <div class="head">
         <div class="qword"><span class="section-tag">${section ? section.parent : ""}</span>${escapeHtml(m.displayLabel).slice(0, 140)}${m.displayLabel.length > 140 ? "…" : ""}</div>
         <div class="mark ${m.mastered ? "good" : "bad"}">${label}</div>
       </div>
       <div class="detail">
-        <span style="opacity:.7">Wrong ${m.timesWrong}× · Right ${m.timesRight}×</span>
-        ${m.mastered ? ` · <button class="ghost" data-unmaster="${escapeHtml(id)}" style="padding:2px 8px;font-size:11px">Reset</button>` : ""}
+        ${answerHtml}
+        <div class="mistakes-meta">
+          <span style="opacity:.7">Wrong ${m.timesWrong}× · Right ${m.timesRight}×</span>
+          ${m.mastered ? ` · <button class="ghost" data-unmaster="${escapeHtml(id)}" style="padding:2px 8px;font-size:11px">Reset</button>` : ""}
+        </div>
       </div>
     `;
     list.appendChild(item);
   }
+  list.querySelectorAll("[data-reveal-id]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.getAttribute("data-reveal-id");
+      const target = list.querySelector(`#reveal-${CSS.escape(id)}`);
+      if (target) {
+        target.classList.toggle("hidden");
+        btn.textContent = target.classList.contains("hidden") ? "👁 Reveal answer" : "🙈 Hide answer";
+      }
+    });
+  });
   list.querySelectorAll("[data-unmaster]").forEach(btn => {
     btn.addEventListener("click", () => {
       const id = btn.getAttribute("data-unmaster");
