@@ -1341,6 +1341,7 @@ const GRADES = {
     tests: {                                                            // half-length (≈50% of full)
       verbal_synonyms:   { questionCount:  9, durationSec:  5 * 60 },
       verbal_completion: { questionCount:  9, durationSec:  5 * 60 },
+      verbal_combined:   { questionCount: 17, durationSec: 10 * 60 },   // half of real ISEE 34/20
       quant_reasoning:   { questionCount: 19, durationSec: 17 * 60 },
       math_achievement:  { questionCount: 15, durationSec: 15 * 60 },
       reading:           { questionCount: 10, durationSec: 10 * 60 },   // 2 passages × 5
@@ -1349,6 +1350,7 @@ const GRADES = {
     testsFull: {                                                        // real ISEE Lower timing
       verbal_synonyms:   { questionCount: 17, durationSec: 10 * 60 },   // 34 q / 20 min split
       verbal_completion: { questionCount: 17, durationSec: 10 * 60 },
+      verbal_combined:   { questionCount: 34, durationSec: 20 * 60 },   // real ISEE Lower verbal
       quant_reasoning:   { questionCount: 38, durationSec: 35 * 60 },
       math_achievement:  { questionCount: 30, durationSec: 30 * 60 },
       reading:           { questionCount: 25, durationSec: 25 * 60 },   // 5 passages × 5
@@ -1369,6 +1371,7 @@ const GRADES = {
     tests: {                                                            // half-length (≈50% of full)
       verbal_synonyms:   { questionCount:  9, durationSec:  5 * 60 },
       verbal_completion: { questionCount: 10, durationSec:  5 * 60 },
+      verbal_combined:   { questionCount: 19, durationSec: 10 * 60 },   // half of interpolated 37/20
       quant_reasoning:   { questionCount: 18, durationSec: 17 * 60 },
       math_achievement:  { questionCount: 19, durationSec: 17 * 60 },
       reading:           { questionCount: 12, durationSec: 15 * 60 },   // 2 passages × 6
@@ -1377,6 +1380,7 @@ const GRADES = {
     testsFull: {                                                        // interpolated Lower→Middle timing
       verbal_synonyms:   { questionCount: 18, durationSec: 10 * 60 },
       verbal_completion: { questionCount: 19, durationSec: 10 * 60 },
+      verbal_combined:   { questionCount: 37, durationSec: 20 * 60 },   // interpolated Lower→Middle
       quant_reasoning:   { questionCount: 37, durationSec: 35 * 60 },
       math_achievement:  { questionCount: 38, durationSec: 35 * 60 },
       reading:           { questionCount: 30, durationSec: 30 * 60 },   // 5 passages × 6
@@ -1397,6 +1401,7 @@ const GRADES = {
     tests: {                                                            // half-length (≈50% of full)
       verbal_synonyms:   { questionCount: 10, durationSec:  5 * 60 },
       verbal_completion: { questionCount: 11, durationSec:  5 * 60 },
+      verbal_combined:   { questionCount: 20, durationSec: 10 * 60 },   // half of real ISEE Middle 40/20
       quant_reasoning:   { questionCount: 19, durationSec: 17 * 60 },
       math_achievement:  { questionCount: 24, durationSec: 20 * 60 },
       reading:           { questionCount: 18, durationSec: 17 * 60 },   // 3 passages × 6
@@ -1405,6 +1410,7 @@ const GRADES = {
     testsFull: {                                                        // real ISEE Middle timing
       verbal_synonyms:   { questionCount: 19, durationSec: 10 * 60 },   // 40 q / 20 min split
       verbal_completion: { questionCount: 21, durationSec: 10 * 60 },
+      verbal_combined:   { questionCount: 40, durationSec: 20 * 60 },   // real ISEE Middle verbal
       quant_reasoning:   { questionCount: 37, durationSec: 35 * 60 },
       math_achievement:  { questionCount: 47, durationSec: 40 * 60 },
       reading:           { questionCount: 36, durationSec: 35 * 60 },   // 6 passages × 6
@@ -1416,6 +1422,7 @@ const GRADES = {
 const SECTIONS = [
   { key: "verbal_synonyms",   name: "Verbal — Synonyms",            parent: "Verbal Reasoning", description: "Pick the word closest in meaning.",                    poolKey: "words" },
   { key: "verbal_completion", name: "Verbal — Sentence Completion", parent: "Verbal Reasoning", description: "Pick the word that best fills the blank.",            poolKey: "sentences" },
+  { key: "verbal_combined",   name: "Verbal Reasoning (real test format)", parent: "Verbal Reasoning", description: "Synonyms and sentence completion mixed in one timed section — matches the actual ISEE.", isCombined: true, combinesPools: ["words","sentences"], combinesSections: ["verbal_synonyms","verbal_completion"] },
   { key: "quant_reasoning",   name: "Quantitative Reasoning",       parent: "Math",             description: "Word problems (and column comparisons at Middle).",  poolKey: "quant" },
   { key: "math_achievement",  name: "Mathematics Achievement",      parent: "Math",             description: "Computation, geometry, and applied problems.",        poolKey: "math" },
   { key: "reading",           name: "Reading Comprehension",        parent: "Reading",          description: "Original passages followed by questions.",            poolKey: "reading", isReading: true },
@@ -1430,6 +1437,7 @@ const STORAGE_KEY = "isee-progress-v5";
 const SECTION_EMOJI = {
   verbal_synonyms:   "🔤",
   verbal_completion: "✏️",
+  verbal_combined:   "🎯",
   quant_reasoning:   "📊",
   math_achievement:  "🔢",
   reading:           "📖",
@@ -1452,6 +1460,9 @@ function buildRegistries() {
     const g = GRADES[gradeKey];
     for (const section of SECTIONS) {
       if (section.isEssay) continue;
+      // Combined sections share their underlying sections' entries; those
+      // are already in the registry under verbal_synonyms / verbal_completion.
+      if (section.isCombined) continue;
       const pool = section.isReading ? g.pools.reading.questions : g.pools[section.poolKey];
       pool.forEach((entry, idx) => {
         const id = entryId(gradeKey, section.key, idx);
@@ -1530,7 +1541,25 @@ function poolFor(section) {
   if (!section) return [];
   if (section.isEssay) return currentGrade().pools.essays;
   if (section.isReading) return currentGrade().pools.reading.questions;
+  if (section.isCombined) return combinedEntries(section).map(c => c.entry);
   return currentGrade().pools[section.poolKey];
+}
+
+// For "combined" sections (e.g. verbal_combined = synonyms + sentence completion
+// mixed in one timed section like the real ISEE), return one row per underlying
+// pool entry annotated with its ORIGINAL sectionKey + idx. This preserves the
+// mistakes-pool keying (mistakes still recorded under verbal_synonyms /
+// verbal_completion) so a combined-section run integrates seamlessly with
+// per-section practice.
+function combinedEntries(section) {
+  const g = currentGrade();
+  const out = [];
+  for (const subKey of section.combinesSections) {
+    const subSection = SECTIONS.find(s => s.key === subKey);
+    const pool = g.pools[subSection.poolKey];
+    pool.forEach((entry, idx) => out.push({ entry, sectionKey: subKey, idx }));
+  }
+  return out;
 }
 function testConfigFor(section) {
   const g = currentGrade();
@@ -2015,9 +2044,12 @@ function renderStats() {
   }
   $("statsBestRows").innerHTML = bestRows.join("");
 
-  // Pool sizes — what's available to draw from
+  // Pool sizes — what's available to draw from. Skip combined sections from
+  // this inventory (their pool is just the union of the listed sub-sections,
+  // so showing it would double-count).
   const poolRows = [];
   for (const section of SECTIONS) {
+    if (section.isCombined) continue;
     const count = section.isEssay ? g.pools.essays.length : poolFor(section).length;
     const noun = section.isEssay ? "prompts"
                : section.isReading ? "questions across passages"
@@ -2057,9 +2089,13 @@ function renderStats() {
 // Math → break → Essay). "break" sentinels in the queue trigger a longer
 // pause screen between sections; otherwise it's a short "ready for next?"
 // transition.
+// Real ISEE flow: Verbal Reasoning (one combined timed section) → Quant
+// Reasoning → break → Reading → Math Achievement → break → Essay. The
+// individual verbal_synonyms / verbal_completion sections stay available
+// from the home grid for focused practice, but the battery uses the
+// combined verbal section to match real test-day pacing.
 const BATTERY_SECTION_ORDER = [
-  "verbal_synonyms",
-  "verbal_completion",
+  "verbal_combined",
   "quant_reasoning",
   "break",
   "reading",
@@ -2341,10 +2377,19 @@ function setGrade(grade) {
 // ════════════════════════════════════════════════════════════════════════════
 // PRACTICE MODE
 // ════════════════════════════════════════════════════════════════════════════
+// Practice pool entries: uniform shape regardless of section type. For normal
+// sections each row is {entry, sectionKey: section.key, idx: positionInPool};
+// for combined sections each row carries its ORIGINAL section's key + idx
+// so mistakes route to verbal_synonyms / verbal_completion correctly.
+function practiceEntriesFor(section) {
+  if (section.isCombined) return combinedEntries(section);
+  return poolFor(section).map((entry, idx) => ({ entry, sectionKey: section.key, idx }));
+}
+
 function startPractice() {
   state.mode = "practice";
-  const pool = poolFor(state.section);
-  state.practicePool = shuffle(pool.map((_, i) => i));
+  const entries = practiceEntriesFor(state.section);
+  state.practicePool = shuffle(entries.map((_, i) => i));
   state.practiceCurrent = null;
   state.practiceAnswered = false;
   state.selectedIdx = -1;
@@ -2358,10 +2403,11 @@ function startPractice() {
 }
 
 function practiceNext() {
-  const pool = poolFor(state.section);
-  if (state.practicePool.length === 0) state.practicePool = shuffle(pool.map((_, i) => i));
-  const idx = state.practicePool.pop();
-  state.practiceCurrent = makeQuestion(pool[idx], state.section.key, idx);
+  const entries = practiceEntriesFor(state.section);
+  if (state.practicePool.length === 0) state.practicePool = shuffle(entries.map((_, i) => i));
+  const localIdx = state.practicePool.pop();
+  const ce = entries[localIdx];
+  state.practiceCurrent = makeQuestion(ce.entry, ce.sectionKey, ce.idx);
   state.practiceAnswered = false;
   state.selectedIdx = -1;
   renderQuiz();
@@ -2380,11 +2426,14 @@ function practiceAnswer(i) {
   } else {
     L().streak = 0;
     recordMistake(q.id, q.sectionKey, q.displayLabel);
-    const pool = poolFor(state.section);
-    const wordIdx = pool.indexOf(q.entry);
-    if (wordIdx >= 0) {
+    // Recycle the missed entry back into the practice queue near the end.
+    // Use practiceEntriesFor so the lookup works for both combined and
+    // normal sections (combined needs sectionKey+idx matching, not just entry).
+    const entries = practiceEntriesFor(state.section);
+    const recycleIdx = entries.findIndex(ce => ce.entry === q.entry && ce.sectionKey === q.sectionKey);
+    if (recycleIdx >= 0) {
       const insertAt = Math.max(0, state.practicePool.length - 3 - Math.floor(Math.random() * 5));
-      state.practicePool.splice(insertAt, 0, wordIdx);
+      state.practicePool.splice(insertAt, 0, recycleIdx);
     }
   }
   saveProgress();
@@ -2413,6 +2462,26 @@ function startTest() {
       if (questions.length >= t.questionCount) break;
     }
     questions = questions.slice(0, t.questionCount);
+  } else if (section.isCombined) {
+    // Combined sections (e.g. real-test-format verbal) — draw proportionally
+    // from each underlying pool, then shuffle them together so synonyms and
+    // sentence completion questions interleave like the real test. Each
+    // question keeps its ORIGINAL sectionKey so mistakes route correctly.
+    const sources = section.combinesSections.map(subKey => {
+      const subSection = SECTIONS.find(s => s.key === subKey);
+      return { subSection, pool: currentGrade().pools[subSection.poolKey] };
+    });
+    const per = Math.floor(t.questionCount / sources.length);
+    const rem = t.questionCount - per * sources.length;
+    questions = [];
+    sources.forEach((src, i) => {
+      const count = per + (i < rem ? 1 : 0);
+      const pickedIdxs = shuffle(src.pool.map((_, idx) => idx)).slice(0, count);
+      for (const idx of pickedIdxs) {
+        questions.push(makeQuestion(src.pool[idx], src.subSection.key, idx));
+      }
+    });
+    questions = shuffle(questions);
   } else {
     const pool = poolFor(section);
     const idxs = shuffle(pool.map((_, i) => i)).slice(0, t.questionCount);
