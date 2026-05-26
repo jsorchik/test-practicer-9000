@@ -215,18 +215,6 @@
   .section-card:disabled { cursor: not-allowed; opacity: .5; }
   .section-card .title { font-size: 17px; font-weight: 700; color: var(--text); }
   .section-card .meta { font-size: 14px; color: var(--muted); line-height: 1.5; }
-  .section-card .badge {
-    align-self: flex-start;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    background: rgba(96,165,250,.15);
-    color: var(--accent);
-  }
-  .section-card .badge.soon { background: rgba(148,163,184,.12); color: var(--muted); }
   .section-card .emoji {
     align-self: flex-start;
     font-size: 26px;
@@ -1073,7 +1061,7 @@
     </span>
     <span class="battery-icon right">✨💰</span>
   </button>
-  <div class="stats-summary" id="statsSummary">
+  <div class="stats-summary">
     <div>
       <span id="gradeBadgeStats">—</span> · Progress: <strong id="lifetimeScore">0 / 0</strong>
       &nbsp;·&nbsp; Best streak: <strong id="lifetimeBest">0</strong>
@@ -1118,7 +1106,7 @@
     </div>
   </div>
 
-  <div class="footer-hint" id="footerHint">
+  <div class="footer-hint">
     <span class="kbd">A</span>–<span class="kbd">D</span> or <span class="kbd">1</span>–<span class="kbd">4</span> select · <span class="kbd">space</span>/<span class="kbd">enter</span> submit/next · <span class="kbd">s</span> skip · <span class="kbd">m</span> master
   </div>
 </div>
@@ -1205,7 +1193,7 @@
 
 <!-- ─── BATTERY RESULTS VIEW (final) ─── -->
 <div class="view-results hidden" id="viewBatteryResults">
-  <div class="celebration-banner" id="batteryFinalBanner">
+  <div class="celebration-banner">
     <div class="ce-title" id="batteryFinalTitle">🎉 Battery complete! 🎉</div>
     <div class="ce-sub" id="batteryFinalSub">—</div>
   </div>
@@ -1414,6 +1402,17 @@ const MASTERY_THRESHOLD = 3;
 // Storage key retained from previous version to preserve user progress across the rebrand.
 const STORAGE_KEY = "isee-progress-v5";
 
+// Section icons — used in section cards, stats page, battery progress, etc.
+const SECTION_EMOJI = {
+  verbal_synonyms:   "🔤",
+  verbal_completion: "✏️",
+  quant_reasoning:   "📊",
+  math_achievement:  "🔢",
+  reading:           "📖",
+  essay:             "📝",
+};
+function sectionEmoji(key) { return SECTION_EMOJI[key] || "•"; }
+
 // ════════════════════════════════════════════════════════════════════════════
 // REGISTRIES — global lookups built at boot for all grades
 // ════════════════════════════════════════════════════════════════════════════
@@ -1473,6 +1472,14 @@ const state = {
     startMs: 0,
     results: [],            // [{key, sectionName, correct, total, time, perfect}]
   },
+  // What the battery transition screen's primary button should do when tapped.
+  // Set by renderBatteryTransition/Break; read by the click handler.
+  batteryButtonIntent: "begin-section", // "begin-section" | "begin-break" | "skip-break"
+  // Snapshots from the most recent finishTest, consumed by renderTestResults
+  // for the celebration banner (perfect / personal best).
+  lastTestPerfect: false,
+  lastTestPersonalBest: false,
+  lastTestPrevBest: 0,
   timerInterval: null,
   // Two-step submit: which option is currently selected (-1 = none)
   selectedIdx: -1,
@@ -1894,14 +1901,6 @@ function renderHome() {
   }
 
   // Sections grid
-  const SECTION_EMOJI = {
-    verbal_synonyms:   "🔤",
-    verbal_completion: "✏️",
-    quant_reasoning:   "📊",
-    math_achievement:  "🔢",
-    reading:           "📖",
-    essay:             "📝",
-  };
   const grid = $("sectionsGrid");
   grid.innerHTML = "";
   for (const section of SECTIONS) {
@@ -1919,7 +1918,7 @@ function renderHome() {
           : `${t.questionCount} questions · ${fmtTime(t.durationSec)}`)
       : section.parent;
     card.innerHTML = `
-      <div class="emoji">${SECTION_EMOJI[section.key] || "•"}</div>
+      <div class="emoji">${sectionEmoji(section.key)}</div>
       <div class="title">${section.name}</div>
       <div class="meta">${metaLine}<br/>${section.description}</div>
     `;
@@ -1947,14 +1946,6 @@ function renderHome() {
 // STATS VIEW
 // ════════════════════════════════════════════════════════════════════════════
 function renderStats() {
-  const SECTION_EMOJI = {
-    verbal_synonyms:   "🔤",
-    verbal_completion: "✏️",
-    quant_reasoning:   "📊",
-    math_achievement:  "🔢",
-    reading:           "📖",
-    essay:             "📝",
-  };
   const lt = L();
   const g  = currentGrade();
   const stats = mistakeStats();
@@ -1993,7 +1984,7 @@ function renderStats() {
     const display = best > 0 ? `${best}%` : "—";
     bestRows.push(`
       <div class="stats-row ${best === 0 ? "muted" : ""}">
-        <div class="left"><span class="emoji">${SECTION_EMOJI[section.key] || "•"}</span><span class="name">${section.name}</span></div>
+        <div class="left"><span class="emoji">${sectionEmoji(section.key)}</span><span class="name">${section.name}</span></div>
         <div class="right"><span class="${cls}">${display}</span></div>
       </div>
     `);
@@ -2009,7 +2000,7 @@ function renderStats() {
                : "questions";
     poolRows.push(`
       <div class="stats-row">
-        <div class="left"><span class="emoji">${SECTION_EMOJI[section.key] || "•"}</span><span class="name">${section.name}</span></div>
+        <div class="left"><span class="emoji">${sectionEmoji(section.key)}</span><span class="name">${section.name}</span></div>
         <div class="right"><strong>${count}</strong> ${noun}</div>
       </div>
     `);
@@ -2173,7 +2164,7 @@ function renderBatteryTransition({ nextIsBreak }) {
   let resIdx = 0;
   for (const key of totalQs) {
     const section = SECTIONS.find(s => s.key === key);
-    const emoji = { verbal_synonyms:"🔤", verbal_completion:"✏️", quant_reasoning:"📊", math_achievement:"🔢", reading:"📖", essay:"📝" }[key] || "•";
+    const emoji = sectionEmoji(key);
     const result = state.battery.results[resIdx];
     if (result && result.key === key) {
       const status = result.isEssay
@@ -2206,7 +2197,7 @@ function renderBatteryBreak() {
   let resIdx = 0;
   const rows = sections.map(key => {
     const section = SECTIONS.find(s => s.key === key);
-    const emoji = { verbal_synonyms:"🔤", verbal_completion:"✏️", quant_reasoning:"📊", math_achievement:"🔢", reading:"📖", essay:"📝" }[key] || "•";
+    const emoji = sectionEmoji(key);
     const result = state.battery.results[resIdx];
     if (result && result.key === key) {
       const status = result.isEssay ? `${result.correct} words` : `${result.correct}/${result.total}`;
@@ -2285,7 +2276,7 @@ function renderBatteryFinal() {
 
   // Per-section breakdown
   const sectionRows = state.battery.results.map(res => {
-    const emoji = { verbal_synonyms:"🔤", verbal_completion:"✏️", quant_reasoning:"📊", math_achievement:"🔢", reading:"📖", essay:"📝" }[res.key] || "•";
+    const emoji = sectionEmoji(res.key);
     if (res.isEssay) {
       return `<div class="stats-row"><div class="left"><span class="emoji">${emoji}</span><span class="name">${res.sectionName}</span></div><div class="right"><strong>${res.correct}</strong> words · ${fmtTime(res.time)}</div></div>`;
     }
