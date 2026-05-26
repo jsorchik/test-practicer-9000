@@ -130,6 +130,45 @@
     margin-bottom: 22px;
     line-height: 1.5;
   }
+  /* ─── Volume toggle (Half / Full test length) ─── */
+  .volume-toggle {
+    display: flex;
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 4px;
+    margin-top: -10px;     /* tuck right under mode-toggle */
+    margin-bottom: 22px;
+    border: 1px solid rgba(255,255,255,.06);
+    gap: 0;
+  }
+  .volume-toggle button {
+    flex: 1;
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    padding: 10px 12px;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    font-family: inherit;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    line-height: 1.2;
+  }
+  .volume-toggle button .sub {
+    font-size: 11px;
+    font-weight: 500;
+    opacity: 0.7;
+  }
+  .volume-toggle button.active {
+    background: var(--panel-2);
+    color: var(--text);
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  }
   .review-panel {
     background: var(--panel);
     border: 1px solid rgba(245,158,11,.3);
@@ -803,6 +842,74 @@
   .stats-row .right .pct { color: var(--good); font-weight: 700; }
   .stats-row .right .pct.dim { color: var(--muted); }
   .stats-row.muted { opacity: 0.55; }
+  /* ─── Modal (battery confirm) ─── */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    z-index: 10000;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+  .modal-card {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 18px;
+    padding: 24px;
+    max-width: 460px;
+    width: 100%;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+    animation: modal-pop 0.22s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes modal-pop {
+    0%   { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .modal-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .modal-body { color: var(--muted); font-size: 15px; line-height: 1.5; }
+  .modal-body p { margin: 0 0 12px; }
+  .modal-checklist {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .modal-checklist li {
+    background: rgba(255,255,255,.05);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 18px;
+  }
+  .modal-actions button {
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 0;
+    font-family: inherit;
+  }
   /* ─── Confetti canvas overlay ─── */
   #confettiCanvas {
     position: fixed;
@@ -939,6 +1046,11 @@
     <button id="modeTest" role="tab">Test Mode</button>
   </div>
   <div class="mode-desc" id="modeDesc"></div>
+
+  <div class="volume-toggle hidden" id="volumeToggle" role="tablist">
+    <button id="volumeHalf" class="active" role="tab">Half length<span class="sub">~10 min sections</span></button>
+    <button id="volumeFull" role="tab">Full length<span class="sub">real ISEE timing</span></button>
+  </div>
 
   <div class="review-panel hidden" id="reviewPanel">
     <div class="info">
@@ -1215,11 +1327,19 @@ const GRADES = {
       essays: LOWER_ESSAY_PROMPTS,
     },
     tests: {
-      verbal_synonyms:   { questionCount:  9, durationSec:  5 * 60 },   // ~half of 17/20min real
+      verbal_synonyms:   { questionCount:  9, durationSec:  5 * 60 },   // ~half of 17/10min real
       verbal_completion: { questionCount:  9, durationSec:  5 * 60 },
       quant_reasoning:   { questionCount: 19, durationSec: 17 * 60 },   // ~half of 38/35min
       math_achievement:  { questionCount: 15, durationSec: 15 * 60 },   // half of 30/30min
       reading:           { questionCount: 10, durationSec: 10 * 60 },   // 2 passages × 5
+      essay:             { questionCount:  1, durationSec: 30 * 60 },
+    },
+    testsFull: {                                                        // real ISEE Lower timing
+      verbal_synonyms:   { questionCount: 17, durationSec: 10 * 60 },   // 34 q / 20 min split
+      verbal_completion: { questionCount: 17, durationSec: 10 * 60 },
+      quant_reasoning:   { questionCount: 38, durationSec: 35 * 60 },
+      math_achievement:  { questionCount: 30, durationSec: 30 * 60 },
+      reading:           { questionCount: 25, durationSec: 25 * 60 },   // 5 passages × 5
       essay:             { questionCount:  1, durationSec: 30 * 60 },
     },
   },
@@ -1242,6 +1362,14 @@ const GRADES = {
       reading:           { questionCount: 12, durationSec: 12 * 60 },   // 2 passages × 6
       essay:             { questionCount:  1, durationSec: 30 * 60 },
     },
+    testsFull: {                                                        // interpolated Lower→Middle timing
+      verbal_synonyms:   { questionCount: 18, durationSec: 10 * 60 },
+      verbal_completion: { questionCount: 19, durationSec: 10 * 60 },
+      quant_reasoning:   { questionCount: 37, durationSec: 35 * 60 },
+      math_achievement:  { questionCount: 38, durationSec: 35 * 60 },
+      reading:           { questionCount: 30, durationSec: 30 * 60 },   // 5 passages × 6
+      essay:             { questionCount:  1, durationSec: 30 * 60 },
+    },
   },
   middle: {
     label: "Middle Level",
@@ -1260,6 +1388,14 @@ const GRADES = {
       quant_reasoning:   { questionCount: 18, durationSec: 17 * 60 },
       math_achievement:  { questionCount: 23, durationSec: 20 * 60 },
       reading:           { questionCount: 12, durationSec: 12 * 60 },
+      essay:             { questionCount:  1, durationSec: 30 * 60 },
+    },
+    testsFull: {                                                        // real ISEE Middle timing
+      verbal_synonyms:   { questionCount: 19, durationSec: 10 * 60 },   // 40 q / 20 min split
+      verbal_completion: { questionCount: 21, durationSec: 10 * 60 },
+      quant_reasoning:   { questionCount: 37, durationSec: 35 * 60 },
+      math_achievement:  { questionCount: 47, durationSec: 40 * 60 },
+      reading:           { questionCount: 36, durationSec: 35 * 60 },   // 6 passages × 6
       essay:             { questionCount:  1, durationSec: 30 * 60 },
     },
   },
@@ -1307,9 +1443,10 @@ function buildRegistries() {
 // STATE
 // ════════════════════════════════════════════════════════════════════════════
 const state = {
-  gradeLevel: "middle",          // "lower" | "middle"
+  gradeLevel: "middle",          // "lower" | "bridge" | "middle"
   view: "home",
   mode: "practice",              // "practice" | "test" | "review"
+  testVolume: "half",            // "half" (shorter practice tests) | "full" (real ISEE timing)
   section: null,
   // Practice
   practicePool: [],
@@ -1364,7 +1501,11 @@ function poolFor(section) {
   if (section.isReading) return currentGrade().pools.reading.questions;
   return currentGrade().pools[section.poolKey];
 }
-function testConfigFor(section) { return currentGrade().tests[section.key]; }
+function testConfigFor(section) {
+  const g = currentGrade();
+  const bucket = state.testVolume === "full" ? (g.testsFull || g.tests) : g.tests;
+  return bucket[section.key];
+}
 
 // ════════════════════════════════════════════════════════════════════════════
 // HELPERS
@@ -1510,6 +1651,7 @@ function loadProgress() {
     if (!raw) return;
     const data = JSON.parse(raw);
     if (data.gradeLevel && GRADES[data.gradeLevel]) state.gradeLevel = data.gradeLevel;
+    if (data.testVolume === "half" || data.testVolume === "full") state.testVolume = data.testVolume;
     if (data.lifetimes) {
       for (const k of Object.keys(state.lifetimes)) {
         if (data.lifetimes[k]) {
@@ -1532,6 +1674,7 @@ function saveProgress() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       gradeLevel: state.gradeLevel,
+      testVolume: state.testVolume,
       lifetimes: state.lifetimes,
     }));
   } catch (_) {}
@@ -1727,9 +1870,15 @@ function renderHome() {
   // Mode toggle
   $("modePractice").classList.toggle("active", state.mode !== "test");
   $("modeTest").classList.toggle("active", state.mode === "test");
+  const volLabel = state.testVolume === "full" ? "full ISEE length" : "half length";
   $("modeDesc").textContent = state.mode === "test"
-    ? `Test mode (${currentGrade().label}): timed section that matches real test pacing. Feedback hidden until the end.`
+    ? `Test mode (${currentGrade().label}, ${volLabel}): timed section, feedback hidden until the end.`
     : `Practice mode (${currentGrade().label}): no timer, instant feedback. Missed questions come back to reinforce learning.`;
+
+  // Volume toggle — only meaningful in Test Mode
+  $("volumeToggle").classList.toggle("hidden", state.mode !== "test");
+  $("volumeHalf").classList.toggle("active", state.testVolume !== "full");
+  $("volumeFull").classList.toggle("active", state.testVolume === "full");
 
   // Review panel
   const stats = mistakeStats();
@@ -1788,10 +1937,10 @@ function renderHome() {
   const batteryMins = batteryTotalMinutes();
   const batteryQs = BATTERY_SECTION_ORDER
     .filter(k => k !== "break" && k !== "essay")
-    .reduce((sum, k) => sum + (currentGrade().tests[k]?.questionCount || 0), 0);
+    .reduce((sum, k) => sum + (testConfigFor(SECTIONS.find(s => s.key === k))?.questionCount || 0), 0);
   $("batteryCTA").classList.toggle("hidden", state.mode !== "test");
   $("batterySub").textContent =
-    `All 6 sections back-to-back · ~${batteryMins} min · ${batteryQs} questions + essay · earn a money reward`;
+    `${state.testVolume === "full" ? "Full ISEE length" : "Half length"} · all 6 sections back-to-back · ~${batteryMins} min · ${batteryQs} questions + essay · earn a money reward`;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -1915,26 +2064,28 @@ function batteryTotalMinutes() {
   for (const key of BATTERY_SECTION_ORDER) {
     if (key === "break") { secs += 5 * 60; continue; }
     const section = SECTIONS.find(s => s.key === key);
-    const cfg = section && currentGrade().tests[key];
+    const cfg = section && testConfigFor(section);
     if (cfg) secs += cfg.durationSec;
   }
   return Math.round(secs / 60);
 }
 
 function startBattery() {
+  // Show the in-app modal. (confirm() was unreliable on some mobile browsers,
+  // and a custom dialog gives us room to show details cleanly.)
   const mins = batteryTotalMinutes();
   const totalQ = BATTERY_SECTION_ORDER
     .filter(k => k !== "break" && k !== "essay")
-    .reduce((sum, k) => sum + (currentGrade().tests[k]?.questionCount || 0), 0);
-  const ok = confirm(
-    `Ready for a full mock test day?\n\n` +
-    `• All sections back-to-back: about ${mins} minutes\n` +
-    `• ${totalQ} timed questions + 1 essay\n` +
-    `• Two short breaks at the natural points\n` +
-    `• You can't quit halfway — this is for real\n\n` +
-    `Finish and you earn a real money reward.\n\nStart now?`
-  );
-  if (!ok) return;
+    .reduce((sum, k) => sum + (testConfigFor(SECTIONS.find(s => s.key === k))?.questionCount || 0), 0);
+  const volLabel = state.testVolume === "full" ? "full ISEE length" : "half length";
+  $("batteryModalIntro").textContent = `${currentGrade().label} · ${volLabel} · all 6 sections back-to-back.`;
+  $("batteryModalTime").textContent = `~${mins} minutes total (including breaks)`;
+  $("batteryModalQs").textContent = `${totalQ} timed questions + 1 essay prompt`;
+  $("batteryModal").classList.remove("hidden");
+}
+
+function confirmStartBattery() {
+  $("batteryModal").classList.add("hidden");
   state.battery.active = true;
   state.battery.queue = buildBatteryQueue();
   state.battery.queueIdx = 0;
@@ -2847,6 +2998,8 @@ $("gradeMiddle").addEventListener("click", () => setGrade("middle"));
 
 $("modePractice").addEventListener("click", () => { state.mode = "practice"; renderHome(); });
 $("modeTest").addEventListener("click", () => { state.mode = "test"; renderHome(); });
+$("volumeHalf").addEventListener("click", () => { state.testVolume = "half"; saveProgress(); renderHome(); });
+$("volumeFull").addEventListener("click", () => { state.testVolume = "full"; saveProgress(); renderHome(); });
 
 $("nextBtn").addEventListener("click", nextOrSubmit);
 $("skipBtn").addEventListener("click", () => { if (state.mode === "test") testSkip(); });
@@ -2865,6 +3018,12 @@ $("viewMistakesBtn").addEventListener("click", () => { renderMistakesList(); sho
 $("viewStatsBtn").addEventListener("click", () => { renderStats(); showView("stats"); });
 $("statsHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
 $("batteryCTA").addEventListener("click", startBattery);
+$("batteryModalCancel").addEventListener("click", () => $("batteryModal").classList.add("hidden"));
+$("batteryModalGo").addEventListener("click", confirmStartBattery);
+$("batteryModal").addEventListener("click", (e) => {
+  // Dismiss when the user taps the backdrop (but not the card itself).
+  if (e.target.id === "batteryModal") $("batteryModal").classList.add("hidden");
+});
 $("batteryNextBtn").addEventListener("click", () => {
   // The button's behavior depends on what screen we just showed, tracked
   // via state.batteryButtonIntent. Three cases:
@@ -2960,6 +3119,27 @@ showView("home");
 
 <canvas id="confettiCanvas"></canvas>
 <div class="streak-toast" id="streakToast">🔥 5 in a row!</div>
+
+<!-- ─── Battery confirm modal ─── -->
+<div class="modal-backdrop hidden" id="batteryModal">
+  <div class="modal-card">
+    <div class="modal-title">🎯 Start Mock Test Day?</div>
+    <div class="modal-body">
+      <p id="batteryModalIntro">Full battery, all sections back-to-back.</p>
+      <ul class="modal-checklist">
+        <li>🕐 <span id="batteryModalTime">~60 minutes</span></li>
+        <li>📝 <span id="batteryModalQs">— questions + 1 essay</span></li>
+        <li>🧘 Two short breaks at the natural points</li>
+        <li>🔒 No quitting halfway — this is for real</li>
+        <li>💰 Finish and earn a real money reward</li>
+      </ul>
+    </div>
+    <div class="modal-actions">
+      <button class="ghost" id="batteryModalCancel">Maybe later</button>
+      <button class="primary" id="batteryModalGo">Start now →</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
