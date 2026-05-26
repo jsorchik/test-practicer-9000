@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Custom Test Practicer 9000</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8E%AF%3C/text%3E%3C/svg%3E">
 <style>
   :root {
     --bg: #0f172a;
@@ -386,6 +387,9 @@
     margin: 8px 0 28px;
     color: #fff;
     text-shadow: 0 2px 10px rgba(96,165,250,.15);
+    /* Display as uppercase but keep the underlying text lowercase so copy/
+       paste gives a normal word a kid can look up in a dictionary. */
+    text-transform: uppercase;
   }
   .sentence {
     font-size: clamp(19px, 2.8vw, 22px);
@@ -521,6 +525,22 @@
   .option.correct .key { background: var(--good); color: #052e16; }
   .option.wrong { background: rgba(239,68,68,.15); border-color: var(--bad); }
   .option.wrong .key { background: var(--bad); color: #450a0a; }
+  .option .option-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    text-align: left;
+  }
+  .option .option-word { font-weight: 600; }
+  .option .option-def {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .option.correct .option-def { color: rgba(187, 247, 208, .85); }
+  .option.wrong .option-def { color: rgba(254, 202, 202, .85); }
   .option:disabled { cursor: default; }
 
   /* Sentence-completion blank: empty by default, fills with the currently
@@ -1114,34 +1134,66 @@
   .review-item .mark.bad { color: var(--bad); }
   .review-item .detail { color: var(--muted); font-size: 15px; line-height: 1.55; }
   .review-item .detail b { color: var(--text); }
-  .review-item .defs-correct {
+  /* Review item — verbal layout (answer blocks + other-choices list) */
+  .review-item .ans-block {
     margin-top: 8px;
-    padding: 8px 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .review-item .ans-block.correct {
     background: rgba(34,197,94,.10);
     border-left: 3px solid var(--good);
-    border-radius: 6px;
-    color: var(--text);
+  }
+  .review-item .ans-block.correct .ans-word strong { color: var(--good); }
+  .review-item .ans-block.your-wrong {
+    background: rgba(239,68,68,.10);
+    border-left: 3px solid var(--bad);
+  }
+  .review-item .ans-block.your-wrong .ans-word strong { color: var(--bad); }
+  .review-item .ans-block .ans-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+  .review-item .ans-block .ans-word { color: var(--text); }
+  .review-item .defs-others {
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,.03);
+    border-radius: 8px;
     font-size: 14px;
   }
-  .review-item .defs-correct strong { color: var(--good); }
-  .review-item .defs-others {
-    margin-top: 6px;
-    font-size: 13px;
-  }
-  .review-item .defs-others summary {
-    cursor: pointer;
-    padding: 4px 0;
+  .review-item .defs-others-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     color: var(--muted);
-    list-style-position: inside;
+    margin-bottom: 4px;
   }
-  .review-item .defs-others summary:hover { color: var(--text); }
   .review-item .defs-others ul {
-    margin: 6px 0 0;
-    padding-left: 22px;
+    margin: 0;
+    padding-left: 20px;
+    color: var(--muted);
+    line-height: 1.55;
+  }
+  .review-item .defs-others ul strong { color: var(--text); }
+  .review-item .explain {
+    margin-top: 8px;
+    font-size: 13px;
     color: var(--muted);
     line-height: 1.5;
   }
-  .review-item .defs-others ul strong { color: var(--text); }
+  .review-item .explain em { color: var(--text); font-style: normal; font-weight: 600; }
+  /* Non-verbal review (math, quant, reading) — keep the original simple style */
+  .review-item .ans-row { color: var(--muted); margin-bottom: 4px; }
+  .review-item .ans-row b { color: var(--text); }
+  .review-item .ans-row b.green { color: var(--good); }
   .review-item .section-tag {
     font-size: 12px;
     text-transform: uppercase;
@@ -1702,7 +1754,7 @@ const GRADES = {
 const SECTIONS = [
   { key: "verbal_synonyms",   name: "Verbal — Synonyms",            parent: "Verbal Reasoning", description: "Pick the word closest in meaning.",                    poolKey: "words" },
   { key: "verbal_completion", name: "Verbal — Sentence Completion", parent: "Verbal Reasoning", description: "Pick the word that best fills the blank.",            poolKey: "sentences" },
-  { key: "verbal_combined",   name: "Verbal Reasoning (real test format)", parent: "Verbal Reasoning", description: "Synonyms and sentence completion mixed together, just like the real test.", isCombined: true, combinesPools: ["words","sentences"], combinesSections: ["verbal_synonyms","verbal_completion"] },
+  { key: "verbal_combined",   name: "Verbal Reasoning",             parent: "Verbal Reasoning", description: "Synonyms and sentence completion mixed together, just like the real test.", isCombined: true, combinesPools: ["words","sentences"], combinesSections: ["verbal_synonyms","verbal_completion"] },
   { key: "quant_reasoning",   name: "Quantitative Reasoning",       parent: "Math",             description: "Math word problems and quantity comparisons.",         poolKey: "quant" },
   { key: "math_achievement",  name: "Mathematics Achievement",      parent: "Math",             description: "Math problems: arithmetic, geometry, and more.",        poolKey: "math" },
   { key: "reading",           name: "Reading Comprehension",        parent: "Reading",          description: "Read a short passage, then answer questions about it.", poolKey: "reading", isReading: true },
@@ -2151,7 +2203,7 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   return {
     id, sectionKey, entry,
     promptHtml: `<div class="prompt">Select the word whose meaning is closest to the word in capital letters.</div>
-                 <div class="word">${escapeHtml(entry.word).toUpperCase()}</div>`,
+                 <div class="word">${escapeHtml(entry.word)}</div>`,
     choices,
     answerIdx: choices.indexOf(entry.correct),
     feedbackHtml: `<b>${entry.word}</b> — ${fmtFractions(entry.meaning)}.`,
@@ -2310,7 +2362,12 @@ function renderHome() {
 function renderSectionsGrid() {
   const grid = $("sectionsGrid");
   grid.innerHTML = "";
+  // The individual verbal_synonyms / verbal_completion sections are still in
+  // SECTIONS (used by the registry + combined section + mistakes pool) but
+  // hidden from the home grid since they're rolled into Verbal Reasoning.
+  const HIDDEN_FROM_GRID = new Set(["verbal_synonyms", "verbal_completion"]);
   for (const section of SECTIONS) {
+    if (HIDDEN_FROM_GRID.has(section.key)) continue;
     const card = document.createElement("button");
     card.className = "section-card";
     const t = testConfigFor(section);
@@ -3300,11 +3357,24 @@ function renderQuiz(picked = -1) {
 
   const optsEl = $("options");
   optsEl.innerHTML = "";
+  const isVerbalQ = q.sectionKey === "verbal_synonyms" || q.sectionKey === "verbal_completion";
   q.choices.forEach((choice, i) => {
     const btn = document.createElement("button");
     btn.className = "option";
     btn.disabled = showFeedback;
-    btn.innerHTML = `<span class="key">${"ABCD"[i]}</span><span>${renderChoiceText(choice)}</span>`;
+    // After submission on verbal questions, surface each choice's
+    // dictionary definition inline on its own button so the kid learns all
+    // four words at once.
+    let inlineDef = "";
+    if (showFeedback && isVerbalQ) {
+      const word = String(choice || "");
+      let def = defLookup(word);
+      if (!def && q.sectionKey === "verbal_synonyms" && i === q.answerIdx) {
+        def = q.entry?.meaning || null;
+      }
+      if (def) inlineDef = `<span class="option-def">${escapeHtml(def)}</span>`;
+    }
+    btn.innerHTML = `<span class="key">${"ABCD"[i]}</span><span class="option-text"><span class="option-word">${renderChoiceText(choice)}</span>${inlineDef}</span>`;
     if (showFeedback) {
       if (i === q.answerIdx) btn.classList.add("correct");
       else if (i === picked) btn.classList.add("wrong");
@@ -3535,42 +3605,113 @@ function renderTestResults() {
     if (a.picked === null) { cls = "skipped"; label = "Skipped"; }
     else if (a.picked !== a.correctIdx) { cls = "wrong"; label = "Wrong"; }
     item.className = `review-item ${cls === "good" ? "" : cls}`;
-    const yourAns = a.picked === null ? "—" : renderChoiceText(a.choices[a.picked]);
-    const correctAns = renderChoiceText(a.choices[a.correctIdx]);
-    item.innerHTML = `
-      <div class="head">
-        <div class="qword">${i + 1}. ${escapeHtml(a.displayLabel).slice(0, 120)}${a.displayLabel.length > 120 ? "…" : ""}</div>
-        <div class="mark ${cls === "good" ? "good" : cls === "wrong" ? "bad" : ""}">${label}</div>
-      </div>
-      <div class="detail">
-        Your answer: <b>${yourAns}</b> · Correct: <b>${correctAns}</b><br/>
-        <span style="opacity:.85">${a.feedbackHtml}</span>
-        ${buildDefinitionsBlock(a)}
-      </div>
-    `;
+    item.innerHTML = renderReviewItem(a, i, cls, label);
     list.appendChild(item);
   });
 }
 
-// For sentence-completion review items, surface the actual dictionary
-// definitions of the correct + (optionally) wrong choices. Helps the kid
-// learn what each word means, not just which one fit the blank.
-function buildDefinitionsBlock(a) {
-  if (a.sectionKey !== "verbal_completion") return "";
+// Build one review item. For verbal sections (synonyms, sentence completion,
+// combined), we show definitions of every choice. For non-verbal sections
+// (math, quant, reading), we keep the simpler "your answer / correct answer
+// / explanation" layout.
+function renderReviewItem(a, i, cls, label) {
+  const isVerbal = a.sectionKey === "verbal_synonyms" || a.sectionKey === "verbal_completion";
+  const head = `
+    <div class="head">
+      <div class="qword">${i + 1}. ${escapeHtml(a.displayLabel).slice(0, 200)}${a.displayLabel.length > 200 ? "…" : ""}</div>
+      <div class="mark ${cls === "good" ? "good" : cls === "wrong" ? "bad" : ""}">${label}</div>
+    </div>`;
+
+  if (!isVerbal) {
+    // Non-verbal: keep the simple your-answer / correct / explanation form
+    const yourAns = a.picked === null ? "—" : renderChoiceText(a.choices[a.picked]);
+    const correctAns = renderChoiceText(a.choices[a.correctIdx]);
+    return head + `
+      <div class="detail">
+        <div class="ans-row">Your answer: <b>${yourAns}</b> · Correct: <b class="green">${correctAns}</b></div>
+        <div class="explain">${a.feedbackHtml}</div>
+      </div>`;
+  }
+
+  // Verbal — definition-rich layout
   const correctWord = String(a.choices[a.correctIdx] || "");
-  const correctDef = defLookup(correctWord);
-  let html = "";
-  if (correctDef) {
-    html += `<div class="defs-correct"><strong>${escapeHtml(correctWord)}</strong> — ${escapeHtml(correctDef)}</div>`;
+  const pickedWord = a.picked !== null ? String(a.choices[a.picked] || "") : null;
+  const correctDef = verbalDefFor(a, a.correctIdx);
+
+  let blocks = "";
+  if (cls === "wrong" && pickedWord !== null) {
+    // Wrong: show "Your answer" THEN "Correct answer" with defs for each
+    const yourDef = verbalDefFor(a, a.picked);
+    blocks += `<div class="ans-block your-wrong">
+      <div class="ans-label">Your answer</div>
+      <div class="ans-word"><strong>${escapeHtml(pickedWord)}</strong>${yourDef ? ` — ${escapeHtml(yourDef)}` : ""}</div>
+    </div>`;
+    blocks += `<div class="ans-block correct">
+      <div class="ans-label">Correct answer</div>
+      <div class="ans-word"><strong>${escapeHtml(correctWord)}</strong>${correctDef ? ` — ${escapeHtml(correctDef)}` : ""}</div>
+    </div>`;
+  } else if (cls === "skipped") {
+    blocks += `<div class="ans-block correct">
+      <div class="ans-label">Correct answer (you skipped)</div>
+      <div class="ans-word"><strong>${escapeHtml(correctWord)}</strong>${correctDef ? ` — ${escapeHtml(correctDef)}` : ""}</div>
+    </div>`;
+  } else {
+    // Correct: just show the correct word with def
+    blocks += `<div class="ans-block correct">
+      <div class="ans-word"><strong>${escapeHtml(correctWord)}</strong>${correctDef ? ` — ${escapeHtml(correctDef)}` : ""}</div>
+    </div>`;
   }
-  const wrongDefs = a.choices
-    .map((c, i) => i !== a.correctIdx ? { word: String(c||""), def: defLookup(c) } : null)
-    .filter(x => x && x.def);
-  if (wrongDefs.length > 0) {
-    const items = wrongDefs.map(d => `<li><strong>${escapeHtml(d.word)}</strong> — ${escapeHtml(d.def)}</li>`).join("");
-    html += `<details class="defs-others"><summary>Other choices (what they mean)</summary><ul>${items}</ul></details>`;
+
+  // Other choices section — always expanded, lists every NON-correct,
+  // NON-your-pick choice with its definition.
+  const otherChoices = a.choices
+    .map((c, idx) => {
+      if (idx === a.correctIdx) return null;
+      if (cls === "wrong" && idx === a.picked) return null;  // already shown above
+      return { word: String(c || ""), def: verbalDefFor(a, idx) };
+    })
+    .filter(Boolean);
+  if (otherChoices.length > 0) {
+    const items = otherChoices.map(d => {
+      return d.def
+        ? `<li><strong>${escapeHtml(d.word)}</strong> — ${escapeHtml(d.def)}</li>`
+        : `<li><strong>${escapeHtml(d.word)}</strong></li>`;
+    }).join("");
+    blocks += `<div class="defs-others">
+      <div class="defs-others-label">Other choices</div>
+      <ul>${items}</ul>
+    </div>`;
   }
-  return html;
+
+  // Optional context explanation for sentence completion (often useful
+  // because it explains the contextual reasoning, not just definitions).
+  let explainHtml = "";
+  if (a.sectionKey === "verbal_completion" && a.feedbackHtml) {
+    // The existing feedbackHtml contains "Correct word: X. <explanation>"
+    // — strip the redundant "Correct word: X." prefix.
+    const stripped = a.feedbackHtml.replace(/^Correct word:[^.]+\.\s*/i, "");
+    if (stripped.trim()) {
+      explainHtml = `<div class="explain"><em>Why:</em> ${stripped}</div>`;
+    }
+  }
+
+  return head + `<div class="detail">${blocks}${explainHtml}</div>`;
+}
+
+// Get the best-available definition for choice index `idx` in answer `a`.
+// For sentence-completion entries: DICTIONARY only.
+// For synonym entries: DICTIONARY first; fall back to the entry's headword
+// `meaning` for the CORRECT choice (since the correct synonym means what the
+// headword means).
+function verbalDefFor(a, idx) {
+  const word = String(a.choices[idx] || "");
+  const fromDict = defLookup(word);
+  if (fromDict) return fromDict;
+  if (a.sectionKey === "verbal_synonyms" && idx === a.correctIdx) {
+    const reg = QUESTION_REGISTRY[a.id];
+    if (reg && reg.entry && reg.entry.meaning) return reg.entry.meaning;
+  }
+  return null;
 }
 
 function renderReviewResults() {
