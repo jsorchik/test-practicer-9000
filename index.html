@@ -3505,7 +3505,8 @@ $("startReviewBtn").addEventListener("click", startReview);
 $("viewMistakesBtn").addEventListener("click", () => { renderMistakesList(); showView("mistakes"); });
 $("viewStatsBtn").addEventListener("click", () => { renderStats(); showView("stats"); });
 $("statsHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
-$("batteryCTA").addEventListener("click", startBattery);
+// (The Mock Test Day card is now dynamically created inside renderSectionsGrid
+//  with its click handler wired there — no static #batteryCTA element exists.)
 $("batteryModalCancel").addEventListener("click", () => $("batteryModal").classList.add("hidden"));
 $("batteryStageIntroNext").addEventListener("click", () => batteryShowStage("pin"));
 $("batteryPinBack").addEventListener("click", () => batteryShowStage("intro"));
