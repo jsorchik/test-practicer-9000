@@ -1156,16 +1156,16 @@
   <div class="mode-toggle" role="tablist">
     <button id="modePractice" class="active" role="tab">
       <span class="mode-label">Practice</span>
-      <button type="button" class="info-icon" data-mode="practice" aria-label="What's Practice mode?">ⓘ</button>
+      <span class="info-icon" role="button" tabindex="0" data-mode="practice" aria-label="What's Practice mode?">ⓘ</span>
     </button>
     <button id="modeTest" role="tab">
       <span class="mode-label">Test</span>
-      <button type="button" class="info-icon" data-mode="test" aria-label="What's Test mode?">ⓘ</button>
+      <span class="info-icon" role="button" tabindex="0" data-mode="test" aria-label="What's Test mode?">ⓘ</span>
     </button>
     <button id="modeReview" role="tab">
       <span class="mode-label">Review</span>
       <span class="mode-badge hidden" id="reviewBadge">0</span>
-      <button type="button" class="info-icon" data-mode="review" aria-label="What's Review mode?">ⓘ</button>
+      <span class="info-icon" role="button" tabindex="0" data-mode="review" aria-label="What's Review mode?">ⓘ</span>
     </button>
   </div>
   <div class="mode-popover hidden" id="modePopover"></div>
@@ -1375,6 +1375,18 @@
 
 <canvas id="confettiCanvas"></canvas>
 <div class="streak-toast" id="streakToast">🔥 5 in a row!</div>
+
+<!-- ─── Generic confirm modal (replaces native confirm() everywhere) ─── -->
+<div class="modal-backdrop hidden" id="confirmModal">
+  <div class="modal-card">
+    <div class="modal-title" id="confirmTitle">Are you sure?</div>
+    <div class="modal-body"><p id="confirmBody">—</p></div>
+    <div class="modal-actions">
+      <button class="ghost" id="confirmCancelBtn">Cancel</button>
+      <button class="primary" id="confirmOkBtn">Yes</button>
+    </div>
+  </div>
+</div>
 
 <!-- ─── Battery confirm modal (3 stages: intro → PIN → config) ─── -->
 <div class="modal-backdrop hidden" id="batteryModal">
@@ -1769,6 +1781,30 @@ function fmtTime(sec) {
 }
 function escapeHtml(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// In-app confirm modal — replaces native confirm() which is unreliable on
+// mobile Safari (silently returns false in some standalone/PWA modes).
+function appConfirm({ title = "Are you sure?", body = "", okLabel = "Yes", cancelLabel = "Cancel", danger = false } = {}) {
+  return new Promise(resolve => {
+    $("confirmTitle").textContent = title;
+    $("confirmBody").textContent = body;
+    $("confirmOkBtn").textContent = okLabel;
+    $("confirmCancelBtn").textContent = cancelLabel;
+    $("confirmModal").classList.remove("hidden");
+    const cleanup = () => {
+      $("confirmModal").classList.add("hidden");
+      $("confirmOkBtn").removeEventListener("click", onOk);
+      $("confirmCancelBtn").removeEventListener("click", onCancel);
+      $("confirmModal").removeEventListener("click", onBackdrop);
+    };
+    const onOk = () => { cleanup(); resolve(true); };
+    const onCancel = () => { cleanup(); resolve(false); };
+    const onBackdrop = (e) => { if (e.target.id === "confirmModal") onCancel(); };
+    $("confirmOkBtn").addEventListener("click", onOk);
+    $("confirmCancelBtn").addEventListener("click", onCancel);
+    $("confirmModal").addEventListener("click", onBackdrop);
+  });
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -3454,13 +3490,14 @@ document.addEventListener("click", (e) => {
 
 $("nextBtn").addEventListener("click", nextOrSubmit);
 $("skipBtn").addEventListener("click", () => { if (state.mode === "test") testSkip(); });
-$("finishBtn").addEventListener("click", () => {
+$("finishBtn").addEventListener("click", async () => {
   if (state.mode !== "test") return;
   const unanswered = state.testAnswers.filter(a => a.picked === null).length;
-  const msg = unanswered > 0
-    ? `Finish test now? ${unanswered} unanswered question${unanswered === 1 ? "" : "s"} will be counted as skipped.`
-    : "Finish test now?";
-  if (confirm(msg)) finishTestEarly();
+  const body = unanswered > 0
+    ? `${unanswered} unanswered question${unanswered === 1 ? "" : "s"} will be counted as skipped.`
+    : "You'll see your score next.";
+  const ok = await appConfirm({ title: "Finish the test now?", body, okLabel: "Finish →" });
+  if (ok) finishTestEarly();
 });
 $("masterBtn").addEventListener("click", () => { if (state.mode === "review") reviewMarkMastered(); });
 
@@ -3513,9 +3550,15 @@ $("batteryDoneBtn").addEventListener("click", () => {
 $("drillFromListBtn").addEventListener("click", startReview);
 $("mistakesHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
 
-$("backBtn").addEventListener("click", () => {
+$("backBtn").addEventListener("click", async () => {
   if (state.mode === "test" && (state.view === "quiz" || state.view === "essay")) {
-    if (!confirm("Leave this timed test? Your progress will be lost.")) return;
+    const ok = await appConfirm({
+      title: "Leave this test?",
+      body: "Your progress on this section will be lost.",
+      okLabel: "Yes, go home →",
+      cancelLabel: "Stay in the test",
+    });
+    if (!ok) return;
   }
   stopTimer();
   stopEssayTimer();
@@ -3530,8 +3573,14 @@ $("retryBtn").addEventListener("click", () => {
   else { renderHome(); showView("home"); }
 });
 $("homeBtn").addEventListener("click", () => { stopTimer(); stopEssayTimer(); renderHome(); showView("home"); });
-$("resetProgress").addEventListener("click", () => {
-  if (!confirm(`Reset all progress for ${currentGrade().label}? (Other grade level is unaffected.) This can't be undone.`)) return;
+$("resetProgress").addEventListener("click", async () => {
+  const ok = await appConfirm({
+    title: `Reset all progress for ${currentGrade().label}?`,
+    body: "Your scores, streaks, and mistakes pool for this level will be wiped. Other grade levels are unaffected. This can't be undone.",
+    okLabel: "Yes, reset",
+    cancelLabel: "Keep my progress",
+  });
+  if (!ok) return;
   state.lifetimes[state.gradeLevel] = { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {} };
   saveProgress();
   renderHome();
@@ -3542,12 +3591,18 @@ $("essayTextarea").addEventListener("input", (e) => {
   state.essay.text = e.target.value;
   updateEssayWordCount();
 });
-$("essayFinishBtn").addEventListener("click", () => {
-  if (state.essay.isTest && !confirm("Finish your essay? You can't keep writing after this.")) return;
+$("essayFinishBtn").addEventListener("click", async () => {
+  if (state.essay.isTest) {
+    const ok = await appConfirm({ title: "Finish your essay?", body: "You can't keep writing after this.", okLabel: "Finish →" });
+    if (!ok) return;
+  }
   finishEssay();
 });
-$("essayNewPromptBtn").addEventListener("click", () => {
-  if (state.essay.text.trim() && !confirm("Switch prompts? You'll lose what you've written.")) return;
+$("essayNewPromptBtn").addEventListener("click", async () => {
+  if (state.essay.text.trim()) {
+    const ok = await appConfirm({ title: "Switch prompts?", body: "You'll lose what you've written so far.", okLabel: "Switch", cancelLabel: "Keep writing" });
+    if (!ok) return;
+  }
   startEssay();
 });
 
