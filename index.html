@@ -1139,8 +1139,8 @@
   <button class="battery-cta" id="batteryCTA">
     <span class="battery-icon">💰✨</span>
     <span class="battery-text">
-      <span class="title">Mock Test Day — Full Battery</span>
-      <span class="sub" id="batterySub">All sections back-to-back · earn a money reward</span>
+      <span class="title">Mock Test Day</span>
+      <span class="sub" id="batterySub">All sections in a row · earn a money reward</span>
     </span>
     <span class="battery-icon right">✨💰</span>
   </button>
@@ -1269,7 +1269,7 @@
     <button class="primary" id="batteryNextBtn">Begin next section →</button>
   </div>
   <div class="stats-section">
-    <h3>Battery progress</h3>
+    <h3>Your progress</h3>
     <div class="stats-rows" id="batteryProgressRows"></div>
   </div>
 </div>
@@ -1342,13 +1342,13 @@
     <div id="batteryStageIntro">
       <div class="modal-title">🎯 Start Mock Test Day?</div>
       <div class="modal-body">
-        <p id="batteryModalIntro">Full battery, all sections back-to-back.</p>
+        <p id="batteryModalIntro">All sections in a row, just like the real test.</p>
         <ul class="modal-checklist">
           <li>🕐 <span id="batteryModalTime">~60 minutes</span></li>
           <li>📝 <span id="batteryModalQs">— questions + 1 essay</span></li>
-          <li>🧘 Two short breaks at the natural points</li>
-          <li>🔒 No quitting halfway — this is for real</li>
-          <li>💰 Real money reward — parent unlocks below</li>
+          <li>🧘 Two short breaks built in</li>
+          <li>🔒 Once you start, you finish — no quitting</li>
+          <li>💰 Real money reward at the end</li>
         </ul>
       </div>
       <div class="modal-actions">
@@ -1375,7 +1375,7 @@
     <div id="batteryStageConfig" class="hidden">
       <div class="modal-title">💰 Set the payout</div>
       <div class="modal-body">
-        <p>These rules apply to this battery. Prefilled with the last values you set.</p>
+        <p>These rules apply to this test. Prefilled with your last values — adjust if you like.</p>
         <div class="payout-grid">
           <label>Base reward for finishing
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutBase" step="0.50" min="0" /></div>
@@ -1551,11 +1551,11 @@ const GRADES = {
 const SECTIONS = [
   { key: "verbal_synonyms",   name: "Verbal — Synonyms",            parent: "Verbal Reasoning", description: "Pick the word closest in meaning.",                    poolKey: "words" },
   { key: "verbal_completion", name: "Verbal — Sentence Completion", parent: "Verbal Reasoning", description: "Pick the word that best fills the blank.",            poolKey: "sentences" },
-  { key: "verbal_combined",   name: "Verbal Reasoning (real test format)", parent: "Verbal Reasoning", description: "Synonyms and sentence completion mixed in one timed section — matches the actual ISEE.", isCombined: true, combinesPools: ["words","sentences"], combinesSections: ["verbal_synonyms","verbal_completion"] },
-  { key: "quant_reasoning",   name: "Quantitative Reasoning",       parent: "Math",             description: "Word problems (and column comparisons at Middle).",  poolKey: "quant" },
-  { key: "math_achievement",  name: "Mathematics Achievement",      parent: "Math",             description: "Computation, geometry, and applied problems.",        poolKey: "math" },
-  { key: "reading",           name: "Reading Comprehension",        parent: "Reading",          description: "Original passages followed by questions.",            poolKey: "reading", isReading: true },
-  { key: "essay",             name: "Essay",                        parent: "Writing",          description: "One prompt, 30 minutes. Not scored, sent to schools.", poolKey: "essays",  isEssay: true },
+  { key: "verbal_combined",   name: "Verbal Reasoning (real test format)", parent: "Verbal Reasoning", description: "Synonyms and sentence completion mixed together, just like the real test.", isCombined: true, combinesPools: ["words","sentences"], combinesSections: ["verbal_synonyms","verbal_completion"] },
+  { key: "quant_reasoning",   name: "Quantitative Reasoning",       parent: "Math",             description: "Math word problems and quantity comparisons.",         poolKey: "quant" },
+  { key: "math_achievement",  name: "Mathematics Achievement",      parent: "Math",             description: "Math problems: arithmetic, geometry, and more.",        poolKey: "math" },
+  { key: "reading",           name: "Reading Comprehension",        parent: "Reading",          description: "Read a short passage, then answer questions about it.", poolKey: "reading", isReading: true },
+  { key: "essay",             name: "Essay",                        parent: "Writing",          description: "Write a thoughtful response to one prompt. 30 minutes.", poolKey: "essays",  isEssay: true },
 ];
 
 const MASTERY_THRESHOLD = 3;
@@ -2079,10 +2079,9 @@ function renderHome() {
   // Mode toggle
   $("modePractice").classList.toggle("active", state.mode !== "test");
   $("modeTest").classList.toggle("active", state.mode === "test");
-  const volLabel = state.testVolume === "full" ? "full ISEE length" : "half length";
   $("modeDesc").textContent = state.mode === "test"
-    ? `Test mode (${currentGrade().label}, ${volLabel}): timed section, feedback hidden until the end.`
-    : `Practice mode (${currentGrade().label}): no timer, instant feedback. Missed questions come back to reinforce learning.`;
+    ? `Timed sections like the real test. You'll see your score at the end.`
+    : `No timer. Each answer is checked as you go, and missed questions come back so you can master them.`;
 
   // Volume toggle — only meaningful in Test Mode
   $("volumeToggle").classList.toggle("hidden", state.mode !== "test");
@@ -2141,7 +2140,7 @@ function renderHome() {
     .reduce((sum, k) => sum + (testConfigFor(SECTIONS.find(s => s.key === k))?.questionCount || 0), 0);
   $("batteryCTA").classList.toggle("hidden", state.mode !== "test");
   $("batterySub").textContent =
-    `${state.testVolume === "full" ? "Full ISEE length" : "Half length"} · all 6 sections back-to-back · ~${batteryMins} min · ${batteryQs} questions + essay · earn a money reward`;
+    `~${batteryMins} min · ${batteryQs} questions + 1 essay · ${state.testVolume === "full" ? "full ISEE length" : "half length"} · earn money when you finish`;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -2277,7 +2276,7 @@ function startBattery() {
     .filter(k => k !== "break" && k !== "essay")
     .reduce((sum, k) => sum + (testConfigFor(SECTIONS.find(s => s.key === k))?.questionCount || 0), 0);
   const volLabel = state.testVolume === "full" ? "full ISEE length" : "half length";
-  $("batteryModalIntro").textContent = `${currentGrade().label} · ${volLabel} · all sections back-to-back.`;
+  $("batteryModalIntro").textContent = `${currentGrade().label} · ${volLabel}`;
   $("batteryModalTime").textContent = `~${mins} minutes total (including breaks)`;
   $("batteryModalQs").textContent = `${totalQ} timed questions + 1 essay prompt`;
   batteryShowStage("intro");
@@ -2334,7 +2333,7 @@ function updatePayoutPreview() {
   const at95 = cfg.base + Math.round(totalQ * 0.95) * cfg.perCorrect + cfg.goodBonus + cfg.greatBonus;
   const at100 = cfg.base + totalQ * cfg.perCorrect + cfg.goodBonus + cfg.greatBonus;
   $("payoutPreview").innerHTML =
-    `Sample payouts on this battery (${totalQ} timed Qs):<br>` +
+    `Sample payouts for this test (${totalQ} timed Qs):<br>` +
     `&nbsp;&nbsp;85% → <strong>$${at85.toFixed(2)}</strong>` +
     ` · 95% → <strong>$${at95.toFixed(2)}</strong>` +
     ` · 100% → <strong>$${at100.toFixed(2)}</strong>`;
@@ -2368,7 +2367,7 @@ function batteryBankedChipHTML() {
   const banked = batteryRunningBanked();
   const bonusLine = (state.payoutConfig.goodBonus > 0 || state.payoutConfig.greatBonus > 0)
     ? `<span class="lock">+ up to $${(state.payoutConfig.goodBonus + state.payoutConfig.greatBonus).toFixed(2)} in end-of-test bonuses</span>`
-    : `<span class="lock">claim when the whole battery is done</span>`;
+    : `<span class="lock">paid out when you finish the whole test</span>`;
   return `<div class="banked-chip">💰 Banked so far: <span class="amt">$${banked.toFixed(2)}</span> ${bonusLine}</div>`;
 }
 
@@ -2554,8 +2553,8 @@ function renderBatteryFinal() {
     $("batteryFinalSub").textContent = "You earned a bonus on top of the base reward.";
     fireConfetti({ intensity: 1.0, durationMs: 2400 });
   } else {
-    $("batteryFinalTitle").textContent = `🎉 Battery complete! 🎉`;
-    $("batteryFinalSub").textContent = `Solid effort — ${pct}% accuracy across ${r.total} questions.`;
+    $("batteryFinalTitle").textContent = `🎉 You did it! 🎉`;
+    $("batteryFinalSub").textContent = `Solid effort — ${pct}% across ${r.total} questions.`;
     fireConfetti({ intensity: 0.7, durationMs: 1800 });
   }
 
