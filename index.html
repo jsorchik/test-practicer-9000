@@ -898,6 +898,89 @@
     border: 0;
     font-family: inherit;
   }
+  /* ─── PIN entry ─── */
+  .pin-input {
+    width: 100%;
+    margin: 10px 0 0;
+    padding: 14px 16px;
+    font-size: 28px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: 8px;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.05);
+    color: var(--text);
+    font-family: inherit;
+  }
+  .pin-input:focus { outline: none; border-color: var(--accent); }
+  .pin-error { color: var(--bad); font-size: 14px; margin-top: 10px; font-weight: 600; }
+  /* ─── Payout config grid ─── */
+  .payout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .payout-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .dollar-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .dollar-wrap span {
+    position: absolute;
+    left: 10px;
+    color: var(--muted);
+    font-weight: 700;
+    pointer-events: none;
+  }
+  .dollar-wrap input {
+    width: 100%;
+    padding: 10px 10px 10px 24px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.05);
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+  }
+  .dollar-wrap input:focus { outline: none; border-color: var(--accent); }
+  .payout-preview {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(251,191,36,0.12);
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--text);
+  }
+  @media (max-width: 480px) {
+    .payout-grid { grid-template-columns: 1fr; }
+  }
+  /* ─── Banked-so-far chip on battery transition screens ─── */
+  .banked-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 10px 16px;
+    background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(249,115,22,0.18));
+    border: 1px solid rgba(251,191,36,0.4);
+    border-radius: 999px;
+    font-size: 15px;
+    color: var(--text);
+  }
+  .banked-chip .amt { font-weight: 800; color: #fbbf24; font-size: 18px; }
+  .banked-chip .lock { opacity: 0.7; font-size: 13px; }
   /* ─── Confetti canvas overlay ─── */
   #confettiCanvas {
     position: fixed;
@@ -1251,24 +1334,70 @@
 <canvas id="confettiCanvas"></canvas>
 <div class="streak-toast" id="streakToast">🔥 5 in a row!</div>
 
-<!-- ─── Battery confirm modal ─── -->
+<!-- ─── Battery confirm modal (3 stages: intro → PIN → config) ─── -->
 <div class="modal-backdrop hidden" id="batteryModal">
   <div class="modal-card">
-    <div class="modal-title">🎯 Start Mock Test Day?</div>
-    <div class="modal-body">
-      <p id="batteryModalIntro">Full battery, all sections back-to-back.</p>
-      <ul class="modal-checklist">
-        <li>🕐 <span id="batteryModalTime">~60 minutes</span></li>
-        <li>📝 <span id="batteryModalQs">— questions + 1 essay</span></li>
-        <li>🧘 Two short breaks at the natural points</li>
-        <li>🔒 No quitting halfway — this is for real</li>
-        <li>💰 Finish and earn a real money reward</li>
-      </ul>
+
+    <!-- Stage 1: intro (kid-facing) -->
+    <div id="batteryStageIntro">
+      <div class="modal-title">🎯 Start Mock Test Day?</div>
+      <div class="modal-body">
+        <p id="batteryModalIntro">Full battery, all sections back-to-back.</p>
+        <ul class="modal-checklist">
+          <li>🕐 <span id="batteryModalTime">~60 minutes</span></li>
+          <li>📝 <span id="batteryModalQs">— questions + 1 essay</span></li>
+          <li>🧘 Two short breaks at the natural points</li>
+          <li>🔒 No quitting halfway — this is for real</li>
+          <li>💰 Real money reward — parent unlocks below</li>
+        </ul>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost" id="batteryModalCancel">Maybe later</button>
+        <button class="primary" id="batteryStageIntroNext">Parent: enter PIN →</button>
+      </div>
     </div>
-    <div class="modal-actions">
-      <button class="ghost" id="batteryModalCancel">Maybe later</button>
-      <button class="primary" id="batteryModalGo">Start now →</button>
+
+    <!-- Stage 2: PIN entry -->
+    <div id="batteryStagePin" class="hidden">
+      <div class="modal-title">🔒 Parent PIN</div>
+      <div class="modal-body">
+        <p>Enter the parent PIN to set the payout and start the test.</p>
+        <input type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="12" id="batteryPinInput" class="pin-input" placeholder="• • • •" />
+        <div id="batteryPinError" class="pin-error hidden">That's not the right PIN. Try again.</div>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost" id="batteryPinBack">← Back</button>
+        <button class="primary" id="batteryPinSubmit">Unlock →</button>
+      </div>
     </div>
+
+    <!-- Stage 3: payout config -->
+    <div id="batteryStageConfig" class="hidden">
+      <div class="modal-title">💰 Set the payout</div>
+      <div class="modal-body">
+        <p>These rules apply to this battery. Prefilled with the last values you set.</p>
+        <div class="payout-grid">
+          <label>Base reward for finishing
+            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutBase" step="0.50" min="0" /></div>
+          </label>
+          <label>Per correct answer
+            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutPerCorrect" step="0.01" min="0" /></div>
+          </label>
+          <label>Bonus if ≥85% overall
+            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGoodBonus" step="0.50" min="0" /></div>
+          </label>
+          <label>Bonus if ≥95% overall
+            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGreatBonus" step="0.50" min="0" /></div>
+          </label>
+        </div>
+        <div class="payout-preview" id="payoutPreview">Typical 85% finish lands around $—.</div>
+      </div>
+      <div class="modal-actions">
+        <button class="ghost" id="batteryConfigBack">← Back</button>
+        <button class="primary" id="batteryConfigStart">Start the test →</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1481,6 +1610,17 @@ const state = {
   view: "home",
   mode: "practice",              // "practice" | "test" | "review"
   testVolume: "half",            // "half" (shorter practice tests) | "full" (real ISEE timing)
+  // Parent-controlled gate for Mock Test Day. PIN persists in localStorage;
+  // default 6969. Payout config is per-battery; parent reviews + can tweak
+  // in the unlock modal each time they start a battery. Defaults below match
+  // the formula we've been shipping with.
+  parentPin: "6969",
+  payoutConfig: {
+    base:        5.00,           // $ for finishing the whole battery
+    perCorrect:  0.05,           // $ per correct answer
+    goodBonus:   3.00,           // $ if overall accuracy ≥ 85%
+    greatBonus:  5.00,           // $ if overall accuracy ≥ 95%
+  },
   section: null,
   // Practice
   practicePool: [],
@@ -1712,6 +1852,13 @@ function loadProgress() {
     const data = JSON.parse(raw);
     if (data.gradeLevel && GRADES[data.gradeLevel]) state.gradeLevel = data.gradeLevel;
     if (data.testVolume === "half" || data.testVolume === "full") state.testVolume = data.testVolume;
+    if (typeof data.parentPin === "string" && data.parentPin.length >= 4) state.parentPin = data.parentPin;
+    if (data.payoutConfig && typeof data.payoutConfig === "object") {
+      for (const k of ["base","perCorrect","goodBonus","greatBonus"]) {
+        const v = Number(data.payoutConfig[k]);
+        if (Number.isFinite(v) && v >= 0) state.payoutConfig[k] = v;
+      }
+    }
     if (data.lifetimes) {
       for (const k of Object.keys(state.lifetimes)) {
         if (data.lifetimes[k]) {
@@ -1735,6 +1882,8 @@ function saveProgress() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       gradeLevel: state.gradeLevel,
       testVolume: state.testVolume,
+      parentPin: state.parentPin,
+      payoutConfig: state.payoutConfig,
       lifetimes: state.lifetimes,
     }));
   } catch (_) {}
@@ -2122,20 +2271,79 @@ function batteryTotalMinutes() {
 }
 
 function startBattery() {
-  // Show the in-app modal. (confirm() was unreliable on some mobile browsers,
-  // and a custom dialog gives us room to show details cleanly.)
+  // Opens the multi-stage parent-gated modal: intro → PIN → configure → start.
   const mins = batteryTotalMinutes();
   const totalQ = BATTERY_SECTION_ORDER
     .filter(k => k !== "break" && k !== "essay")
     .reduce((sum, k) => sum + (testConfigFor(SECTIONS.find(s => s.key === k))?.questionCount || 0), 0);
   const volLabel = state.testVolume === "full" ? "full ISEE length" : "half length";
-  $("batteryModalIntro").textContent = `${currentGrade().label} · ${volLabel} · all 6 sections back-to-back.`;
+  $("batteryModalIntro").textContent = `${currentGrade().label} · ${volLabel} · all sections back-to-back.`;
   $("batteryModalTime").textContent = `~${mins} minutes total (including breaks)`;
   $("batteryModalQs").textContent = `${totalQ} timed questions + 1 essay prompt`;
+  batteryShowStage("intro");
   $("batteryModal").classList.remove("hidden");
 }
 
+function batteryShowStage(stage) {
+  $("batteryStageIntro").classList.toggle("hidden", stage !== "intro");
+  $("batteryStagePin").classList.toggle("hidden", stage !== "pin");
+  $("batteryStageConfig").classList.toggle("hidden", stage !== "config");
+  if (stage === "pin") {
+    $("batteryPinInput").value = "";
+    $("batteryPinError").classList.add("hidden");
+    setTimeout(() => $("batteryPinInput").focus(), 50);
+  }
+  if (stage === "config") {
+    // Prefill from current state.payoutConfig
+    $("payoutBase").value        = state.payoutConfig.base.toFixed(2);
+    $("payoutPerCorrect").value  = state.payoutConfig.perCorrect.toFixed(2);
+    $("payoutGoodBonus").value   = state.payoutConfig.goodBonus.toFixed(2);
+    $("payoutGreatBonus").value  = state.payoutConfig.greatBonus.toFixed(2);
+    updatePayoutPreview();
+  }
+}
+
+function tryUnlockPin() {
+  const entered = $("batteryPinInput").value.trim();
+  if (entered === state.parentPin) {
+    batteryShowStage("config");
+  } else {
+    $("batteryPinError").classList.remove("hidden");
+    $("batteryPinInput").value = "";
+    $("batteryPinInput").focus();
+  }
+}
+
+function readPayoutConfigFromForm() {
+  return {
+    base:        Math.max(0, Number($("payoutBase").value)        || 0),
+    perCorrect:  Math.max(0, Number($("payoutPerCorrect").value)  || 0),
+    goodBonus:   Math.max(0, Number($("payoutGoodBonus").value)   || 0),
+    greatBonus:  Math.max(0, Number($("payoutGreatBonus").value)  || 0),
+  };
+}
+
+function updatePayoutPreview() {
+  // Estimate "typical 85% finish" using current form values + the question
+  // count of this grade's volume.
+  const cfg = readPayoutConfigFromForm();
+  const totalQ = BATTERY_SECTION_ORDER
+    .filter(k => k !== "break" && k !== "essay")
+    .reduce((sum, k) => sum + (testConfigFor(SECTIONS.find(s => s.key === k))?.questionCount || 0), 0);
+  const at85 = cfg.base + Math.round(totalQ * 0.85) * cfg.perCorrect + cfg.goodBonus;
+  const at95 = cfg.base + Math.round(totalQ * 0.95) * cfg.perCorrect + cfg.goodBonus + cfg.greatBonus;
+  const at100 = cfg.base + totalQ * cfg.perCorrect + cfg.goodBonus + cfg.greatBonus;
+  $("payoutPreview").innerHTML =
+    `Sample payouts on this battery (${totalQ} timed Qs):<br>` +
+    `&nbsp;&nbsp;85% → <strong>$${at85.toFixed(2)}</strong>` +
+    ` · 95% → <strong>$${at95.toFixed(2)}</strong>` +
+    ` · 100% → <strong>$${at100.toFixed(2)}</strong>`;
+}
+
 function confirmStartBattery() {
+  // Save the parent's payout settings (persists across batteries).
+  state.payoutConfig = readPayoutConfigFromForm();
+  saveProgress();
   $("batteryModal").classList.add("hidden");
   state.battery.active = true;
   state.battery.queue = buildBatteryQueue();
@@ -2144,6 +2352,24 @@ function confirmStartBattery() {
   state.battery.results = [];
   state.mode = "test";  // each section runs in test mode
   batteryRunNext();
+}
+
+// Running banked = base + per-correct portion only. Bonuses depend on FINAL
+// overall accuracy, so we surface them as "still possible" rather than banked.
+function batteryRunningBanked() {
+  let correct = 0;
+  for (const r of state.battery.results) {
+    if (r.isEssay) continue;
+    correct += r.correct;
+  }
+  return state.payoutConfig.base + (correct * state.payoutConfig.perCorrect);
+}
+function batteryBankedChipHTML() {
+  const banked = batteryRunningBanked();
+  const bonusLine = (state.payoutConfig.goodBonus > 0 || state.payoutConfig.greatBonus > 0)
+    ? `<span class="lock">+ up to $${(state.payoutConfig.goodBonus + state.payoutConfig.greatBonus).toFixed(2)} in end-of-test bonuses</span>`
+    : `<span class="lock">claim when the whole battery is done</span>`;
+  return `<div class="banked-chip">💰 Banked so far: <span class="amt">$${banked.toFixed(2)}</span> ${bonusLine}</div>`;
 }
 
 function batteryRunNext() {
@@ -2208,13 +2434,15 @@ function renderBatteryTransition({ nextIsBreak }) {
   if (lastResult.isEssay) {
     $("batteryTransTitle").textContent = `✍️ ${lastResult.correct} words written`;
     $("batteryTransSub").textContent = `${fmtTime(lastResult.time)} on the essay`;
-    $("batteryTransRow").innerHTML = '';
+    $("batteryTransRow").innerHTML = batteryBankedChipHTML();
   } else {
     const pct = lastResult.total > 0 ? Math.round((lastResult.correct / lastResult.total) * 100) : 0;
     $("batteryTransTitle").textContent = `${lastResult.correct} / ${lastResult.total}  (${pct}%)`;
     $("batteryTransTitle").className = "big " + (pct >= 80 ? "good" : pct >= 60 ? "ok" : "bad");
     $("batteryTransSub").textContent = `${lastResult.sectionName} · ${fmtTime(lastResult.time)} used`;
-    $("batteryTransRow").innerHTML = `<div><strong>${lastResult.correct}</strong>correct</div><div><strong>${lastResult.total - lastResult.correct}</strong>missed</div>`;
+    $("batteryTransRow").innerHTML =
+      `<div><strong>${lastResult.correct}</strong>correct</div><div><strong>${lastResult.total - lastResult.correct}</strong>missed</div>` +
+      batteryBankedChipHTML();
   }
   $("batteryNextBtn").textContent = nextIsBreak ? "Start 5-min break →" : "Begin next section →";
   state.batteryButtonIntent = nextIsBreak ? "begin-break" : "begin-section";
@@ -2248,7 +2476,9 @@ function renderBatteryBreak() {
   $("batteryTransTitle").textContent = "🧘 Take a breath";
   $("batteryTransTitle").className = "big";
   $("batteryTransSub").textContent = "5-minute break — stretch, sip water, look out a window. The next section starts when you tap below.";
-  $("batteryTransRow").innerHTML = `<div><strong id="breakCountdown">5:00</strong>break time remaining</div>`;
+  $("batteryTransRow").innerHTML =
+    `<div><strong id="breakCountdown">5:00</strong>break time remaining</div>` +
+    batteryBankedChipHTML();
   $("batteryNextBtn").textContent = "Skip break and continue →";
   state.batteryButtonIntent = "skip-break";
   // Reuse the progress section
@@ -2292,14 +2522,16 @@ function calculateBatteryReward() {
     total += r.total;
   }
   const accuracy = total > 0 ? correct / total : 0;
-  const baseReward      = 5.00;
-  const perCorrect      = correct * 0.05;
-  const goodBonus       = accuracy >= 0.85 ? 3.00 : 0;
-  const greatBonus      = accuracy >= 0.95 ? 5.00 : 0;
+  const cfg = state.payoutConfig;
+  const baseReward = cfg.base;
+  const perCorrect = correct * cfg.perCorrect;
+  const goodBonus  = accuracy >= 0.85 ? cfg.goodBonus : 0;
+  const greatBonus = accuracy >= 0.95 ? cfg.greatBonus : 0;
   const total$ = baseReward + perCorrect + goodBonus + greatBonus;
   return {
     correct, total, accuracy,
     baseReward, perCorrect, goodBonus, greatBonus,
+    perCorrectRate: cfg.perCorrect,
     total$,
   };
 }
@@ -3103,7 +3335,16 @@ $("viewStatsBtn").addEventListener("click", () => { renderStats(); showView("sta
 $("statsHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
 $("batteryCTA").addEventListener("click", startBattery);
 $("batteryModalCancel").addEventListener("click", () => $("batteryModal").classList.add("hidden"));
-$("batteryModalGo").addEventListener("click", confirmStartBattery);
+$("batteryStageIntroNext").addEventListener("click", () => batteryShowStage("pin"));
+$("batteryPinBack").addEventListener("click", () => batteryShowStage("intro"));
+$("batteryPinSubmit").addEventListener("click", tryUnlockPin);
+$("batteryPinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlockPin(); });
+$("batteryConfigBack").addEventListener("click", () => batteryShowStage("pin"));
+$("batteryConfigStart").addEventListener("click", confirmStartBattery);
+// Live-update the preview as parent edits any payout value
+for (const id of ["payoutBase","payoutPerCorrect","payoutGoodBonus","payoutGreatBonus"]) {
+  document.addEventListener("input", (e) => { if (e.target && e.target.id === id) updatePayoutPreview(); });
+}
 $("batteryModal").addEventListener("click", (e) => {
   // Dismiss when the user taps the backdrop (but not the card itself).
   if (e.target.id === "batteryModal") $("batteryModal").classList.add("hidden");
