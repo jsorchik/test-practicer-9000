@@ -2013,6 +2013,7 @@ function renderBatteryTransition({ nextIsBreak }) {
     $("batteryTransRow").innerHTML = `<div><strong>${lastResult.correct}</strong>correct</div><div><strong>${lastResult.total - lastResult.correct}</strong>missed</div>`;
   }
   $("batteryNextBtn").textContent = nextIsBreak ? "Start 5-min break →" : "Begin next section →";
+  state.batteryButtonIntent = nextIsBreak ? "begin-break" : "begin-section";
   // Progress checklist
   const totalQs = state.battery.queue.filter(k => k !== "break");
   const rows = [];
@@ -2045,6 +2046,7 @@ function renderBatteryBreak() {
   $("batteryTransSub").textContent = "5-minute break — stretch, sip water, look out a window. The next section starts when you tap below.";
   $("batteryTransRow").innerHTML = `<div><strong id="breakCountdown">5:00</strong>break time remaining</div>`;
   $("batteryNextBtn").textContent = "Skip break and continue →";
+  state.batteryButtonIntent = "skip-break";
   // Reuse the progress section
   // (Same logic as transition, except we don't have a "last result" to show)
   const sections = state.battery.queue.filter(k => k !== "break");
@@ -2862,11 +2864,24 @@ $("viewStatsBtn").addEventListener("click", () => { renderStats(); showView("sta
 $("statsHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
 $("batteryCTA").addEventListener("click", startBattery);
 $("batteryNextBtn").addEventListener("click", () => {
-  if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
-  // If the current queue position is a break sentinel, skip past it.
-  if (state.battery.queue[state.battery.queueIdx] === "break") {
-    state.battery.queueIdx += 1;
+  // The button's behavior depends on what screen we just showed, tracked
+  // via state.batteryButtonIntent. Three cases:
+  //  - "begin-section": user just saw "Section X complete" — start next section
+  //  - "begin-break":   user just saw "Section X complete (break next)" — open the break screen
+  //  - "skip-break":    user is on the break screen — skip remaining time and continue
+  const intent = state.batteryButtonIntent;
+  if (intent === "begin-break") {
+    // queueIdx is currently on the "break" sentinel — show the timer screen
+    renderBatteryBreak();
+    return;
   }
+  if (intent === "skip-break") {
+    if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
+    state.battery.queueIdx += 1;  // step past the break sentinel
+    batteryRunNext();
+    return;
+  }
+  // default: begin-section
   batteryRunNext();
 });
 $("batteryDoneBtn").addEventListener("click", () => {
