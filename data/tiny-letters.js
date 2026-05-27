@@ -13,8 +13,8 @@ const TINY_LETTERS = [
   { type: "tinyQuiz", subtype: "letter", prompt: "Tap the letter A.", choices: ["A", "M", "S", "K"], correct: 0 },
   { type: "tinyQuiz", subtype: "letter", prompt: "Which letter is at the start of 🐱?", visual: "🐱", choices: ["B", "C", "D", "G"], correct: 1 },
   { type: "tinyQuiz", subtype: "letter", prompt: "Tap the lowercase r.", choices: ["n", "m", "r", "h"], correct: 2 },
-  { type: "tinyQuiz", subtype: "word",   prompt: "Which one says 'cat'?", choices: ["dog", "cat", "bat", "rat"], correct: 1 },
-  { type: "tinyQuiz", subtype: "word",   prompt: "Which word means a place you sleep?", choices: ["bed", "cup", "pan", "fan"], correct: 0 },
+  { type: "tinyQuiz", subtype: "word",   prompt: "Which word matches?", visual: "🐱", choices: ["dog", "cat", "bat", "rat"], correct: 1 },
+  { type: "tinyQuiz", subtype: "word",   prompt: "Which word means a place you sleep?", visual: "🛏️", choices: ["bed", "cup", "pan", "fan"], correct: 0 },
 
 
   // ─── Generated batch appended 2026-05-27 ──────────────
@@ -40,22 +40,28 @@ const TINY_LETTERS = [
   { type: "tinyQuiz", subtype: "letter", prompt: "Which letter says /b/?", visual: "⚽", choices: ["D", "B", "P", "G"], correct: 1 },
   { type: "tinyQuiz", subtype: "letter", prompt: "What letter does 🍎 start with?", visual: "🍎", choices: ["O", "E", "A", "U"], correct: 2 },
   { type: "tinyQuiz", subtype: "letter", prompt: "What letter does 🐱 start with?", visual: "🐱", choices: ["K", "S", "T", "C"], correct: 3 },
-  { type: "tinyQuiz", subtype: "letter", prompt: "Tap the letter that starts 'ball'.", visual: "⚾", choices: ["B", "L", "M", "F"], correct: 0 },
+  { type: "tinyQuiz", subtype: "letter", prompt: "What letter does this start with?", visual: "⚾", choices: ["B", "L", "M", "F"], correct: 0 },
   { type: "tinyQuiz", subtype: "letter", prompt: "What letter does 🐶 start with?", visual: "🐶", choices: ["B", "D", "G", "P"], correct: 1 },
   { type: "tinyQuiz", subtype: "letter", prompt: "Which letter says /m/?", visual: "🌙", choices: ["N", "W", "M", "H"], correct: 2 },
   { type: "tinyQuiz", subtype: "letter", prompt: "What letter does 🌞 start with?", visual: "🌞", choices: ["C", "T", "M", "S"], correct: 3, cheer: "Sunshine smart! 🌞" },
-  { type: "tinyQuiz", subtype: "letter", prompt: "Tap the letter that starts 'fish'.", visual: "🐟", choices: ["F", "S", "H", "T"], correct: 0 },
+  { type: "tinyQuiz", subtype: "letter", prompt: "What letter does this start with?", visual: "🐟", choices: ["F", "S", "H", "T"], correct: 0 },
   { type: "tinyQuiz", subtype: "letter", prompt: "Which letter says /t/?", visual: "🐯", choices: ["D", "T", "P", "K"], correct: 1 },
 
-  // --- Sight words & simple CVC words (10) ---
-  { type: "tinyQuiz", subtype: "word", prompt: "Which one says 'cat'?", visual: "🐱", choices: ["cat", "cab", "bat", "rat"], correct: 0 },
-  { type: "tinyQuiz", subtype: "word", prompt: "Which one says 'dog'?", visual: "🐶", choices: ["log", "dog", "dot", "dig"], correct: 1 },
-  { type: "tinyQuiz", subtype: "word", prompt: "Tap the word 'see'.", choices: ["she", "sea", "see", "set"], correct: 2 },
-  { type: "tinyQuiz", subtype: "word", prompt: "Tap the word 'the'.", choices: ["she", "her", "them", "the"], correct: 3 },
-  { type: "tinyQuiz", subtype: "word", prompt: "Which one says 'sun'?", visual: "🌞", choices: ["sun", "fun", "run", "bun"], correct: 0 },
-  { type: "tinyQuiz", subtype: "word", prompt: "Tap the word 'and'.", choices: ["end", "and", "ant", "add"], correct: 1 },
-  { type: "tinyQuiz", subtype: "word", prompt: "Which word means a hat you wear on your head?", visual: "🎩", choices: ["bat", "mat", "hat", "rat"], correct: 2 },
-  { type: "tinyQuiz", subtype: "word", prompt: "Tap the word 'go'.", choices: ["so", "do", "no", "go"], correct: 3 },
-  { type: "tinyQuiz", subtype: "word", prompt: "Which one says 'big'?", choices: ["big", "bag", "bug", "beg"], correct: 0, cheer: "Big brain! 🧠" },
-  { type: "tinyQuiz", subtype: "word", prompt: "Tap the word 'me'.", choices: ["my", "me", "we", "be"], correct: 1 },
+  // --- Picture-word matching (10) ---
+  // Rewritten 2026-05-27: original "Tap the word 'cat'" / "Which one says
+  // 'cat'?" pattern put the answer literally in the prompt — a 5yo would
+  // just match letters in prompt to letters in choices instead of reading.
+  // Now everything is picture-based: kid sees the emoji, picks the word.
+  // Abstract function-words (the, and, go, me) that can't be pictured were
+  // swapped for concrete nouns. Indices preserved per the append-only rule.
+  { type: "tinyQuiz", subtype: "word", prompt: "Which word matches?", visual: "🐱", choices: ["cat", "cab", "bat", "rat"], correct: 0 },
+  { type: "tinyQuiz", subtype: "word", prompt: "Which word matches?", visual: "🐶", choices: ["log", "dog", "dot", "dig"], correct: 1 },
+  { type: "tinyQuiz", subtype: "word", prompt: "Which word matches?", visual: "👀", choices: ["ear", "egg", "eye", "elf"], correct: 2 },
+  { type: "tinyQuiz", subtype: "word", prompt: "Which word matches?", visual: "🚗", choices: ["bus", "van", "jet", "car"], correct: 3 },
+  { type: "tinyQuiz", subtype: "word", prompt: "Which word matches?", visual: "🌞", choices: ["sun", "fun", "run", "bun"], correct: 0 },
+  { type: "tinyQuiz", subtype: "word", prompt: "Which word matches?", visual: "🐝", choices: ["bug", "bee", "bow", "boo"], correct: 1 },
+  { type: "tinyQuiz", subtype: "word", prompt: "Which word matches?", visual: "🎩", choices: ["bat", "mat", "hat", "rat"], correct: 2 },
+  { type: "tinyQuiz", subtype: "word", prompt: "Which word matches?", visual: "🐟", choices: ["fan", "fin", "fox", "fish"], correct: 3 },
+  { type: "tinyQuiz", subtype: "word", prompt: "Which word means very large?", visual: "🐘", choices: ["big", "bag", "bug", "beg"], correct: 0, cheer: "Big brain! 🧠" },
+  { type: "tinyQuiz", subtype: "word", prompt: "Which word matches?", visual: "🛏️", choices: ["bed", "bow", "bib", "bug"], correct: 0 },
 ];
