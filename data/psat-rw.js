@@ -1719,4 +1719,19 @@ const PSAT_READING_WRITING = [
     correct: 1,
     explanation: "The 'not only X but also Y' construction requires X and Y to be parallel. 'Not only reduce daily travel time' is a verb phrase, so the second half should also begin with a verb: 'but also improve emergency response.' The original inserts a subject and an auxiliary; choice C breaks the 'not only / but also' pairing; choice D shifts to a gerund and drops 'also.'",
   },
+
+  // ─── Phase A: table-rendering sample (2026-05-27) ─────────────
+  {
+    type: "psatRW", subtype: "comprehension",
+    passage: "A small ice-cream shop tracked sales of its three most-popular flavors during one Saturday. The owner, planning next week's order, wanted to know which flavor moved most consistently across the day.<table><caption>Saturday sales (scoops)</caption><tr><th>Hour</th><th>Vanilla</th><th>Chocolate</th><th>Strawberry</th></tr><tr><td>12 pm</td><td>14</td><td>22</td><td>8</td></tr><tr><td>2 pm</td><td>18</td><td>14</td><td>10</td></tr><tr><td>4 pm</td><td>12</td><td>20</td><td>9</td></tr><tr><td>6 pm</td><td>16</td><td>16</td><td>9</td></tr></table>",
+    question: "Based on the table, which flavor had the smallest range in hourly sales?",
+    choices: [
+      "Vanilla",
+      "Chocolate",
+      "Strawberry",
+      "All three had the same range",
+    ],
+    correct: 2,
+    explanation: "Range = max − min for each flavor. Vanilla: 18 − 12 = 6. Chocolate: 22 − 14 = 8. Strawberry: 10 − 8 = 2. Strawberry has the smallest range, meaning it moved most consistently.",
+  },
 ];

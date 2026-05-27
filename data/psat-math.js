@@ -918,4 +918,24 @@ const PSAT_MATH = [
     wrong: ["28 m²", "48 m²", "16 m²"],
     explanation: "Outer rectangle is (8 + 2)(6 + 2) = 10 × 8 = 80 m². Inner garden area = 8 × 6 = 48 m². Walkway = 80 − 48 = 32 m².",
   },
+
+  // ─── Phase A: table-rendering samples (2026-05-27) ─────────────
+  {
+    type: "psatMath",
+    question: "The table shows the heights (in cm) of plants in two greenhouses after one month.<table><tr><th></th><th>Plant 1</th><th>Plant 2</th><th>Plant 3</th><th>Plant 4</th></tr><tr><th>Greenhouse A</th><td>12</td><td>15</td><td>13</td><td>16</td></tr><tr><th>Greenhouse B</th><td>10</td><td>20</td><td>11</td><td>23</td></tr></table>Which statement comparing the two greenhouses is true?",
+    correct: "Greenhouse B has a greater range than Greenhouse A",
+    wrong: [
+      "Greenhouse A has a greater mean than Greenhouse B",
+      "Both greenhouses have the same median",
+      "Greenhouse A has a greater range than Greenhouse B",
+    ],
+    explanation: "Greenhouse A range = 16 − 12 = 4. Greenhouse B range = 23 − 10 = 13. B has the greater range (13 > 4). Means: A = 14, B = 16 (B is greater, not A). Medians: A = 14, B = 15.5 (different).",
+  },
+  {
+    type: "psatMath",
+    question: "The table shows the number of books five students read over the summer.<table><tr><th>Student</th><th>Books read</th></tr><tr><td>Ada</td><td>4</td></tr><tr><td>Ben</td><td>9</td></tr><tr><td>Cara</td><td>6</td></tr><tr><td>Dan</td><td>5</td></tr><tr><td>Eve</td><td>11</td></tr></table>What is the median number of books read?",
+    correct: "6",
+    wrong: ["5", "7", "9"],
+    explanation: "Sort the values: 4, 5, 6, 9, 11. The middle value (3rd of 5) is 6.",
+  },
 ];

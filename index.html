@@ -575,6 +575,38 @@
     padding: 0 2px;
     border-radius: 2px;
   }
+  /* Inline data tables — used in PSAT R&W "data analysis" comprehension
+     and in math questions that reference tabular data. Same styling whether
+     the table appears in a passage (R&W) or in the math-q block. */
+  .psat-passage table,
+  .math-q table {
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    background: rgba(255,255,255,.03);
+  }
+  .psat-passage th, .psat-passage td,
+  .math-q th, .math-q td {
+    border: 1px solid rgba(255,255,255,.15);
+    padding: 6px 12px;
+    text-align: left;
+  }
+  .psat-passage th,
+  .math-q th {
+    background: rgba(255,255,255,.06);
+    font-weight: 700;
+    color: var(--text);
+  }
+  .psat-passage caption,
+  .math-q caption {
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-size: 13px;
+    caption-side: top;
+    text-align: left;
+  }
   .qc-cols {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2602,6 +2634,21 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// After escapeHtml(), selectively re-enable a small allowlist of safe tags
+// for passage / question rendering. PSAT R&W passages use these to mark
+// up underlined text (writing-edit subtype) and to embed small data tables
+// for data-analysis questions. Bare tags only — no attribute parsing, so
+// content writers can't sneak in style/onclick/etc.
+const ALLOWED_PASSAGE_TAGS = ["u", "table", "thead", "tbody", "tr", "th", "td", "caption"];
+function unescapeAllowedTags(escaped) {
+  let out = escaped;
+  for (const tag of ALLOWED_PASSAGE_TAGS) {
+    out = out.replace(new RegExp(`&lt;${tag}&gt;`, "g"), `<${tag}>`);
+    out = out.replace(new RegExp(`&lt;\\/${tag}&gt;`, "g"), `</${tag}>`);
+  }
+  return out;
+}
+
 // In-app confirm modal — replaces native confirm() which is unreliable on
 // mobile Safari (silently returns false in some standalone/PWA modes).
 function appConfirm({ title = "Are you sure?", body = "", okLabel = "Yes", cancelLabel = "Cancel", danger = false } = {}) {
@@ -2898,13 +2945,7 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   if (entry.type === "psatRW") {
     const sub = entry.subtype || "comprehension";
     const promptLine = PSAT_RW_PROMPTS[sub] || PSAT_RW_PROMPTS.comprehension;
-    // Allow <u>...</u> in the passage (writing-edit subtype wraps the variable
-    // portion in it). Escape everything else first, then re-enable just those
-    // two tags. The allowlist is explicit so we don't accidentally render
-    // anything else if content writers stick odd HTML in.
-    const safePassage = escapeHtml(entry.passage)
-      .replace(/&lt;u&gt;/g, "<u>")
-      .replace(/&lt;\/u&gt;/g, "</u>");
+    const safePassage = unescapeAllowedTags(escapeHtml(entry.passage));
     return {
       id, sectionKey, entry,
       promptHtml: `
