@@ -3229,11 +3229,6 @@ const PATH_TO_VIEW = Object.fromEntries(Object.entries(ROUTABLE_VIEWS).map(([k,v
 let suppressHashUpdate = false;  // set true when handling popstate to avoid loops
 
 function showView(name) {
-  // PSAT mode is content-empty — every non-home view (quiz, stats, essays,
-  // past tests, mistakes) is ISEE-specific. If something tries to route
-  // there in PSAT mode (deep-link, popstate, etc.), fall back to home so
-  // the kid never lands on an empty/broken view.
-  if (state.testType === "psat" && name !== "home") name = "home";
   state.view = name;
   // Update browser URL for the routable views (home / stats / essays /
   // mistakes). Doesn't run when this showView was triggered by popstate.
