@@ -2105,6 +2105,8 @@
 <script src="data/bridge-math.js"></script>
 <script src="data/bridge-reading.js"></script>
 <script src="data/bridge-essays.js"></script>
+<script src="data/psat-rw.js"></script>
+<script src="data/psat-math.js"></script>
 <script src="data/definitions.js"></script>
 <script>
 // ════════════════════════════════════════════════════════════════════════════
@@ -2268,114 +2270,10 @@ const SECTIONS = [
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
-// PSAT DATA — structure ready, content pending
+// PSAT DATA — pools loaded from data/psat-rw.js + data/psat-math.js (the
+// PSAT_READING_WRITING and PSAT_MATH consts are visible here via shared
+// script scope). Section list + grade test configs stay inline below.
 // ════════════════════════════════════════════════════════════════════════════
-// PSAT question pools. Inline for now (small smoke-test batch); will move
-// to data/psat-*.js files once a real content pass starts. Each section
-// needs at least 1 entry for its home-grid card to become clickable.
-
-// type: "psatRW" entries — passage + question + 4 choices. Subtype hints at
-// the question style (comprehension / vocab / writingEdit). choices are NOT
-// shuffled (writing-edit questions traditionally put "NO CHANGE" first;
-// preserving order avoids breaking that convention).
-const PSAT_READING_WRITING = [
-  {
-    type: "psatRW", subtype: "comprehension",
-    passage: "Lichens are slow-growing organisms formed by a partnership between a fungus and an alga. The fungus provides structure and traps moisture; the alga produces sugar through photosynthesis. Neither could survive alone in the harsh climates where lichens often thrive — bare rock, arctic tundra, tree bark — but together they endure for decades.",
-    question: "The passage suggests that lichens are notable primarily because they:",
-    choices: [
-      "grow more quickly than other organisms",
-      "consist of two organisms that depend on each other",
-      "produce food without sunlight",
-      "are found exclusively in arctic regions",
-    ],
-    correct: 1,
-    explanation: "The passage emphasizes the fungus-alga partnership ('neither could survive alone… but together they endure'). Choice B captures this mutualism.",
-  },
-  {
-    type: "psatRW", subtype: "vocab",
-    passage: "The novelist's prose was unfailingly austere — short sentences, plain words, almost no adjectives. Critics admired its discipline; some readers found it cold.",
-    question: "As used in the passage, 'austere' most nearly means:",
-    choices: ["lavish", "spare", "confusing", "joyful"],
-    correct: 1,
-    explanation: "The passage describes the prose as having 'short sentences, plain words, almost no adjectives' — i.e. stripped down. 'Spare' captures that meaning. 'Lavish' is the opposite; 'confusing' and 'joyful' don't fit.",
-  },
-  {
-    type: "psatRW", subtype: "writingEdit",
-    passage: "The committee, <u>which they had only just been formed</u>, decided to delay any votes until its members had time to read the proposal.",
-    question: "Which choice provides the most grammatically correct and concise version of the underlined text?",
-    choices: [
-      "NO CHANGE",
-      "which had only just been formed",
-      "which they were forming only now",
-      "having been formed only just now",
-    ],
-    correct: 1,
-    explanation: "The original mixes a relative pronoun ('which') with a redundant subject ('they'). 'Which had only just been formed' is the cleanest fix — relative clause with no double subject.",
-  },
-  {
-    type: "psatRW", subtype: "comprehension",
-    passage: "Early radio broadcasting in the 1920s relied heavily on improvisation. Performers often had no script; engineers tinkered with new equipment during broadcasts; even the music was sometimes chosen minutes before airing. What seems chaotic in hindsight was, at the time, a feature — listeners tuned in not knowing what would happen, and that uncertainty was part of the appeal.",
-    question: "The author's main point is that early radio broadcasting:",
-    choices: [
-      "was technically inferior to modern broadcasting",
-      "was disorganized in ways that audiences found exciting",
-      "depended on a small number of skilled performers",
-      "was eventually replaced by scripted television",
-    ],
-    correct: 1,
-    explanation: "The passage frames the chaos positively — 'a feature… uncertainty was part of the appeal'. Choice B captures the author's actual claim. The other choices are not supported by the text.",
-  },
-  {
-    type: "psatRW", subtype: "vocab",
-    passage: "After weeks of debate, the city council passed a tepid resolution that neither raised funds for the project nor blocked it outright.",
-    question: "As used in the passage, 'tepid' most nearly means:",
-    choices: ["enthusiastic", "lukewarm", "secret", "controversial"],
-    correct: 1,
-    explanation: "Tepid literally means slightly warm — figuratively, lacking enthusiasm or commitment. The resolution 'neither raised funds nor blocked' the project, so it was half-hearted. 'Lukewarm' captures that.",
-  },
-];
-
-// type: "psatMath" entries — same shape as ISEE math (correct + wrong[]).
-// Multiple choice only for V1; grid-in support lands when we add a numeric
-// answer renderer.
-const PSAT_MATH = [
-  {
-    type: "psatMath",
-    question: "If 3x + 7 = 22, what is the value of x?",
-    correct: "5",
-    wrong: ["3", "7", "15"],
-    explanation: "Subtract 7 from both sides: 3x = 15. Then x = 5.",
-  },
-  {
-    type: "psatMath",
-    question: "A rectangle has length 12 and width 5. What is the length of its diagonal?",
-    correct: "13",
-    wrong: ["17", "7", "60"],
-    explanation: "By the Pythagorean theorem, diagonal² = 12² + 5² = 144 + 25 = 169. So diagonal = 13.",
-  },
-  {
-    type: "psatMath",
-    question: "If f(x) = 2x² − 3x + 1, what is f(4)?",
-    correct: "21",
-    wrong: ["17", "25", "32"],
-    explanation: "f(4) = 2(16) − 3(4) + 1 = 32 − 12 + 1 = 21.",
-  },
-  {
-    type: "psatMath",
-    question: "A jar holds 15 marbles — 6 red, 4 blue, 5 green. If one marble is drawn at random, what is the probability it is NOT red?",
-    correct: "3/5",
-    wrong: ["2/5", "1/3", "9/10"],
-    explanation: "Non-red marbles: 4 blue + 5 green = 9. Total = 15. P(not red) = 9/15 = 3/5.",
-  },
-  {
-    type: "psatMath",
-    question: "The price of a shirt is reduced by 20%, then reduced by an additional 25% off the sale price. What is the total percentage discount from the original price?",
-    correct: "40%",
-    wrong: ["45%", "50%", "35%"],
-    explanation: "After 20% off, you pay 80% of original. After 25% off that, you pay 75% of 80% = 60% of original. So 40% off total.",
-  },
-];
 
 // PSAT section list. Modeled flat — Reading & Writing is a single combined
 // section like the real digital PSAT, and Math is its own. No essay, no
