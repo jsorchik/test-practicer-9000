@@ -970,4 +970,49 @@ const PSAT_MATH = [
     accept: ["8"],
     explanation: "Distribute: 2x + 6 = 4x − 10. Subtract 2x: 6 = 2x − 10. Add 10: 16 = 2x. So x = 8.",
   },
+
+  // ─── Phase C: chart samples — bar, line, scatter (2026-05-27) ───────────
+  {
+    type: "psatMath",
+    question: "Based on the bar chart, what is the difference between the day with the highest sales and the day with the lowest sales?",
+    chart: {
+      type: "bar",
+      title: "Daily sales — Lemonade stand",
+      xLabel: "Day",
+      yLabel: "Cups sold",
+      categories: ["Mon", "Tue", "Wed", "Thu", "Fri"],
+      values: [12, 8, 18, 14, 22],
+    },
+    correct: "14",
+    wrong: ["10", "16", "22"],
+    explanation: "Highest = Friday (22 cups). Lowest = Tuesday (8 cups). 22 − 8 = 14.",
+  },
+  {
+    type: "psatMath",
+    question: "The line graph shows a town's population over time. By approximately how many people did the population grow between 2010 and 2020?",
+    chart: {
+      type: "line",
+      title: "Town population (thousands)",
+      xLabel: "Year",
+      yLabel: "Population (k)",
+      points: [[2010, 5], [2012, 7], [2014, 11], [2016, 18], [2018, 25], [2020, 32]],
+    },
+    correct: "27 thousand",
+    wrong: ["20 thousand", "32 thousand", "15 thousand"],
+    explanation: "Population in 2010 = 5k; in 2020 = 32k. Growth = 32 − 5 = 27 thousand.",
+  },
+  {
+    type: "psatMathGridIn",
+    question: "The scatter plot shows hours studied vs test score for 6 students. Looking at the trend, what test score would you predict for a student who studied 7 hours? (Round to the nearest 5.)",
+    chart: {
+      type: "scatter",
+      title: "Study time vs test score",
+      xLabel: "Hours studied",
+      yLabel: "Score (%)",
+      points: [[1, 60], [2, 68], [3, 72], [4, 80], [5, 85], [6, 92]],
+    },
+    correct: "100",
+    accept: ["100", "95", "98"],
+    explanation: "The scatter shows roughly +6 points per added hour. From 6 hr (92%) → 7 hr ≈ 98-100. Either 95 or 100 is a reasonable rounded prediction.",
+  },
 ];

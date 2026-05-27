@@ -651,6 +651,66 @@
   }
   .grid-in-tag.good { background: rgba(34,197,94,.18); color: #86efac; }
   .grid-in-tag.bad  { background: rgba(239,68,68,.18); color: #fca5a5; }
+
+  /* PSAT inline SVG charts (data-analysis questions) */
+  .psat-chart-wrap {
+    margin: 12px 0 16px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 10px;
+    overflow-x: auto;
+  }
+  .psat-chart {
+    width: 100%;
+    max-width: 520px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+  .psat-chart .pc-title {
+    font-size: 14px;
+    font-weight: 700;
+    fill: var(--text);
+    font-family: inherit;
+  }
+  .psat-chart .pc-grid {
+    stroke: rgba(255,255,255,.08);
+    stroke-width: 1;
+    stroke-dasharray: 2 4;
+  }
+  .psat-chart .pc-axis {
+    stroke: rgba(255,255,255,.35);
+    stroke-width: 1.5;
+  }
+  .psat-chart .pc-tick,
+  .psat-chart .pc-cat {
+    font-size: 11px;
+    fill: var(--muted);
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+  }
+  .psat-chart .pc-axis-label {
+    font-size: 12px;
+    font-weight: 600;
+    fill: var(--text);
+    font-family: inherit;
+  }
+  .psat-chart .pc-bar {
+    fill: var(--accent);
+    opacity: 0.85;
+  }
+  .psat-chart .pc-line {
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .psat-chart .pc-dot {
+    fill: var(--accent);
+    stroke: var(--panel);
+    stroke-width: 1.5;
+  }
   .qc-cols {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -3048,16 +3108,136 @@ function renderGridInFeedback(q, pickedValue) {
   return `<div class="grid-in-tag bad">Correct answer: <strong>${escapeHtml(String(q.correctAnswer))}</strong></div>`;
 }
 
+// ─── Inline SVG chart renderer (PSAT data-analysis questions) ────────────────
+// Entries with a `chart` field get an SVG chart rendered above the question.
+// Spec language:
+//   { type: "bar"|"line"|"scatter",
+//     title: "optional title",
+//     xLabel: "X axis label",
+//     yLabel: "Y axis label",
+//     // bar: discrete categories + parallel values
+//     categories: ["Mon","Tue",…],   values: [12,15,…],
+//     // line/scatter: array of [x,y] points
+//     points: [[2010,5],[2012,7],…],
+//     // optional: explicit axis bounds (otherwise computed from data)
+//     yMin: 0,  yMax: 100,
+//   }
+function renderChartSvg(chart) {
+  if (!chart || typeof chart !== "object") return "";
+  const W = 480, H = 280;
+  const M = { top: 30, right: 20, bottom: 56, left: 56 };
+  const PW = W - M.left - M.right;
+  const PH = H - M.top - M.bottom;
+
+  // Compute domain from chart spec or data
+  let xs = [], ys = [];
+  if (chart.type === "bar") {
+    xs = (chart.categories || []).slice();
+    ys = (chart.values || []).slice();
+  } else {
+    xs = (chart.points || []).map(p => p[0]);
+    ys = (chart.points || []).map(p => p[1]);
+  }
+  const yMin = chart.yMin !== undefined ? chart.yMin : Math.min(0, ...ys);
+  const yMax = chart.yMax !== undefined ? chart.yMax : Math.max(...ys);
+  const xMin = chart.xMin !== undefined ? chart.xMin : Math.min(...xs);
+  const xMax = chart.xMax !== undefined ? chart.xMax : Math.max(...xs);
+
+  // Coordinate scales (SVG y is inverted — top is 0)
+  const yScale = v => M.top + PH * (1 - (v - yMin) / (yMax - yMin || 1));
+  const xScaleNum = v => M.left + PW * ((v - xMin) / (xMax - xMin || 1));
+  const xScaleCat = i => M.left + PW * ((i + 0.5) / xs.length);
+
+  // Build "nice" tick values for the y-axis (~5 ticks)
+  function niceTicks(min, max, n = 5) {
+    const range = max - min;
+    if (range === 0) return [min];
+    const rough = range / n;
+    const mag = Math.pow(10, Math.floor(Math.log10(rough)));
+    const norm = rough / mag;
+    const step = (norm < 1.5 ? 1 : norm < 3 ? 2 : norm < 7 ? 5 : 10) * mag;
+    const ticks = [];
+    const start = Math.ceil(min / step) * step;
+    for (let t = start; t <= max + 1e-9; t += step) ticks.push(+t.toFixed(10));
+    return ticks;
+  }
+
+  const yTicks = niceTicks(yMin, yMax, 5);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" class="psat-chart" role="img" aria-label="${escapeHtml(chart.title || "Chart")}" preserveAspectRatio="xMidYMid meet">`;
+
+  // Title
+  if (chart.title) {
+    svg += `<text x="${W / 2}" y="18" class="pc-title" text-anchor="middle">${escapeHtml(chart.title)}</text>`;
+  }
+
+  // Y-axis gridlines + tick labels
+  for (const t of yTicks) {
+    const y = yScale(t);
+    svg += `<line x1="${M.left}" y1="${y}" x2="${W - M.right}" y2="${y}" class="pc-grid" />`;
+    svg += `<text x="${M.left - 8}" y="${y + 4}" class="pc-tick" text-anchor="end">${t}</text>`;
+  }
+
+  // X-axis line
+  svg += `<line x1="${M.left}" y1="${M.top + PH}" x2="${W - M.right}" y2="${M.top + PH}" class="pc-axis" />`;
+  svg += `<line x1="${M.left}" y1="${M.top}" x2="${M.left}" y2="${M.top + PH}" class="pc-axis" />`;
+
+  // Data series
+  if (chart.type === "bar") {
+    const barW = (PW / xs.length) * 0.7;
+    xs.forEach((cat, i) => {
+      const v = ys[i];
+      const y = yScale(v);
+      const x = xScaleCat(i) - barW / 2;
+      const baseY = yScale(Math.max(0, yMin));
+      svg += `<rect x="${x}" y="${Math.min(y, baseY)}" width="${barW}" height="${Math.abs(baseY - y)}" class="pc-bar" />`;
+      svg += `<text x="${xScaleCat(i)}" y="${M.top + PH + 18}" class="pc-cat" text-anchor="middle">${escapeHtml(String(cat))}</text>`;
+    });
+  } else if (chart.type === "line") {
+    const path = chart.points.map((p, i) => `${i === 0 ? "M" : "L"}${xScaleNum(p[0])},${yScale(p[1])}`).join(" ");
+    svg += `<path d="${path}" class="pc-line" fill="none" />`;
+    // Dots at each point
+    chart.points.forEach(p => {
+      svg += `<circle cx="${xScaleNum(p[0])}" cy="${yScale(p[1])}" r="3" class="pc-dot" />`;
+    });
+    // X-axis tick labels — use unique sorted x-values
+    const uniqXs = [...new Set(xs)].sort((a, b) => a - b);
+    uniqXs.forEach(x => {
+      svg += `<text x="${xScaleNum(x)}" y="${M.top + PH + 18}" class="pc-cat" text-anchor="middle">${x}</text>`;
+    });
+  } else if (chart.type === "scatter") {
+    chart.points.forEach(p => {
+      svg += `<circle cx="${xScaleNum(p[0])}" cy="${yScale(p[1])}" r="4" class="pc-dot" />`;
+    });
+    // X-axis tick labels at evenly-spaced positions
+    const xTicks = niceTicks(xMin, xMax, 5);
+    xTicks.forEach(x => {
+      svg += `<text x="${xScaleNum(x)}" y="${M.top + PH + 18}" class="pc-cat" text-anchor="middle">${x}</text>`;
+    });
+  }
+
+  // Axis labels
+  if (chart.xLabel) {
+    svg += `<text x="${M.left + PW / 2}" y="${H - 8}" class="pc-axis-label" text-anchor="middle">${escapeHtml(chart.xLabel)}</text>`;
+  }
+  if (chart.yLabel) {
+    svg += `<text x="14" y="${M.top + PH / 2}" class="pc-axis-label" text-anchor="middle" transform="rotate(-90, 14, ${M.top + PH / 2})">${escapeHtml(chart.yLabel)}</text>`;
+  }
+
+  svg += `</svg>`;
+  return `<div class="psat-chart-wrap">${svg}</div>`;
+}
+
 function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   const id = entryId(gradeLevel, sectionKey, idx);
 
   // PSAT Math — same shape as ISEE math (multiple choice with correct + wrong).
-  // Different prompt header. No separate grid-in support yet.
+  // Optional `chart` field renders an inline SVG chart above the question.
   if (entry.type === "psatMath") {
     const choices = shuffle([entry.correct, ...entry.wrong]);
+    const chartHtml = entry.chart ? renderChartSvg(entry.chart) : "";
     return {
       id, sectionKey, entry,
-      promptHtml: `<div class="prompt">Multiple-choice math. Calculator allowed.</div><div class="math-q">${fmtFractions(entry.question)}</div>`,
+      promptHtml: `<div class="prompt">Multiple-choice math. Calculator allowed.</div>${chartHtml}<div class="math-q">${fmtFractions(entry.question)}</div>`,
       choices,
       answerIdx: choices.indexOf(entry.correct),
       feedbackHtml: `<b>Explanation:</b> ${fmtFractions(entry.explanation)}`,
@@ -3066,15 +3246,16 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   }
 
   // PSAT Math Grid-In — student-produced response. No choices array; the kid
-  // types their answer into a text input. answerIdx is null and unused; the
-  // comparison goes through isAnswerCorrect() → psatAnswersMatch().
+  // types their answer into a text input. Optional `chart` field renders an
+  // inline SVG chart above the question.
   if (entry.type === "psatMathGridIn") {
     const accepted = Array.isArray(entry.accept) && entry.accept.length
       ? entry.accept.slice()
       : [entry.correct];
+    const chartHtml = entry.chart ? renderChartSvg(entry.chart) : "";
     return {
       id, sectionKey, entry,
-      promptHtml: `<div class="prompt">Grid-in: type your numerical answer. Calculator allowed.</div><div class="math-q">${fmtFractions(entry.question)}</div>`,
+      promptHtml: `<div class="prompt">Grid-in: type your numerical answer. Calculator allowed.</div>${chartHtml}<div class="math-q">${fmtFractions(entry.question)}</div>`,
       choices: [],
       answerIdx: null,
       isGridIn: true,
@@ -3093,11 +3274,13 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
     const sub = entry.subtype || "comprehension";
     const promptLine = PSAT_RW_PROMPTS[sub] || PSAT_RW_PROMPTS.comprehension;
     const safePassage = unescapeAllowedTags(escapeHtml(entry.passage));
+    const chartHtml = entry.chart ? renderChartSvg(entry.chart) : "";
     return {
       id, sectionKey, entry,
       promptHtml: `
         <div class="prompt">${promptLine}</div>
         <div class="psat-passage">${safePassage}</div>
+        ${chartHtml}
         <div class="question-text">${escapeHtml(entry.question)}</div>`,
       choices: entry.choices.slice(),
       answerIdx: entry.correct,
