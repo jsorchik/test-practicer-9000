@@ -107,6 +107,139 @@
     box-shadow: 0 0 0 1px var(--accent) inset;
   }
   .test-type-pill.active .tt-label { color: var(--accent); }
+  /* Unicorn Quest (tiny) pill — pink flavor. Active state uses pink tints
+     instead of the accent blue so the kid-mode option is visually distinct
+     even when not selected. */
+  .test-type-pill.tiny-flavor {
+    border-color: rgba(244,114,182,.35);
+    background: rgba(244,114,182,.06);
+  }
+  .test-type-pill.tiny-flavor:hover { background: rgba(244,114,182,.10); }
+  .test-type-pill.tiny-flavor.active {
+    border-color: #ec4899;
+    background: linear-gradient(135deg, rgba(244,114,182,.18), rgba(168,85,247,.12));
+    box-shadow: 0 0 0 1px #ec4899 inset, 0 4px 16px rgba(236,72,153,.20);
+  }
+  .test-type-pill.tiny-flavor.active .tt-label { color: #ec4899; }
+
+  /* ─── Tiny mode (Unicorn Quest) — kid-friendly styling ─── */
+  body.tiny-mode {
+    --tiny-pink: #ec4899;
+    --tiny-pink-soft: rgba(244,114,182,.18);
+    --tiny-lavender: #a78bfa;
+    --tiny-mint: #6ee7b7;
+    --tiny-peach: #fbbf24;
+  }
+  /* Slightly chunkier section cards in tiny mode for easier targeting */
+  body.tiny-mode .section-card {
+    border-radius: 20px;
+    border-width: 2px;
+    padding: 22px;
+  }
+  body.tiny-mode .section-card .title { font-size: 22px; }
+  body.tiny-mode .section-card .emoji { font-size: 48px; }
+
+  /* Quiz view in tiny mode: big visual / prompt / huge colorful buttons */
+  .tiny-visual {
+    font-size: clamp(56px, 16vw, 120px);
+    text-align: center;
+    line-height: 1.1;
+    margin: 8px 0 18px;
+    filter: drop-shadow(0 4px 12px rgba(236,72,153,.25));
+  }
+  .tiny-prompt {
+    font-size: clamp(22px, 4.5vw, 30px);
+    font-weight: 800;
+    color: var(--text);
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 18px;
+    letter-spacing: .3px;
+  }
+  body.tiny-mode .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  body.tiny-mode .option {
+    min-height: 90px;
+    font-size: clamp(28px, 6vw, 44px);
+    font-weight: 900;
+    border-radius: 20px;
+    border-width: 3px;
+    border-style: solid;
+    padding: 14px;
+    transition: transform .12s ease, box-shadow .12s ease;
+    color: var(--text);
+  }
+  body.tiny-mode .option:not(:disabled):hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+  }
+  body.tiny-mode .option:not(:disabled):active { transform: translateY(0) scale(0.98); }
+  body.tiny-mode .option .key { display: none; }
+  body.tiny-mode .option .option-text { display: block; text-align: center; width: 100%; }
+  body.tiny-mode .option .option-word { display: block; text-align: center; }
+  /* Rotating pastel borders so each of the 4 buttons feels distinct */
+  body.tiny-mode .options .option:nth-child(1) { background: rgba(244,114,182,.10); border-color: #ec4899; color: #fde0f4; }
+  body.tiny-mode .options .option:nth-child(2) { background: rgba(167,139,250,.10); border-color: #a78bfa; color: #e0d4ff; }
+  body.tiny-mode .options .option:nth-child(3) { background: rgba(110,231,183,.10); border-color: #34d399; color: #ccfae5; }
+  body.tiny-mode .options .option:nth-child(4) { background: rgba(251,191,36,.10); border-color: #fbbf24; color: #fde9b3; }
+  body.tiny-mode .option.correct { background: rgba(34,197,94,.30); border-color: #22c55e; color: #d4f5dd; }
+  body.tiny-mode .option.wrong   { background: rgba(239,68,68,.25); border-color: #ef4444; color: #fad5d5; }
+
+  /* 🦄 mascot — floats in a corner during tiny-mode quiz; bounces on
+     correct answers, looks sad on wrong. Skippable: pointer-events none
+     so it never blocks taps. */
+  .tiny-mascot {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    font-size: 56px;
+    z-index: 100;
+    pointer-events: none;
+    transition: transform .25s ease, opacity .25s ease;
+    filter: drop-shadow(0 4px 16px rgba(236,72,153,.45));
+    user-select: none;
+  }
+  .tiny-mascot.cheer { animation: tiny-mascot-cheer .6s ease; }
+  .tiny-mascot.sad   { animation: tiny-mascot-sad .5s ease; }
+  @keyframes tiny-mascot-cheer {
+    0%   { transform: scale(1) rotate(0); }
+    25%  { transform: scale(1.3) rotate(-12deg) translateY(-12px); }
+    50%  { transform: scale(1.2) rotate(8deg) translateY(-20px); }
+    75%  { transform: scale(1.25) rotate(-5deg) translateY(-10px); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  @keyframes tiny-mascot-sad {
+    0%   { transform: rotate(0); }
+    25%  { transform: rotate(-8deg) translateY(4px); }
+    50%  { transform: rotate(0) translateY(4px); }
+    75%  { transform: rotate(8deg) translateY(4px); }
+    100% { transform: rotate(0); }
+  }
+
+  /* Big celebration overlay on right answers in tiny mode — flashes then
+     fades. Cheerful, fast, ungated. */
+  .tiny-celebrate {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    font-size: clamp(60px, 14vw, 140px);
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 40px #fde047, 0 0 80px #f472b6, 0 8px 32px rgba(0,0,0,.4);
+    animation: tiny-celebrate-burst .9s ease forwards;
+  }
+  @keyframes tiny-celebrate-burst {
+    0%   { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+    30%  { transform: scale(1.3) rotate(5deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 0; }
+  }
 
   /* Compact info banner shown above the section grid when PSAT mode is
      active and every PSAT section pool is still empty. Disappears the
@@ -1941,8 +2074,9 @@
 
 <!-- ─── HOME VIEW ─── -->
 <div class="view-home" id="viewHome">
-  <!-- Top-level test type toggle. ISEE is the default and the only one with
-       content today; PSAT shows a "coming soon" stub when selected. -->
+  <!-- Top-level test type toggle. Three modes: ISEE (default), PSAT, and
+       Unicorn Quest (kid mode for younger siblings). Unicorn pill gets a
+       pink flavor — kid-facing brand identity. -->
   <div class="test-type-toggle" id="testTypeToggle">
     <button class="test-type-pill active" id="testTypeIsee" data-type="isee">
       <div class="tt-label">ISEE</div>
@@ -1951,6 +2085,10 @@
     <button class="test-type-pill" id="testTypePsat" data-type="psat">
       <div class="tt-label">PSAT</div>
       <div class="tt-sub">Preliminary SAT</div>
+    </button>
+    <button class="test-type-pill tiny-flavor" id="testTypeTiny" data-type="tiny">
+      <div class="tt-label">🦄 Unicorn Quest</div>
+      <div class="tt-sub">Letters & numbers for little kids</div>
     </button>
   </div>
 
@@ -2241,6 +2379,11 @@
      Big animated hype text, countdown 3-2-1, floating emojis, tap to skip. -->
 <div class="lock-in-splash hidden" id="lockInSplash"></div>
 
+<!-- 🦄 Mascot — fixed-position emoji shown only in tiny-mode (Unicorn
+     Quest) during the quiz view. Reacts on answers (cheer/sad animations).
+     Pointer-events none — never blocks taps. -->
+<div class="tiny-mascot hidden" id="tinyMascot">🦄</div>
+
 <!-- Build stamp — populated at boot from APP_VERSION / APP_VERSION_DATE so
      the parent can tell what version is running after a hard refresh. -->
 <footer class="app-footer" id="appFooter"></footer>
@@ -2383,6 +2526,8 @@
 <script src="data/bridge-essays.js"></script>
 <script src="data/psat-rw.js"></script>
 <script src="data/psat-math.js"></script>
+<script src="data/tiny-letters.js"></script>
+<script src="data/tiny-numbers.js"></script>
 <script src="data/definitions.js"></script>
 <script>
 // ════════════════════════════════════════════════════════════════════════════
@@ -2439,6 +2584,12 @@ const TESTS = {
     defaultGrade: "psat89",
     // grades / sections wired up after PSAT_SECTIONS + psat89 grade are
     // defined further down — see TESTS.psat.grades = { psat89: {...} }.
+  },
+  tiny: {
+    label: "Unicorn Quest 🦄",
+    sub: "Letters and numbers for little kids",
+    defaultGrade: "prek",
+    // grades / sections wired up below — see TESTS.tiny.grades = { prek: {...} }.
   },
 };
 
@@ -2592,6 +2743,51 @@ TESTS.isee.grades = GRADES;
 TESTS.isee.sections = SECTIONS;
 TESTS.psat.sections = PSAT_SECTIONS;
 
+// ════════════════════════════════════════════════════════════════════════════
+// UNICORN QUEST DATA — Pre-K & K mode for a 5-year-old
+// ════════════════════════════════════════════════════════════════════════════
+// Single entry type `tinyQuiz` with a subtype for the question style. Choices
+// are always literal strings (letters, words, numbers, or shape names) and
+// rendered as four BIG colorful buttons. Always instant feedback regardless
+// of test/practice mode — a 5yo wants to know if they got it right NOW.
+//
+// Each entry shape:
+//   { type: "tinyQuiz",
+//     subtype: "letter" | "word" | "count" | "addSub" | "shape" | "number",
+//     prompt: "Tap the letter A",      // big friendly question
+//     visual: "🍎🍎🍎",                  // optional emoji visual, rendered LARGE
+//     choices: ["A", "B", "C", "D"],    // 4 choices, displayed as huge buttons
+//     correct: 0,                       // 0-based index
+//     cheer: "Yes! 🎉",                  // optional override; default cheer phrase rotates
+//   }
+// TINY_LETTERS + TINY_NUMBERS come from data/tiny-letters.js + data/tiny-numbers.js
+// via classic <script src> tags loaded before the inline app script.
+
+const TINY_SECTIONS = [
+  { key: "tiny_letters", name: "Letters & Words", parent: "Unicorn Quest", description: "Letters, sounds, and first words.",     poolKey: "letters", isTiny: true },
+  { key: "tiny_numbers", name: "Numbers & Math",  parent: "Unicorn Quest", description: "Counting, adding, shapes, and numbers.", poolKey: "numbers", isTiny: true },
+];
+
+TESTS.tiny.grades = {
+  prek: {
+    label: "Pre-K & K",
+    sub: "Ages 4 → 6",
+    pools: {
+      letters: TINY_LETTERS,
+      numbers: TINY_NUMBERS,
+    },
+    tests: {                                              // half-length
+      tiny_letters: { questionCount: 5, durationSec: 3 * 60 },
+      tiny_numbers: { questionCount: 5, durationSec: 3 * 60 },
+    },
+    testsFull: {                                          // "full-length" — still short
+      tiny_letters: { questionCount: 10, durationSec: 5 * 60 },
+      tiny_numbers: { questionCount: 10, durationSec: 5 * 60 },
+    },
+  },
+};
+TESTS.tiny.sections = TINY_SECTIONS;
+
 const MASTERY_THRESHOLD = 3;
 // Storage key retained from previous version to preserve user progress across the rebrand.
 const STORAGE_KEY = "isee-progress-v5";
@@ -2600,7 +2796,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.8";
+const APP_VERSION = "3.9";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -2633,6 +2829,34 @@ const DEFAULT_PAYOUT_CONFIG = {
   reviewMasteryBounty: 0.10,  // $ per mistake mastered (3 in a row)
 };
 
+// Per-test-type payout defaults. ISEE + PSAT share the standard config;
+// tiny mode (Unicorn Quest, for a 5-year-old) has its own — smaller numbers
+// since the tests are short (5-10 questions), but generous per-correct so
+// every right answer feels like a meaningful win. Perfect 10-q test pays
+// roughly ~$2.25; perfect 5-q halves to ~$1.10.
+const TINY_DEFAULT_PAYOUT_CONFIG = {
+  testBase:            0.50,
+  perCorrect:          0.10,
+  testGoodBonus:       0.25,
+  testGreatBonus:      0.50,
+  mtdCompletionBonus:  0.00,  // no MTD for tiny
+  reviewMasteryBounty: 0.05,
+};
+const DEFAULT_PAYOUT_CONFIG_BY_TYPE = {
+  isee: { ...DEFAULT_PAYOUT_CONFIG },
+  psat: { ...DEFAULT_PAYOUT_CONFIG },
+  tiny: { ...TINY_DEFAULT_PAYOUT_CONFIG },
+};
+
+// Returns the payoutConfig for the active testType. Use this instead of
+// reading state.payoutConfigByType directly — handles missing-entry fallback
+// for forward-compat (e.g. older save that doesn't know about a new test
+// type) and keeps the existing field names so call sites read cleanly.
+function activePayoutConfig() {
+  const byType = state.payoutConfigByType || {};
+  return byType[state.testType] || byType.isee || DEFAULT_PAYOUT_CONFIG;
+}
+
 // Parent PIN to unlock Monetized Mode. Rotates daily to today's MMDD so the
 // kid can't memorize a fixed value — they'd have to look up today's date,
 // type it, and remember to re-enter it the next day.
@@ -2655,6 +2879,9 @@ const SECTION_EMOJI = {
   // PSAT
   psat_rw:           "📚",
   psat_math:         "📐",
+  // Unicorn Quest
+  tiny_letters:      "🔡",
+  tiny_numbers:      "🧮",
 };
 function sectionEmoji(key) { return SECTION_EMOJI[key] || "•"; }
 
@@ -2800,7 +3027,15 @@ const state = {
   // PIN is today's date as MMDD (e.g. 0527 for May 27). Rotates daily so
   // the kid can't just memorize a static value — see getCurrentParentPin().
   monetized: false,
-  payoutConfig: { ...DEFAULT_PAYOUT_CONFIG },
+  // Per-test-type payout config. Each test type maintains its own values
+  // so a kid finishing a 5-question Unicorn Quest doesn't out-earn a
+  // 12-year-old finishing a full Mock Test Day. Read via activePayoutConfig()
+  // anywhere a consumer needs the current values.
+  payoutConfigByType: {
+    isee: { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.isee },
+    psat: { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.psat },
+    tiny: { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.tiny },
+  },
   section: null,
   // Practice
   practicePool: [],
@@ -2849,6 +3084,10 @@ const state = {
   reviewAnswered: false,
   reviewSession: { seen: 0, correct: 0, wrong: 0, mastered: 0 },
   reviewJustMastered: false,
+  // Tiny mode (Unicorn Quest): set true the moment a tinyQuiz entry is
+  // answered (in either practice or test mode) so renderQuiz shows
+  // feedback. Reset to false when the kid advances to the next question.
+  tinyFeedbackShown: false,
   // Essay
   essay: { prompt: "", text: "", startMs: 0, endMs: 0, timerInterval: null, isTest: false },
   // Top-level test type — wraps grade levels + lifetimes. "isee" is the
@@ -2867,6 +3106,9 @@ const state = {
     },
     psat: {
       psat89: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
+    },
+    tiny: {
+      prek:   { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
     },
   },
 };
@@ -3122,23 +3364,39 @@ function loadProgress() {
     // now computed daily from the current date via getCurrentParentPin(), so
     // we ignore any saved value from older versions.
     if (typeof data.monetized === "boolean") state.monetized = data.monetized;
-    if (data.payoutConfig && typeof data.payoutConfig === "object") {
-      const dp = data.payoutConfig;
-      // Migrate old field names → new
-      //   old `base`       (was MTD-completion-only) → `mtdCompletionBonus`
-      //   old `goodBonus`  (was MTD overall ≥85%)    → `testGoodBonus` (per segment)
-      //   old `greatBonus` (was MTD overall ≥95%)    → `testGreatBonus` (per segment)
-      if (dp.base !== undefined && dp.mtdCompletionBonus === undefined) state.payoutConfig.mtdCompletionBonus = Number(dp.base) || 0;
-      if (dp.goodBonus !== undefined && dp.testGoodBonus === undefined)  state.payoutConfig.testGoodBonus  = Number(dp.goodBonus) || 0;
-      if (dp.greatBonus !== undefined && dp.testGreatBonus === undefined) state.payoutConfig.testGreatBonus = Number(dp.greatBonus) || 0;
-      // Then layer in any explicitly-set new fields
-      for (const k of ["testBase","perCorrect","testGoodBonus","testGreatBonus","mtdCompletionBonus","reviewMasteryBounty"]) {
-        const v = Number(dp[k]);
-        if (Number.isFinite(v) && v >= 0) state.payoutConfig[k] = v;
+    // Payout config migration. Three shapes have existed:
+    //   (1) ancient: data.payoutConfig with old field names (base, goodBonus, greatBonus)
+    //   (2) recent:  data.payoutConfig with new field names (testBase, testGoodBonus, …)
+    //   (3) current: data.payoutConfigByType = { isee: {...}, psat: {...}, tiny: {...} }
+    // Older shapes get migrated into the per-type bucket for ISEE.
+    const numericFields = ["testBase","perCorrect","testGoodBonus","testGreatBonus","mtdCompletionBonus","reviewMasteryBounty"];
+    function applyPayoutFields(target, source) {
+      // Migrate old field names if present
+      if (source.base !== undefined && source.mtdCompletionBonus === undefined) target.mtdCompletionBonus = Number(source.base) || 0;
+      if (source.goodBonus !== undefined && source.testGoodBonus === undefined)  target.testGoodBonus  = Number(source.goodBonus) || 0;
+      if (source.greatBonus !== undefined && source.testGreatBonus === undefined) target.testGreatBonus = Number(source.greatBonus) || 0;
+      for (const k of numericFields) {
+        const v = Number(source[k]);
+        if (Number.isFinite(v) && v >= 0) target[k] = v;
       }
-      // Backfill: older saves predate reviewMasteryBounty; default it in.
-      if (state.payoutConfig.reviewMasteryBounty === undefined) {
-        state.payoutConfig.reviewMasteryBounty = DEFAULT_PAYOUT_CONFIG.reviewMasteryBounty;
+    }
+    if (data.payoutConfigByType && typeof data.payoutConfigByType === "object") {
+      // Current shape — layer per-type
+      for (const t of Object.keys(state.payoutConfigByType)) {
+        if (data.payoutConfigByType[t] && typeof data.payoutConfigByType[t] === "object") {
+          applyPayoutFields(state.payoutConfigByType[t], data.payoutConfigByType[t]);
+        }
+      }
+    } else if (data.payoutConfig && typeof data.payoutConfig === "object") {
+      // Legacy flat shape — apply to ISEE only (the only test type that
+      // existed when this shape was in use). PSAT + tiny stay at defaults.
+      applyPayoutFields(state.payoutConfigByType.isee, data.payoutConfig);
+    }
+    // Backfill reviewMasteryBounty on any type whose loaded values predate it.
+    for (const t of Object.keys(state.payoutConfigByType)) {
+      if (state.payoutConfigByType[t].reviewMasteryBounty === undefined) {
+        state.payoutConfigByType[t].reviewMasteryBounty =
+          (DEFAULT_PAYOUT_CONFIG_BY_TYPE[t] || DEFAULT_PAYOUT_CONFIG).reviewMasteryBounty;
       }
     }
     // testType is new — accept saved value if it matches a known test type.
@@ -3153,6 +3411,7 @@ function loadProgress() {
       const looksFlat = ("lower" in data.lifetimes) || ("bridge" in data.lifetimes) || ("middle" in data.lifetimes);
       const incomingIsee = looksFlat ? data.lifetimes : (data.lifetimes.isee || {});
       const incomingPsat = data.lifetimes.psat || {};
+      const incomingTiny = data.lifetimes.tiny || {};
       for (const g of Object.keys(state.lifetimes.isee)) {
         if (incomingIsee[g]) {
           Object.assign(state.lifetimes.isee[g], incomingIsee[g]);
@@ -3171,6 +3430,16 @@ function loadProgress() {
       // about (forward-compat) — accept their shape verbatim.
       for (const g of Object.keys(incomingPsat)) {
         if (!state.lifetimes.psat[g]) state.lifetimes.psat[g] = incomingPsat[g];
+      }
+      // Same for tiny (Unicorn Quest).
+      for (const g of Object.keys(state.lifetimes.tiny)) {
+        if (incomingTiny[g]) {
+          Object.assign(state.lifetimes.tiny[g], incomingTiny[g]);
+          if (!state.lifetimes.tiny[g].mistakes) state.lifetimes.tiny[g].mistakes = {};
+        }
+      }
+      for (const g of Object.keys(incomingTiny)) {
+        if (!state.lifetimes.tiny[g]) state.lifetimes.tiny[g] = incomingTiny[g];
       }
     }
     // Migration: add new gamification fields for older saved states. Same
@@ -3214,7 +3483,7 @@ function saveProgress() {
       lastGradeByType: state.lastGradeByType,
       testVolume: state.testVolume,
       monetized: state.monetized,
-      payoutConfig: state.payoutConfig,
+      payoutConfigByType: state.payoutConfigByType,
       lifetimes: state.lifetimes,
     }));
   } catch (_) {}
@@ -3503,6 +3772,24 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
     };
   }
 
+  // Unicorn Quest (tiny mode). Big colorful prompt + 4 huge choice buttons.
+  // Optional `visual` emoji block rendered LARGE above the question.
+  // `cheer` overrides the default celebration phrase on a right answer.
+  if (entry.type === "tinyQuiz") {
+    const visualHtml = entry.visual
+      ? `<div class="tiny-visual">${escapeHtml(entry.visual)}</div>`
+      : "";
+    return {
+      id, sectionKey, entry,
+      promptHtml: `${visualHtml}<div class="tiny-prompt">${escapeHtml(entry.prompt || entry.question || "")}</div>`,
+      choices: entry.choices.slice(),
+      answerIdx: entry.correct,
+      feedbackHtml: entry.cheer ? `<b>${escapeHtml(entry.cheer)}</b>` : "",
+      displayLabel: entry.prompt || entry.question || "",
+      isTiny: true,
+    };
+  }
+
   if (entry.type === "quantComparison") {
     return {
       id, sectionKey, entry,
@@ -3588,6 +3875,15 @@ function selectOption(i) {
   // Test mode: tap-to-select is the answer (real-ISEE bubble behavior).
   // Record immediately; the kid stays on the question and can change later.
   if (state.mode === "test") { testAnswer(i); return; }
+  // Tiny mode in practice/review: one-tap auto-submit (5yo doesn't want a
+  // separate Submit step). Fires mascot + celebration like test mode.
+  if (q.isTiny) {
+    const correct = i === q.answerIdx;
+    tinyMascotReact(correct);
+    if (correct) tinyCelebrate();
+    submitSelected();
+    return;
+  }
   renderQuiz();
 }
 function submitSelected() {
@@ -3609,8 +3905,17 @@ function submitSelected() {
 function nextOrSubmit() {
   // Enter/Space and the right-hand button both call this.
   if (state.mode === "test") {
-    // Test mode: tap-to-record removes the "submit" step. Enter advances to
-    // the next question, or on the last question triggers Submit Section.
+    // Tiny mode: Next only appears after the kid has answered + seen feedback.
+    // Skip the Submit-Section confirm modal on the last question — a 5yo
+    // doesn't need to "lock in"; we just go to results.
+    const q = state.testCurrent;
+    if (q && q.isTiny) {
+      if (state.testIndex < state.testQueue.length - 1) testNext();
+      else finishTest();
+      return;
+    }
+    // Standard test mode: tap-to-record removes the "submit" step. Enter
+    // advances to the next question, or on the last triggers Submit Section.
     if (state.testIndex < state.testQueue.length - 1) testNext();
     else triggerFinishTest();
     return;
@@ -3695,7 +4000,7 @@ function recordReviewCorrect(id) {
   if (m.correctStreak >= MASTERY_THRESHOLD) m.mastered = true;
   let bountyEarned = 0;
   if (justMastered && state.monetized) {
-    bountyEarned = Math.max(0, Number(state.payoutConfig.reviewMasteryBounty) || 0);
+    bountyEarned = Math.max(0, Number(activePayoutConfig().reviewMasteryBounty) || 0);
     if (bountyEarned > 0) {
       L().rewardsBanked = (L().rewardsBanked || 0) + bountyEarned;
     }
@@ -3766,6 +4071,8 @@ function showView(name) {
     bankedBadge.classList.toggle("hidden", !showBanked);
     if (showBanked) bankedBadge.textContent = `💰 $${L().rewardsBanked.toFixed(2)} banked`;
   }
+  // Tiny mascot lives only inside the quiz view in tiny mode.
+  if (name !== "quiz") tinyMascotHide();
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -3894,7 +4201,7 @@ function renderSectionsGrid() {
     // payouts across all 5 testable sections + essay base + completion bonus)
     let mtdPayoutChip = "";
     if (state.monetized) {
-      const cfg = state.payoutConfig;
+      const cfg = activePayoutConfig();
       let maxSum = 0;
       for (const k of BATTERY_SECTION_ORDER) {
         if (k === "break") continue;
@@ -3936,7 +4243,7 @@ function renderReviewModePanel(stats) {
   // Sparkle + bounty chip when monetized AND a bounty is configured (parent
   // could set it to $0 to opt out). Skip if there are no active mistakes
   // since there's nothing to earn on right now.
-  const bounty = Number(state.payoutConfig.reviewMasteryBounty) || 0;
+  const bounty = Number(activePayoutConfig().reviewMasteryBounty) || 0;
   const showSparkle = state.monetized && bounty > 0 && stats.active > 0;
   $("reviewModePanel").classList.toggle("lite-sparkle", showSparkle);
   const chip = $("reviewBountyChip");
@@ -4250,13 +4557,15 @@ function batteryShowStage(stage) {
     setTimeout(() => $("batteryPinInput").focus(), 50);
   }
   if (stage === "config") {
-    // Prefill from current state.payoutConfig
-    $("payoutBase").value          = state.payoutConfig.testBase.toFixed(2);
-    $("payoutPerCorrect").value    = state.payoutConfig.perCorrect.toFixed(2);
-    $("payoutGoodBonus").value     = state.payoutConfig.testGoodBonus.toFixed(2);
-    $("payoutGreatBonus").value    = state.payoutConfig.testGreatBonus.toFixed(2);
-    $("payoutMtdBonus").value      = state.payoutConfig.mtdCompletionBonus.toFixed(2);
-    $("payoutReviewBounty").value  = (state.payoutConfig.reviewMasteryBounty || 0).toFixed(2);
+    // Prefill from the active testType's payoutConfig. Each test type has
+    // its own (Unicorn Quest's are tuned for shorter tests + younger user).
+    const _pc = activePayoutConfig();
+    $("payoutBase").value          = _pc.testBase.toFixed(2);
+    $("payoutPerCorrect").value    = _pc.perCorrect.toFixed(2);
+    $("payoutGoodBonus").value     = _pc.testGoodBonus.toFixed(2);
+    $("payoutGreatBonus").value    = _pc.testGreatBonus.toFixed(2);
+    $("payoutMtdBonus").value      = _pc.mtdCompletionBonus.toFixed(2);
+    $("payoutReviewBounty").value  = (_pc.reviewMasteryBounty || 0).toFixed(2);
     $("bankedAmount").textContent  = `$${(L().rewardsBanked || 0).toFixed(2)}`;
     updatePayoutPreview();
     // Submit button label depends on whether we're launching MTD after
@@ -4341,9 +4650,9 @@ function updatePayoutPreview() {
 }
 
 function confirmStartBattery() {
-  // Save the parent's payout settings (persists across batteries) and
-  // enable Monetized Mode (this flow always means parent has approved).
-  state.payoutConfig = readPayoutConfigFromForm();
+  // Save the parent's payout settings (per the active testType) and enable
+  // Monetized Mode (this flow always means parent has approved).
+  state.payoutConfigByType[state.testType] = readPayoutConfigFromForm();
   state.monetized = true;
   saveProgress();
   $("batteryModal").classList.add("hidden");
@@ -4370,19 +4679,29 @@ function actuallyLaunchBattery() {
 
 // Running banked = base + per-correct portion only. Bonuses depend on FINAL
 // overall accuracy, so we surface them as "still possible" rather than banked.
+// Running total of per-section payouts during an in-progress MTD. Sums the
+// completed sections' actual earnings (including their accuracy bonuses);
+// the MTD completion bonus is added separately when the whole battery
+// finishes. (Used to reference long-dead field names — would have shown
+// "$NaN" — until the per-type-payout refactor caught it.)
 function batteryRunningBanked() {
-  let correct = 0;
+  let banked = 0;
   for (const r of state.battery.results) {
-    if (r.isEssay) continue;
-    correct += r.correct;
+    if (r.isEssay) {
+      banked += calculateEssayEarnings(r.correct);  // r.correct = word count for essays
+    } else {
+      banked += calculateTestEarnings(r.correct, r.total);
+    }
   }
-  return state.payoutConfig.base + (correct * state.payoutConfig.perCorrect);
+  return banked;
 }
 function batteryBankedChipHTML() {
+  const cfg = activePayoutConfig();
   const banked = batteryRunningBanked();
-  const bonusLine = (state.payoutConfig.goodBonus > 0 || state.payoutConfig.greatBonus > 0)
-    ? `<span class="lock">+ up to $${(state.payoutConfig.goodBonus + state.payoutConfig.greatBonus).toFixed(2)} in end-of-test bonuses</span>`
-    : `<span class="lock">paid out when you finish the whole test</span>`;
+  const mtdBonus = cfg.mtdCompletionBonus || 0;
+  const bonusLine = mtdBonus > 0
+    ? `<span class="lock">+ $${mtdBonus.toFixed(2)} MTD bonus when you finish</span>`
+    : `<span class="lock">earnings accumulate per section</span>`;
   return `<div class="banked-chip">💰 Banked so far: <span class="amt">$${banked.toFixed(2)}</span> ${bonusLine}</div>`;
 }
 
@@ -4537,7 +4856,7 @@ function renderBatteryBreak() {
 // answer pays the same regardless of volume.
 function calculateTestEarnings(correct, total) {
   if (total === 0) return 0;
-  const cfg = state.payoutConfig;
+  const cfg = activePayoutConfig();
   const scale = payoutScale();
   const acc = correct / total;
   let earned = cfg.testBase * scale + correct * cfg.perCorrect;
@@ -4548,8 +4867,8 @@ function calculateTestEarnings(correct, total) {
 
 // Highest payout possible for a test of `total` questions (perfect score).
 function maxTestEarnings(total) {
-  if (total === 0) return state.payoutConfig.testBase * payoutScale();
-  const cfg = state.payoutConfig;
+  const cfg = activePayoutConfig();
+  if (total === 0) return cfg.testBase * payoutScale();
   const scale = payoutScale();
   return cfg.testBase * scale + total * cfg.perCorrect + cfg.testGoodBonus * scale + cfg.testGreatBonus * scale;
 }
@@ -4570,7 +4889,7 @@ function maxEssayEarnings() { return 2.00; }
 function calculateBatteryReward() {
   // Sum per-section payouts; add the MTD completion bonus on top.
   // Apply the same anti-spam check per section as for individual tests.
-  const cfg = state.payoutConfig;
+  const cfg = activePayoutConfig();
   let totalCorrect = 0, totalQ = 0, sectionPayouts = 0;
   const segments = [];
   for (const r of state.battery.results) {
@@ -4718,26 +5037,35 @@ function setTestType(type) {
 // Header chips (Monetized, Banked) hide in PSAT mode since they reflect
 // ISEE-scoped accounting; PSAT has its own future accounting.
 function applyTestTypeToHome() {
-  const isPsat = state.testType === "psat";
-  $("testTypeIsee").classList.toggle("active", !isPsat);
-  $("testTypePsat").classList.toggle("active",  isPsat);
+  const tt = state.testType;
+  const isIsee = tt === "isee";
+  const isPsat = tt === "psat";
+  const isTiny = tt === "tiny";
+  $("testTypeIsee").classList.toggle("active", isIsee);
+  $("testTypePsat").classList.toggle("active", isPsat);
+  $("testTypeTiny").classList.toggle("active", isTiny);
+  // Body class drives kid-mode CSS (pink palette, bigger buttons, etc.)
+  // app-wide while tiny is the active test type.
+  document.body.classList.toggle("tiny-mode", isTiny);
   // Grade toggle: hide when current testType has only one grade. Lets the
   // toggle auto-hide if we ever add or remove grades from a test type.
   const gradeKeys = Object.keys(currentGrades());
   $("gradeToggle").classList.toggle("hidden", gradeKeys.length <= 1);
   // PSAT info banner: only when PSAT is active AND every PSAT section pool
-  // is still empty. Once content lands the cards themselves carry the
-  // readiness signal.
+  // is still empty.
   const psatPoolsEmpty = isPsat && TESTS.psat.sections.every(s => {
     const grade = TESTS.psat.grades[state.gradeLevel];
     return !grade || (grade.pools[s.poolKey] || []).length === 0;
   });
   $("psatInfoBanner").classList.toggle("hidden", !psatPoolsEmpty);
-  // Header chips
-  $("monetizedHeaderBadge").classList.toggle("hidden", isPsat || !state.monetized);
-  $("bankedHeaderBadge").classList.toggle("hidden", isPsat);
+  // Header chips — hide Monetized + Banked badges when in PSAT or tiny mode
+  // (they reflect ISEE-scoped state and would be misleading; per-type
+  // accounting means the kid sees the relevant testType's bank inside the
+  // monetized modal instead).
+  $("monetizedHeaderBadge").classList.toggle("hidden", !isIsee || !state.monetized);
+  $("bankedHeaderBadge").classList.toggle("hidden", !isIsee);
   // Hide the Essays button when the current testType has no essay section.
-  // PSAT (post-2021 redesign) dropped the essay; ISEE still has it.
+  // PSAT + tiny have none; ISEE has it.
   const hasEssay = currentSections().some(s => s.isEssay);
   $("viewEssaysBtn").classList.toggle("hidden", !hasEssay);
 }
@@ -4768,6 +5096,10 @@ function startPractice() {
   $("prevBtn").classList.add("hidden");
   $("testNavStrip").classList.add("hidden");
   $("masterBtn").classList.add("hidden");
+  // Mascot shown only in tiny-mode practice (so the kid sees their unicorn
+  // friend even in practice mode). Hidden for ISEE / PSAT.
+  if (state.testType === "tiny") tinyMascotShow();
+  else tinyMascotHide();
   showView("quiz");
   practiceNext();
 }
@@ -4781,6 +5113,7 @@ function practiceNext() {
   state.practiceAnswered = false;
   state.selectedIdx = -1;
   state.gridInDraft = "";  // reset grid-in input between questions
+  state.tinyFeedbackShown = false;
   renderQuiz();
 }
 
@@ -4817,6 +5150,51 @@ function practiceAnswer(i) {
 // ════════════════════════════════════════════════════════════════════════════
 // TEST MODE
 // ════════════════════════════════════════════════════════════════════════════
+// ─── Tiny mode (Unicorn Quest) UI helpers ───────────────────────────────────
+// Mascot lives in a fixed-position div and reacts to answers with bouncy
+// animations. Shown only in tiny-mode quiz views; hidden everywhere else.
+function tinyMascotShow() {
+  const m = $("tinyMascot");
+  if (m) m.classList.remove("hidden");
+}
+function tinyMascotHide() {
+  const m = $("tinyMascot");
+  if (m) m.classList.add("hidden");
+}
+function tinyMascotReact(correct) {
+  const m = $("tinyMascot");
+  if (!m) return;
+  m.classList.remove("hidden", "cheer", "sad");
+  m.textContent = correct ? "🦄" : "🥺";
+  // Re-trigger animation by toggling the class on next frame
+  void m.offsetWidth;
+  m.classList.add(correct ? "cheer" : "sad");
+  // Reset to neutral 🦄 after the sad animation so the next correct answer
+  // gets the proper unicorn back
+  if (!correct) {
+    setTimeout(() => { if (m) m.textContent = "🦄"; m.classList.remove("sad"); }, 1500);
+  }
+}
+// Random celebration phrase + emoji shower for a right answer in tiny mode.
+const TINY_CHEERS = ["YES!! 🎉", "WOOHOO! ✨", "GREAT JOB! 🌟", "AMAZING! 💖", "YOU GOT IT! 🦄", "WAY TO GO! 🎊", "PERFECT! 🌈", "SUPERSTAR! ⭐"];
+// Returns the per-entry custom cheer if set, otherwise picks a random
+// phrase from TINY_CHEERS. Used inline in the tiny-mode feedback render.
+function entryOrCheer(q) {
+  const fromEntry = q && q.entry && q.entry.cheer;
+  if (fromEntry) return escapeHtml(String(fromEntry));
+  return escapeHtml(TINY_CHEERS[Math.floor(Math.random() * TINY_CHEERS.length)]);
+}
+function tinyCelebrate(customCheer) {
+  const cheer = customCheer || TINY_CHEERS[Math.floor(Math.random() * TINY_CHEERS.length)];
+  const el = document.createElement("div");
+  el.className = "tiny-celebrate";
+  el.textContent = cheer;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 950);
+  // Small confetti burst — same helper the rest of the app uses
+  try { fireConfetti({ intensity: 0.7, durationMs: 1100 }); } catch (_) {}
+}
+
 // ─── LOCK IN splash (pre-test hype overlay) ─────────────────────────────────
 // Phrase pool rotates randomly each launch. Gen-alpha flavored; the kid
 // thinks they're funny. Pair: text + flanking emoji that fits the vibe.
@@ -4964,22 +5342,37 @@ function startTest() {
   // during a real test, and free navigation means there's no natural
   // "streak in a row" until we compute it post-test.
   $("streakStat").classList.add("hidden");
-  $("finishBtn").classList.remove("hidden");
-  $("flagBtn").classList.remove("hidden");
-  $("prevBtn").classList.remove("hidden");
+  // Tiny mode (Unicorn Quest): suppress the standard test-mode chrome
+  // (nav strip, flag, prev, Submit Section) — confusing for a 5yo. Show
+  // the unicorn mascot instead. Tests still time and finish via the
+  // standard finishTest path so payouts + past-tests history work.
+  const isTinyTest = state.testType === "tiny";
+  if (isTinyTest) {
+    $("testNavStrip").classList.add("hidden");
+    $("finishBtn").classList.add("hidden");
+    $("flagBtn").classList.add("hidden");
+    $("prevBtn").classList.add("hidden");
+    state.tinyFeedbackShown = false;
+    tinyMascotShow();
+  } else {
+    $("testNavStrip").classList.remove("hidden");
+    $("finishBtn").classList.remove("hidden");
+    $("flagBtn").classList.remove("hidden");
+    $("prevBtn").classList.remove("hidden");
+    tinyMascotHide();
+  }
   $("masterBtn").classList.add("hidden");
-  $("testNavStrip").classList.remove("hidden");
   // Hype-splash overlay before the test starts. Defer timer start + view
   // show until the splash dismisses (or is tapped to skip) — otherwise
-  // the kid loses test time staring at the splash. Battery mode skips
-  // the splash since the per-section transition screen already provides
-  // a "lock in" beat between sections.
+  // the kid loses test time staring at the splash. Battery mode + tiny
+  // mode skip the splash (battery has its own transition screens; tiny
+  // gets celebrations on every right answer instead).
   const launchTest = () => {
     startTimer();
     showView("quiz");
     renderQuiz();
   };
-  if (state.battery.active) {
+  if (state.battery.active || isTinyTest) {
     launchTest();
   } else {
     showLockInSplash(launchTest);
@@ -5014,6 +5407,18 @@ function testAnswer(i) {
   if (!ans) return;
   ans.picked = i;
   state.selectedIdx = i;
+  // Tiny mode (Unicorn Quest): even in test mode, every answer gets
+  // instant feedback. Flip the feedback flag + fire mascot reaction +
+  // celebrate-overlay on correct. The renderQuiz test-mode branch
+  // checks `tinyFeedbackShown` to render the feedback panel instead of
+  // the standard test-mode action bar.
+  const q = state.testCurrent;
+  if (q && q.isTiny) {
+    state.tinyFeedbackShown = true;
+    const correct = i === q.answerIdx;
+    tinyMascotReact(correct);
+    if (correct) tinyCelebrate();
+  }
   renderQuiz();
 }
 function testToggleFlag() {
@@ -5029,6 +5434,11 @@ function testGoto(idx) {
   // selectedIdx mirrors what's currently picked (if anything) for the
   // option-render code path that reads it.
   state.selectedIdx = state.testAnswers[idx].picked ?? -1;
+  // Tiny-mode: reset feedback-shown flag when moving to a new question so
+  // the kid sees fresh options (and re-show the unanswered state if they
+  // navigate back). For tiny, in practice navigation isn't a thing — kid
+  // just goes forward — but reset is correct in either case.
+  state.tinyFeedbackShown = false;
   renderQuiz();
 }
 function testPrev() { if (state.testIndex > 0) testGoto(state.testIndex - 1); }
@@ -5042,10 +5452,12 @@ function finishTestEarly() {
 function finishTest() {
   stopTimer();
   // Hide the test-mode chrome so it doesn't leak into the results / battery
-  // transition views (battery skips renderTestResults).
+  // transition views (battery skips renderTestResults). Tiny mascot too.
   $("testNavStrip").classList.add("hidden");
   $("flagBtn").classList.add("hidden");
   $("prevBtn").classList.add("hidden");
+  tinyMascotHide();
+  state.tinyFeedbackShown = false;
   for (const a of state.testAnswers) {
     if (!isAnswerCorrect(a)) {
       recordMistake(a.id, a.sectionKey, a.displayLabel);
@@ -5169,6 +5581,7 @@ function startReview() {
   $("prevBtn").classList.add("hidden");
   $("testNavStrip").classList.add("hidden");
   $("masterBtn").classList.remove("hidden");
+  if (state.testType === "tiny") tinyMascotShow(); else tinyMascotHide();
   showView("quiz");
   reviewNext();
 }
@@ -5403,7 +5816,47 @@ function renderQuiz(picked = -1) {
   const finishBtn = $("finishBtn");
 
   if (mode === "test") {
-    // Test mode never shows per-question feedback. The action bar is:
+    // ── Tiny mode in test mode: always instant feedback (5yo wants to
+    //    know NOW if they got it). After answering, fall through to the
+    //    normal showFeedback block. Until then, show a clean
+    //    "tap an answer" layout with no nav strip / flag / Submit Section
+    //    (those are confusing for a 5yo).
+    if (q.isTiny) {
+      const ans = state.testAnswers[state.testIndex];
+      prevBtn.classList.add("hidden");
+      flagBtn.classList.add("hidden");
+      finishBtn.classList.add("hidden");
+      masterBtn.classList.add("hidden");
+      if (state.tinyFeedbackShown && ans?.picked != null) {
+        // Render feedback + Next button by falling through to the standard
+        // showFeedback path below. Pass picked through the local variable
+        // (the outer call passed picked=-1, but we have the recorded value).
+        picked = ans.picked;
+        // Force the showFeedback branch by setting a synthetic flag locally.
+        // Easiest: just inline the same render here without falling through.
+        const correct = picked === q.answerIdx;
+        const isLast = state.testIndex === state.testQueue.length - 1;
+        // Use the entry's custom cheer if provided, else random
+        const cheerLine = correct
+          ? `<div class="verdict good">${entryOrCheer(q)}</div>`
+          : `<div class="verdict bad">Almost! The answer is <strong>${escapeHtml(String(q.choices[q.answerIdx]))}</strong> 💛</div>`;
+        fbEl.className = `feedback ${correct ? "good" : "bad"}`;
+        fbEl.innerHTML = cheerLine;
+        nextBtn.classList.remove("hidden");
+        nextBtn.disabled = false;
+        nextBtn.textContent = isLast ? "Finish! 🎉" : "Next →";
+        nextBtn.focus();
+      } else {
+        // Unanswered — show the four big choice buttons (rendered above by
+        // the options-render loop), hide feedback + next button until answer.
+        fbEl.className = "feedback";
+        fbEl.innerHTML = "";
+        nextBtn.classList.add("hidden");
+      }
+      return;
+    }
+    // Standard test mode (ISEE / PSAT) — no per-question feedback. The
+    // action bar is:
     //   ← Prev   ⚑ Flag   ⋯   Next →   [Submit Section]
     // Submit Section is hidden until the kid has either reached the last
     // question or touched every question (answered or flagged) — guards
@@ -5475,7 +5928,7 @@ function renderQuiz(picked = -1) {
     // the natural 3-in-a-row mastery path is the one that pays.
     masterBtn.classList.toggle("hidden", mode !== "review");
     if (mode === "review") {
-      const bounty = Number(state.payoutConfig.reviewMasteryBounty) || 0;
+      const bounty = Number(activePayoutConfig().reviewMasteryBounty) || 0;
       const showHint = state.monetized && bounty > 0;
       masterBtn.textContent = showHint
         ? "Mark as mastered (no payout)"
@@ -6071,6 +6524,7 @@ function renderMistakesList() {
 // ════════════════════════════════════════════════════════════════════════════
 $("testTypeIsee").addEventListener("click", () => setTestType("isee"));
 $("testTypePsat").addEventListener("click", () => setTestType("psat"));
+$("testTypeTiny").addEventListener("click", () => setTestType("tiny"));
 $("gradeLower").addEventListener("click", () => setGrade("lower"));
 $("gradeBridge").addEventListener("click", () => setGrade("bridge"));
 $("gradeMiddle").addEventListener("click", () => setGrade("middle"));
@@ -6191,9 +6645,11 @@ $("monetizedToggleBtn").addEventListener("click", async () => {
 for (const id of ["payoutBase","payoutPerCorrect","payoutGoodBonus","payoutGreatBonus","payoutMtdBonus","payoutReviewBounty"]) {
   document.addEventListener("input", (e) => { if (e.target && e.target.id === id) updatePayoutPreview(); });
 }
-// Reset all payout fields to factory defaults — DEFAULT_PAYOUT_CONFIG.
+// Reset all payout fields to factory defaults for the active testType.
+// (ISEE + PSAT share the standard DEFAULT_PAYOUT_CONFIG; Unicorn Quest
+// resets to its own kid-tuned TINY_DEFAULT_PAYOUT_CONFIG.)
 $("payoutResetBtn").addEventListener("click", () => {
-  const d = DEFAULT_PAYOUT_CONFIG;
+  const d = DEFAULT_PAYOUT_CONFIG_BY_TYPE[state.testType] || DEFAULT_PAYOUT_CONFIG;
   $("payoutBase").value          = d.testBase.toFixed(2);
   $("payoutPerCorrect").value    = d.perCorrect.toFixed(2);
   $("payoutGoodBonus").value     = d.testGoodBonus.toFixed(2);
