@@ -1697,7 +1697,9 @@
 <div class="streak-toast" id="streakToast">🔥 5 in a row!</div>
 
 <!-- ─── Generic confirm modal (replaces native confirm() everywhere) ─── -->
-<div class="modal-backdrop hidden" id="confirmModal">
+<!-- z-index nudged above the battery modal so confirms triggered from
+     inside the monetized config modal stack on top correctly. -->
+<div class="modal-backdrop hidden" id="confirmModal" style="z-index: 10001">
   <div class="modal-card">
     <div class="modal-title" id="confirmTitle">Are you sure?</div>
     <div class="modal-body"><p id="confirmBody">—</p></div>
