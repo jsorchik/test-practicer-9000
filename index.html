@@ -2925,6 +2925,22 @@ function loadProgress() {
       }
     }
   } catch (_) {}
+  // After everything is loaded, ensure state.gradeLevel is valid for the
+  // current testType. If a save has testType=psat with gradeLevel=middle
+  // (cross-type leftover from before setTestType normalized it), fall back
+  // to the testType's defaultGrade so currentGrade() / L() / testConfigFor()
+  // don't return undefined.
+  //
+  // (This block lived inside saveProgress by mistake until 2026-05-27. The
+  // symptom: first render after a fresh page load showed an empty PSAT
+  // section grid + "content in progress" banner, because state.gradeLevel
+  // was stale. Clicking any mode tab triggered a save → normalization →
+  // fixed state, and subsequent renders worked. Moved here so the fix
+  // happens before renderHome runs at boot.)
+  const grades = currentGrades();
+  if (!grades[state.gradeLevel]) {
+    state.gradeLevel = TESTS[state.testType].defaultGrade || Object.keys(grades)[0];
+  }
 }
 function saveProgress() {
   try {
@@ -2938,14 +2954,6 @@ function saveProgress() {
       lifetimes: state.lifetimes,
     }));
   } catch (_) {}
-  // After everything is loaded, ensure state.gradeLevel is valid for the
-  // current testType. If a save has testType=psat with gradeLevel=middle
-  // (cross-type leftover), normalize to the testType's defaultGrade so
-  // currentGrade() / L() / testConfigFor() don't return undefined.
-  const grades = currentGrades();
-  if (!grades[state.gradeLevel]) {
-    state.gradeLevel = TESTS[state.testType].defaultGrade || Object.keys(grades)[0];
-  }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
