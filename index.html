@@ -2651,10 +2651,13 @@ function renderMonetizedToggle() {
 function renderSectionsGrid() {
   const grid = $("sectionsGrid");
   grid.innerHTML = "";
-  // The individual verbal_synonyms / verbal_completion sections are still in
-  // SECTIONS (used by the registry + combined section + mistakes pool) but
-  // hidden from the home grid since they're rolled into Verbal Reasoning.
-  const HIDDEN_FROM_GRID = new Set(["verbal_synonyms", "verbal_completion"]);
+  // In test mode we only show the combined Verbal Reasoning card (matches
+  // the real ISEE format — synonyms + sentence completion mixed in one
+  // timed block). In practice mode we show all three so the kid can drill
+  // synonyms or sentence completion individually.
+  const HIDDEN_FROM_GRID = state.mode === "test"
+    ? new Set(["verbal_synonyms", "verbal_completion"])
+    : new Set(["verbal_combined"]);
   for (const section of SECTIONS) {
     if (HIDDEN_FROM_GRID.has(section.key)) continue;
     const card = document.createElement("button");
