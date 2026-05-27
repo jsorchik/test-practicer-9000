@@ -877,6 +877,22 @@
     0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.4); }
     50%      { box-shadow: 0 0 12px 2px rgba(251,191,36,0.3); }
   }
+  /* Banked-balance badge — shown next to the title on the home view ONLY,
+     when Monetized is on AND there's a balance. Hidden during tests to
+     avoid leaking right/wrong feedback as the value would update. */
+  #bankedHeaderBadge {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 8px;
+    padding: 4px 12px;
+    background: rgba(34,197,94,.18);
+    border: 1px solid rgba(34,197,94,.45);
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #4ade80;
+    vertical-align: middle;
+  }
   /* ─── Payout chip on section cards ─── */
   .payout-chip {
     align-self: flex-start;
@@ -1183,6 +1199,26 @@
     color: var(--muted);
     margin-bottom: 6px;
   }
+  .banked-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(251,191,36,0.12);
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 10px;
+    flex-wrap: wrap;
+  }
+  .banked-row .banked-amt {
+    color: var(--text);
+    font-size: 15px;
+  }
+  .banked-row .banked-amt #bankedAmount {
+    color: #fbbf24;
+    font-weight: 800;
+    font-size: 18px;
+  }
   @media (max-width: 480px) {
     .payout-grid { grid-template-columns: 1fr; }
   }
@@ -1401,7 +1437,7 @@
 <body>
 
 <header class="app">
-  <h1>Custom Test Practicer 9000<span id="monetizedHeaderBadge" class="hidden">💰 Monetized</span></h1>
+  <h1>Custom Test Practicer 9000<span id="monetizedHeaderBadge" class="hidden">💰 Monetized</span><span id="bankedHeaderBadge" class="hidden">💰 $0.00 banked</span></h1>
   <button class="back hidden" id="backBtn">← Home</button>
 </header>
 
@@ -1750,6 +1786,11 @@
           </label>
         </div>
         <div class="payout-preview" id="payoutPreview">Sample payouts —</div>
+        <div class="payout-group-label" style="margin-top:14px;">Banked balance</div>
+        <div class="banked-row" id="bankedRow">
+          <div class="banked-amt"><span id="bankedAmount">$0.00</span> banked</div>
+          <button class="ghost" id="markPaidBtn" type="button">Mark paid (reset to $0)</button>
+        </div>
       </div>
       <div class="modal-actions">
         <button class="ghost" id="batteryConfigBack">← Back</button>
@@ -1922,6 +1963,11 @@ const MASTERY_THRESHOLD = 3;
 // Storage key retained from previous version to preserve user progress across the rebrand.
 const STORAGE_KEY = "isee-progress-v5";
 
+// Anti-spam: minimum seconds per question for a test to count toward
+// monetized earnings. Faster than this and we assume the kid is
+// random-clicking; payout for that test is $0.
+const MIN_SEC_PER_QUESTION = 5;
+
 // Section icons — used in section cards, stats page, battery progress, etc.
 const SECTION_EMOJI = {
   verbal_synonyms:   "🔤",
@@ -1998,7 +2044,10 @@ const state = {
   parentPin: "6969",
   payoutConfig: {
     // Per-test / per-MTD-segment rewards (apply to every individual test AND
-    // to each section within Mock Test Day):
+    // to each section within Mock Test Day). Defaults are calibrated so
+    // ~30 min of solid 85% work pays ~$5, matching the user's manual rate:
+    //   Half-mode Middle test (20q / 10min) at 85% → $1.85 = ~$5.55/30min
+    //   Full Middle MTD (160q / 200min) at 85%     → $16.30 = ~$4.89/30min
     testBase:       0.50,        // $ for completing any test (or one MTD section)
     perCorrect:     0.05,        // $ per correct answer
     testGoodBonus:  0.50,        // $ bonus if this test/section ≥ 85%
@@ -2509,6 +2558,14 @@ function showView(name) {
   // Hide home button during battery (kid is locked in) and on the home view.
   const hideBack = name === "home" || state.battery.active;
   $("backBtn").classList.toggle("hidden", hideBack);
+  // Banked-balance badge in header: only on the home view (during tests
+  // it would leak right/wrong feedback as the value would change).
+  const bankedBadge = $("bankedHeaderBadge");
+  if (bankedBadge) {
+    const showBanked = name === "home" && state.monetized && (L().rewardsBanked || 0) > 0;
+    bankedBadge.classList.toggle("hidden", !showBanked);
+    if (showBanked) bankedBadge.textContent = `💰 $${L().rewardsBanked.toFixed(2)} banked`;
+  }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -2896,6 +2953,7 @@ function batteryShowStage(stage) {
     $("payoutGoodBonus").value   = state.payoutConfig.testGoodBonus.toFixed(2);
     $("payoutGreatBonus").value  = state.payoutConfig.testGreatBonus.toFixed(2);
     $("payoutMtdBonus").value    = state.payoutConfig.mtdCompletionBonus.toFixed(2);
+    $("bankedAmount").textContent = `$${(L().rewardsBanked || 0).toFixed(2)}`;
     updatePayoutPreview();
     // Submit button label depends on whether we're launching MTD after
     $("batteryConfigStart").textContent = state.monetizedFlowAfterEnable === "start-battery"
@@ -3172,6 +3230,7 @@ function maxTestEarnings(total) {
 
 function calculateBatteryReward() {
   // Sum per-section payouts; add the MTD completion bonus on top.
+  // Apply the same anti-spam check per section as for individual tests.
   const cfg = state.payoutConfig;
   let totalCorrect = 0, totalQ = 0, sectionPayouts = 0;
   const segments = [];
@@ -3180,13 +3239,15 @@ function calculateBatteryReward() {
       // Essays don't have a correct count, so they just get the test base.
       const segEarned = cfg.testBase;
       sectionPayouts += segEarned;
-      segments.push({ key: r.key, name: r.sectionName, isEssay: true, earned: segEarned });
+      segments.push({ key: r.key, name: r.sectionName, isEssay: true, earned: segEarned, rushed: false });
     } else {
-      const segEarned = calculateTestEarnings(r.correct, r.total);
+      const minTimeSec = r.total * MIN_SEC_PER_QUESTION;
+      const rushed = r.total > 0 && r.time < minTimeSec;
+      const segEarned = rushed ? 0 : calculateTestEarnings(r.correct, r.total);
       sectionPayouts += segEarned;
       totalCorrect += r.correct;
       totalQ += r.total;
-      segments.push({ key: r.key, name: r.sectionName, correct: r.correct, total: r.total, earned: segEarned });
+      segments.push({ key: r.key, name: r.sectionName, correct: r.correct, total: r.total, earned: segEarned, rushed });
     }
   }
   const completionBonus = cfg.mtdCompletionBonus;
@@ -3255,8 +3316,9 @@ function renderBatteryFinal() {
     const detail = seg.isEssay
       ? `essay base`
       : `${seg.correct}/${seg.total} · ${Math.round((seg.correct/seg.total)*100)}%`;
+    const rushedNote = seg.rushed ? ` <span style="color:#ef4444;font-size:11px;font-weight:700;">⚠️ TOO FAST</span>` : '';
     breakdown.push(
-      `<div class="stats-row"><div class="left"><span class="emoji">${emoji}</span><span class="name">${seg.name} <span style="opacity:.6;font-size:12px">${detail}</span></span></div><div class="right"><strong>${fmt$(seg.earned)}</strong></div></div>`
+      `<div class="stats-row"><div class="left"><span class="emoji">${emoji}</span><span class="name">${seg.name} <span style="opacity:.6;font-size:12px">${detail}</span>${rushedNote}</span></div><div class="right"><strong>${fmt$(seg.earned)}</strong></div></div>`
     );
   }
   breakdown.push(
@@ -3522,7 +3584,13 @@ function finishTest() {
   // Per-test payout: testBase + correct × perCorrect + accuracy bonuses.
   // Only when Monetized Mode is ON (this path is Test Mode only — Practice
   // never pays out). Same formula applies inside MTD per section.
-  const perTestEarned = state.monetized ? calculateTestEarnings(correct, total) : 0;
+  // Anti-spam: if the kid blasted through faster than 5 sec/question (the
+  // minimum for a plausible real attempt), no payout. Saves the parent
+  // from paying for random-guess speedruns.
+  const minTimeSec = total * MIN_SEC_PER_QUESTION;
+  const rushed = total > 0 && elapsed < minTimeSec;
+  const perTestEarned = (state.monetized && !rushed) ? calculateTestEarnings(correct, total) : 0;
+  state.lastTestRushed = rushed;
   if (perTestEarned > 0) {
     lt.rewardsBanked = (lt.rewardsBanked || 0) + perTestEarned;
     state.lastTestEarned = perTestEarned;
@@ -3925,7 +3993,9 @@ function renderTestResults() {
     : '';
   const earnedCell = (state.lastTestEarned || 0) > 0
     ? `<div><strong style="color:#fbbf24">💰 $${state.lastTestEarned.toFixed(2)}</strong>earned this test</div>`
-    : '';
+    : state.lastTestRushed && state.monetized
+      ? `<div><strong style="color:#ef4444">⚠️ Too fast</strong>no payout (give it a real try)</div>`
+      : '';
   const bankCell = (lt.rewardsBanked || 0) > 0
     ? `<div><strong style="color:#fbbf24">$${lt.rewardsBanked.toFixed(2)}</strong>banked total</div>`
     : '';
@@ -4251,6 +4321,21 @@ $("batteryPinSubmit").addEventListener("click", tryUnlockPin);
 $("batteryPinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlockPin(); });
 $("batteryConfigBack").addEventListener("click", () => batteryShowStage("pin"));
 $("batteryConfigStart").addEventListener("click", confirmStartBattery);
+$("markPaidBtn").addEventListener("click", async () => {
+  const cur = (L().rewardsBanked || 0);
+  if (cur <= 0) return;
+  const ok = await appConfirm({
+    title: `Mark $${cur.toFixed(2)} as paid?`,
+    body: `Resets the banked balance for ${currentGrade().label} to $0.00. Do this after you've paid the kid the cash.`,
+    okLabel: "Yes, paid",
+    cancelLabel: "Cancel",
+  });
+  if (!ok) return;
+  L().rewardsBanked = 0;
+  saveProgress();
+  $("bankedAmount").textContent = "$0.00";
+  renderHome();  // updates header chip
+});
 // Monetized Mode toggle (bottom stats bar)
 $("monetizedToggleBtn").addEventListener("click", async () => {
   if (state.monetized) {
