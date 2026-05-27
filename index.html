@@ -5739,21 +5739,52 @@ function renderMistakesList() {
     const label = m.mastered ? "Mastered" : `${m.correctStreak} / ${MASTERY_THRESHOLD} to master`;
     const item = document.createElement("div");
     item.className = `review-item ${cls}`;
-    // Look up the entry to surface the correct answer + definition behind
-    // a reveal toggle. Pedagogically: active recall > passive reading, so
-    // the answer stays hidden until the kid commits to peeking.
+    // Look up the entry to surface the correct answer behind a reveal
+    // toggle. Pedagogically: active recall > passive reading, so the answer
+    // stays hidden until the kid commits to peeking. Inside the reveal we
+    // surface the correct answer + explanation + a Khan Academy brush-up
+    // link (for tagged math/quant entries).
     const reg = QUESTION_REGISTRY[id];
     const entry = reg && reg.entry;
     let answerHtml = "";
-    if (entry && (m.sectionKey === "verbal_synonyms" || m.sectionKey === "verbal_completion")) {
-      const correct = entry.correct;
-      let def = defLookup(correct);
-      if (!def && m.sectionKey === "verbal_synonyms" && entry.meaning) def = entry.meaning;
-      const defText = def ? ` — ${escapeHtml(def)}` : "";
-      answerHtml = `<button class="reveal-btn" data-reveal-id="${escapeHtml(id)}">👁 Reveal answer</button>
-                    <div class="reveal-answer hidden" id="reveal-${escapeHtml(id)}">
-                      <strong>${escapeHtml(correct)}</strong>${defText}
-                    </div>`;
+    if (entry) {
+      let revealBody = "";
+      if (m.sectionKey === "verbal_synonyms" || m.sectionKey === "verbal_completion") {
+        // Verbal — show correct word + dictionary definition.
+        const correct = entry.correct;
+        let def = defLookup(correct);
+        if (!def && m.sectionKey === "verbal_synonyms" && entry.meaning) def = entry.meaning;
+        const defText = def ? ` — ${escapeHtml(def)}` : "";
+        revealBody = `<div><strong>${escapeHtml(correct)}</strong>${defText}</div>`;
+      } else if (entry.type === "quantComparison") {
+        // Quant comparison — show which column or "equal"/"can't be determined".
+        const map = { a: "Column A is greater", b: "Column B is greater", equal: "The two quantities are equal", cant: "The relationship cannot be determined" };
+        revealBody = `<div><strong>${escapeHtml(map[entry.answer] || entry.answer)}</strong></div>`;
+        if (entry.explanation) revealBody += `<div class="explain" style="margin-top:6px;">${fmtFractions(escapeHtml(entry.explanation))}</div>`;
+      } else if (entry.type === "psatMathGridIn") {
+        // Grid-in — show the canonical answer + explanation.
+        revealBody = `<div><strong>${escapeHtml(String(entry.correct))}</strong></div>`;
+        if (entry.explanation) revealBody += `<div class="explain" style="margin-top:6px;">${fmtFractions(escapeHtml(entry.explanation))}</div>`;
+      } else if (entry.type === "psatRW") {
+        // Reading & Writing MCQ — choices[correct] is the right answer.
+        const correct = entry.choices && entry.choices[entry.correct];
+        revealBody = `<div><strong>${escapeHtml(String(correct || ""))}</strong></div>`;
+        if (entry.explanation) revealBody += `<div class="explain" style="margin-top:6px;">${escapeHtml(entry.explanation)}</div>`;
+      } else if (entry.correct !== undefined) {
+        // Generic MCQ (math, reading, psatMath) — correct is the right answer string.
+        revealBody = `<div><strong>${fmtFractions(escapeHtml(String(entry.correct)))}</strong></div>`;
+        if (entry.explanation) revealBody += `<div class="explain" style="margin-top:6px;">${fmtFractions(escapeHtml(entry.explanation))}</div>`;
+      }
+      // Khan brush-up link for any tagged entry (math/quant only — verbal
+      // entries don't carry topics, so brushUpLinkFor returns "").
+      const brushUp = brushUpLinkFor(entry);
+      if (revealBody || brushUp) {
+        answerHtml = `<button class="reveal-btn" data-reveal-id="${escapeHtml(id)}">👁 Reveal answer</button>
+                      <div class="reveal-answer hidden" id="reveal-${escapeHtml(id)}">
+                        ${revealBody}
+                        ${brushUp}
+                      </div>`;
+      }
     }
     item.innerHTML = `
       <div class="head">
