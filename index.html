@@ -5226,6 +5226,10 @@ function renderQuiz(picked = -1) {
       : picked === q.answerIdx;
     let html = `<div class="verdict">${correct ? "Correct!" : "Not quite."}</div>
                 <div class="explanation">${q.feedbackHtml}</div>`;
+    // Khan Academy brush-up link — shown when the kid got a math/quant
+    // question wrong (in practice or review mode; test mode never shows
+    // per-question feedback). Same renderer used on the results screen.
+    if (!correct) html += brushUpLinkFor(q.entry);
     if (mode === "review") {
       const m = L().mistakes[q.id];
       const streak = m ? m.correctStreak : 0;
