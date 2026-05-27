@@ -1040,6 +1040,17 @@
     font-size: 14px;
     text-align: center;
   }
+  /* Build stamp at the very bottom of the page — muted, small, easy to
+     ignore unless someone's hunting for it. */
+  .app-footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    opacity: 0.55;
+    padding: 18px 8px 24px;
+    letter-spacing: .3px;
+    font-variant-numeric: tabular-nums;
+  }
   .kbd {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     background: rgba(255,255,255,.06);
@@ -2124,6 +2135,10 @@
 <canvas id="confettiCanvas"></canvas>
 <div class="streak-toast" id="streakToast">🔥 5 in a row!</div>
 
+<!-- Build stamp — populated at boot from APP_VERSION / APP_VERSION_DATE so
+     the parent can tell what version is running after a hard refresh. -->
+<footer class="app-footer" id="appFooter"></footer>
+
 <!-- ─── Generic confirm modal (replaces native confirm() everywhere) ─── -->
 <!-- z-index nudged above the battery modal so confirms triggered from
      inside the monetized config modal stack on top correctly. -->
@@ -2474,6 +2489,13 @@ TESTS.psat.sections = PSAT_SECTIONS;
 const MASTERY_THRESHOLD = 3;
 // Storage key retained from previous version to preserve user progress across the rebrand.
 const STORAGE_KEY = "isee-progress-v5";
+
+// Displayed in a muted footer at the bottom of the page so the parent can
+// tell what version the kid is running (helpful when reporting bugs / sanity-
+// checking that a fix has landed after a hard refresh). Bump on every push
+// of substantive changes; small UX nits don't need a version bump.
+const APP_VERSION = "3.6";
+const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
 // monetized earnings. Faster than this and we assume the kid is
@@ -6149,6 +6171,9 @@ window.addEventListener("popstate", (e) => {
 // BOOT
 buildRegistries();
 loadProgress();
+// Build-stamp footer — populated once at boot from the version constants.
+const _fEl = document.getElementById("appFooter");
+if (_fEl) _fEl.textContent = `Custom Test Practicer 9000 · v${APP_VERSION} · ${APP_VERSION_DATE}`;
 // Honor an initial deep-link in the URL hash (e.g. someone bookmarked /stats).
 const initialPath = window.location.hash.replace(/^#/, "") || "/";
 const initialView = PATH_TO_VIEW[initialPath] || "home";
