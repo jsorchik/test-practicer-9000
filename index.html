@@ -731,6 +731,24 @@
     font-family: inherit;
   }
   button.success:hover { filter: brightness(1.05); }
+  /* Warm-orange "commit" button — used for end-of-section lock-in actions
+     (e.g. Submit Section). Distinct from .primary (blue) so the kid never
+     confuses "submit the whole section" with "next question". */
+  button.danger {
+    background: var(--warn);
+    color: #2a1c00;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: .2px;
+    box-shadow: 0 4px 12px rgba(245,158,11,.25);
+  }
+  button.danger:hover { filter: brightness(1.05); }
+  button.danger:active { transform: translateY(1px); }
 
   .footer-hint {
     width: min(820px, 100%);
@@ -891,6 +909,46 @@
     max-height: 400px;
     overflow-y: auto;
   }
+  /* Inline colored score in past-test cards */
+  .essay-card-head .good { color: var(--good); }
+  .essay-card-head .ok   { color: var(--warn); }
+  .essay-card-head .bad  { color: var(--bad);  }
+  /* Per-question review rows inside an expanded past-test card */
+  .past-q-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .past-q-row {
+    background: rgba(255,255,255,.03);
+    border-left: 3px solid var(--muted);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .past-q-row.good  { border-left-color: var(--good); }
+  .past-q-row.wrong { border-left-color: var(--bad);  }
+  .past-q-row.skipped { border-left-color: var(--muted); }
+  .past-q-head { color: var(--text); margin-bottom: 4px; }
+  .past-q-meta { color: var(--muted); font-size: 13px; }
+  .past-q-exp  { color: var(--muted); font-size: 13px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,.06); }
+  .past-q-tag {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+  }
+  .past-q-tag.good    { background: rgba(34,197,94,.18);  color: #86efac; }
+  .past-q-tag.wrong   { background: rgba(239,68,68,.18);  color: #fca5a5; }
+  .past-q-tag.skipped { background: rgba(148,163,184,.18); color: var(--muted); }
   /* ─── Monetized Mode toggle button + state styles ─── */
   #monetizedToggleBtn {
     position: relative;
@@ -1574,6 +1632,7 @@
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
       <button id="monetizedToggleBtn">💰 Monetized: OFF</button>
       <button id="viewStatsBtn">📊 Stats</button>
+      <button id="viewTestsBtn">📋 Past tests</button>
       <button id="viewEssaysBtn">📝 Essays</button>
       <button id="resetProgress">Reset this level</button>
     </div>
@@ -1607,11 +1666,11 @@
       <div class="left">
         <button class="ghost hidden" id="prevBtn">← Prev</button>
         <button class="ghost hidden" id="flagBtn">⚑ Flag</button>
-        <button class="primary hidden" id="finishBtn">Submit Section</button>
         <button class="success hidden" id="masterBtn">Mark as mastered</button>
       </div>
       <div class="right">
         <button class="primary" id="nextBtn" disabled>Submit</button>
+        <button class="danger hidden" id="finishBtn">Submit Section</button>
       </div>
     </div>
   </div>
@@ -1769,6 +1828,19 @@
     <button class="ghost" id="essaysHomeBtn">Back to home</button>
   </div>
   <div class="essays-list" id="essaysList"></div>
+</div>
+
+<!-- ─── PAST TESTS HISTORY VIEW ─── -->
+<div class="view-results hidden" id="viewTests">
+  <div class="results-summary">
+    <div class="sub" id="testsGradeLabel">Past tests</div>
+    <div class="big" id="testsHeadline">0</div>
+    <div class="sub" id="testsSubhead">tests saved</div>
+  </div>
+  <div class="results-actions">
+    <button class="ghost" id="testsHomeBtn">Back to home</button>
+  </div>
+  <div class="essays-list" id="testsList"></div>
 </div>
 
 <canvas id="confettiCanvas"></canvas>
@@ -2197,9 +2269,9 @@ const state = {
   essay: { prompt: "", text: "", startMs: 0, endMs: 0, timerInterval: null, isTest: false },
   // Persistent — separate per grade level
   lifetimes: {
-    lower:  { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], rewardsBanked: 0 },
-    bridge: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], rewardsBanked: 0 },
-    middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], rewardsBanked: 0 },
+    lower:  { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
+    bridge: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
+    middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
   },
 };
 // Shortcut accessor for current grade's lifetime stats
@@ -2437,6 +2509,7 @@ function loadProgress() {
       if (L.longestTestStreak === undefined) L.longestTestStreak = 0;
       if (!L.bestByTest)                    L.bestByTest = {};
       if (!Array.isArray(L.essays))         L.essays = [];
+      if (!Array.isArray(L.tests))          L.tests = [];
       if (L.rewardsBanked === undefined)    L.rewardsBanked = 0;
     }
   } catch (_) {}
@@ -2670,6 +2743,7 @@ const ROUTABLE_VIEWS = {
   home:     "/",
   stats:    "/stats",
   essays:   "/essays",
+  tests:    "/tests",
   mistakes: "/mistakes",
 };
 const PATH_TO_VIEW = Object.fromEntries(Object.entries(ROUTABLE_VIEWS).map(([k,v]) => [v, k]));
@@ -2694,6 +2768,7 @@ function showView(name) {
   $("viewBatteryTransition").classList.toggle("hidden", name !== "batteryTransition");
   $("viewBatteryResults").classList.toggle("hidden", name !== "batteryResults");
   $("viewEssays").classList.toggle("hidden", name !== "essays");
+  $("viewTests").classList.toggle("hidden", name !== "tests");
   // Hide home button during battery (kid is locked in) and on the home view.
   const hideBack = name === "home" || state.battery.active;
   $("backBtn").classList.toggle("hidden", hideBack);
@@ -3004,6 +3079,73 @@ function renderEssaysHistory() {
       </details>
     </div>
   `).join("");
+}
+
+// Past tests history view — mirrors the essays history. Each card shows a
+// per-test summary and an expandable per-question review with the correct
+// answer + explanation (same content the kid sees on the immediate results
+// screen, recoverable later).
+function renderTestsHistory() {
+  const tests = (L().tests || []).slice().reverse();  // newest first
+  const grade = currentGrade();
+  $("testsGradeLabel").textContent = `${grade.label} past tests`;
+  $("testsHeadline").textContent = tests.length;
+  $("testsHeadline").className = "big";
+  $("testsSubhead").textContent = tests.length === 0
+    ? "Take a test to start your history."
+    : `Most recent ${tests.length === 1 ? "test" : "tests"} shown first`;
+  if (tests.length === 0) {
+    $("testsList").innerHTML = `<div style="text-align:center;color:var(--muted);padding:40px 20px;">No tests yet. Switch to Test mode on the home view and pick a section.</div>`;
+    return;
+  }
+  const fmtDate = (ms) => {
+    const d = new Date(ms);
+    const opts = { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" };
+    return d.toLocaleString(undefined, opts);
+  };
+  $("testsList").innerHTML = tests.map(t => {
+    const emoji = sectionEmoji(t.sectionKey) || "📝";
+    const pctClass = t.pct >= 80 ? "good" : t.pct >= 60 ? "ok" : "bad";
+    const badges = [];
+    if (t.isPerfect)      badges.push('<span class="badge" style="background:rgba(34,197,94,.18);color:#86efac;">🎉 Perfect</span>');
+    if (t.isPersonalBest) badges.push('<span class="badge" style="background:rgba(96,165,250,.18);color:#93c5fd;">🏆 Personal best</span>');
+    if (t.inBattery)      badges.push('<span class="badge" style="background:rgba(251,191,36,.18);color:#fbbf24;">MTD</span>');
+    if (t.testVolume)     badges.push(`<span class="badge" style="background:rgba(148,163,184,.15);color:var(--muted);">${t.testVolume === "full" ? "Full-length" : "Half-length"}</span>`);
+    const earnedLine = (t.earnedDollars || 0) > 0
+      ? ` · <span style="color:#fbbf24;font-weight:700;">💰 $${t.earnedDollars.toFixed(2)}</span>`
+      : t.rushed ? ` · <span style="color:#ef4444;">⚠ too fast — no payout</span>` : '';
+    // Per-question review block (inside <details>). Each row shows the
+    // question, the kid's answer, the correct answer, and the explanation.
+    const reviewRows = (t.answers || []).map((a, i) => {
+      const isUnans = a.picked === null || a.picked === undefined;
+      const isCorrect = !isUnans && a.picked === a.correctIdx;
+      const cls = isUnans ? "skipped" : (isCorrect ? "good" : "wrong");
+      const label = isUnans ? "Unanswered" : (isCorrect ? "Correct" : "Wrong");
+      const yourAns = isUnans ? "—" : `${"ABCD"[a.picked]}. ${escapeHtml(String(a.choices[a.picked] || ""))}`;
+      const correctAns = `${"ABCD"[a.correctIdx]}. ${escapeHtml(String(a.choices[a.correctIdx] || ""))}`;
+      return `
+        <div class="past-q-row ${cls}">
+          <div class="past-q-head"><strong>${i + 1}.</strong> ${escapeHtml(a.displayLabel || "").slice(0, 200)}${(a.displayLabel || "").length > 200 ? "…" : ""} <span class="past-q-tag ${cls}">${label}</span></div>
+          ${isCorrect ? "" : `<div class="past-q-meta">Your answer: ${yourAns}</div>`}
+          <div class="past-q-meta">Correct: <strong>${correctAns}</strong></div>
+          ${a.feedbackHtml ? `<div class="past-q-exp">${a.feedbackHtml}</div>` : ""}
+        </div>
+      `;
+    }).join("");
+    return `
+      <div class="essay-card">
+        <div class="essay-card-head">
+          <span>${emoji} <strong>${escapeHtml(t.sectionName)}</strong> · ${fmtDate(t.dateMs)}</span>
+          <span><strong class="${pctClass}">${t.correct}/${t.questionCount}</strong> · ${t.pct}%</span>
+        </div>
+        <div class="essay-card-prompt" style="font-size:14px;color:var(--muted);">
+          ${fmtTime(t.durationSec)} · ${t.unanswered} unanswered${earnedLine}
+          ${badges.length ? `<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">${badges.join("")}</div>` : ""}
+        </div>
+        ${reviewRows ? `<details><summary>Review all ${t.questionCount} questions</summary><div class="past-q-list">${reviewRows}</div></details>` : ""}
+      </div>
+    `;
+  }).join("");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -3778,6 +3920,42 @@ function finishTest() {
   } else {
     state.lastTestEarned = 0;
   }
+  // Save the test to history (mirrors how essays save). Per-question detail
+  // is included so the kid can revisit and review any past test in full.
+  // Capped at 50 most-recent to keep localStorage bounded — full Middle MTD
+  // worth (~5 sections × 40q) plus extra still fits comfortably.
+  if (!Array.isArray(lt.tests)) lt.tests = [];
+  lt.tests.push({
+    sectionKey: state.section.key,
+    sectionName: state.section.name,
+    gradeLevel: state.gradeLevel,
+    testVolume: state.testVolume,
+    inBattery: state.battery.active,
+    dateMs: Date.now(),
+    durationSec: elapsedSecForCheck,
+    questionCount: total,
+    correct,
+    wrong: total - correct - state.testAnswers.filter(a => a.picked === null).length,
+    unanswered: state.testAnswers.filter(a => a.picked === null).length,
+    pct,
+    isPerfect: state.lastTestPerfect,
+    isPersonalBest: isPersonalBest,
+    earnedDollars: state.lastTestEarned || 0,
+    rushed,
+    longestStreak: state.testLongestStreak,
+    // Per-question detail for full review. Drop the runtime-only `flagged`
+    // field since flag state at finish time has no meaning post-hoc.
+    answers: state.testAnswers.map(a => ({
+      id: a.id,
+      sectionKey: a.sectionKey,
+      displayLabel: a.displayLabel,
+      choices: a.choices,
+      correctIdx: a.correctIdx,
+      feedbackHtml: a.feedbackHtml,
+      picked: a.picked,
+    })),
+  });
+  if (lt.tests.length > 50) lt.tests = lt.tests.slice(-50);
   saveProgress();
   // Battery mode: instead of showing the standard results screen, record the
   // section result and advance the queue.
@@ -4534,6 +4712,8 @@ $("viewMistakesBtn").addEventListener("click", () => { renderMistakesList(); sho
 $("viewStatsBtn").addEventListener("click", () => { renderStats(); showView("stats"); });
 $("statsHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
 $("viewEssaysBtn").addEventListener("click", () => { renderEssaysHistory(); showView("essays"); });
+$("viewTestsBtn").addEventListener("click",  () => { renderTestsHistory();  showView("tests"); });
+$("testsHomeBtn").addEventListener("click",  () => { renderHome();           showView("home"); });
 $("essaysHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
 // (The Mock Test Day card is now dynamically created inside renderSectionsGrid
 //  with its click handler wired there — no static #batteryCTA element exists.)
@@ -4741,6 +4921,7 @@ window.addEventListener("popstate", (e) => {
   if (targetView === "home") { renderHome(); showView("home"); }
   else if (targetView === "stats") { renderStats(); showView("stats"); }
   else if (targetView === "essays") { renderEssaysHistory(); showView("essays"); }
+  else if (targetView === "tests") { renderTestsHistory(); showView("tests"); }
   else if (targetView === "mistakes") { renderMistakesList(); showView("mistakes"); }
   suppressHashUpdate = false;
 });
@@ -4755,6 +4936,7 @@ renderHome();
 suppressHashUpdate = true;
 if (initialView === "stats")    { renderStats();          showView("stats"); }
 else if (initialView === "essays")   { renderEssaysHistory();   showView("essays"); }
+else if (initialView === "tests")    { renderTestsHistory();    showView("tests"); }
 else if (initialView === "mistakes") { renderMistakesList();    showView("mistakes"); }
 else                                  { showView("home"); }
 suppressHashUpdate = false;
