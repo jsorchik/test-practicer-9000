@@ -121,6 +121,45 @@
   .psat-stub-emoji { font-size: 56px; margin-bottom: 10px; }
   .psat-stub-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
   .psat-stub-body  { font-size: 15px; color: var(--muted); line-height: 1.55; max-width: 500px; margin: 0 auto; }
+  /* Per-section preview rows inside the PSAT stub. Each shows a planned
+     section, its full-test target, and how many questions are currently
+     in the bank — clear "what's coming" signal for the kid + parent. */
+  .psat-preview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 520px;
+    margin: 22px auto 0;
+    text-align: left;
+  }
+  .psat-preview-row {
+    background: var(--panel-2);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .psat-preview-row .pv-emoji { font-size: 28px; }
+  .psat-preview-row .pv-main  { flex: 1; }
+  .psat-preview-row .pv-name  { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .psat-preview-row .pv-desc  { font-size: 13px; color: var(--muted); }
+  .psat-preview-row .pv-count {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(148,163,184,.12);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .psat-preview-row .pv-count.ready {
+    background: rgba(34,197,94,.18);
+    color: #86efac;
+  }
 
   .grade-toggle {
     display: grid;
@@ -1656,16 +1695,18 @@
     </button>
   </div>
 
-  <!-- PSAT stub panel — shown when testType === "psat". Hidden otherwise. -->
+  <!-- PSAT stub panel — shown when testType === "psat". Previews the
+       planned sections with live "X questions ready" counts so the
+       structure is visible even before content lands. -->
   <div class="psat-stub hidden" id="psatStubPanel">
     <div class="psat-stub-emoji">🛠️</div>
-    <div class="psat-stub-title">PSAT mode is coming soon</div>
+    <div class="psat-stub-title">PSAT 8/9 — content in progress</div>
     <div class="psat-stub-body">
-      We're stubbing this in alongside ISEE so the structural pieces are
-      in place — separate question banks, separate progress tracking,
-      separate payouts. Content is still being written.
+      Two sections planned, matching the real digital PSAT format.
+      Each will unlock here as its question bank fills up.
     </div>
-    <div class="psat-stub-body" style="font-size:13px;color:var(--muted);margin-top:14px;">
+    <div class="psat-preview-list" id="psatPreviewList"></div>
+    <div class="psat-stub-body" style="font-size:13px;color:var(--muted);margin-top:18px;">
       Toggle back to ISEE above to keep practicing.
     </div>
   </div>
@@ -2133,8 +2174,9 @@ const TESTS = {
   psat: {
     label: "PSAT",
     sub: "Preliminary SAT — coming soon",
-    defaultGrade: null,
-    // grades / sections empty until PSAT content lands.
+    defaultGrade: "psat89",
+    // grades / sections wired up after PSAT_SECTIONS + psat89 grade are
+    // defined further down — see TESTS.psat.grades = { psat89: {...} }.
   },
 };
 
@@ -2241,15 +2283,55 @@ const SECTIONS = [
   { key: "essay",             name: "Essay",                        parent: "Writing",          description: "Write a thoughtful response to one prompt.", poolKey: "essays",  isEssay: true },
 ];
 
+// ════════════════════════════════════════════════════════════════════════════
+// PSAT DATA — structure ready, content pending
+// ════════════════════════════════════════════════════════════════════════════
+// Empty question pools that PSAT content files will populate when they ship.
+// Declared up here (rather than in a /data/psat-*.js file) so the structural
+// stub is fully self-contained for now — once content lands they move out.
+const PSAT_READING_WRITING = [];   // mixed: passages, vocab-in-context, writing edits
+const PSAT_MATH = [];              // mixed: algebra MC, eventually grid-in + charts
+
+// PSAT section list. Modeled flat — Reading & Writing is a single combined
+// section like the real digital PSAT, and Math is its own. No essay, no
+// quant-comparison, no isolated synonyms (all replaced by in-passage forms
+// inside Reading & Writing).
+const PSAT_SECTIONS = [
+  { key: "psat_rw",   name: "Reading & Writing", parent: "PSAT", description: "Passages with comprehension, vocab-in-context, and inline writing edits.", poolKey: "readingWriting", isPsat: true },
+  { key: "psat_math", name: "Math",              parent: "PSAT", description: "Algebra, functions, problem solving — multiple choice for now.",            poolKey: "math",           isPsat: true },
+];
+
+// Per-grade config. PSAT 8/9 is the natural target for the kid; later we can
+// add psat10 / sat tiers as the content level rises. Test counts mirror the
+// real format; half-length is ≈50% for daily practice.
+TESTS.psat.grades = {
+  psat89: {
+    label: "PSAT 8/9",
+    sub: "Grades 8 → 9",
+    pools: {
+      readingWriting: PSAT_READING_WRITING,
+      math:           PSAT_MATH,
+    },
+    tests: {                                                              // half-length
+      psat_rw:   { questionCount: 27, durationSec: 32 * 60 },              // half of real 54/64
+      psat_math: { questionCount: 22, durationSec: 35 * 60 },              // half of real 44/70
+    },
+    testsFull: {                                                          // real PSAT 8/9 format
+      psat_rw:   { questionCount: 54, durationSec: 64 * 60 },              // 2 modules combined
+      psat_math: { questionCount: 44, durationSec: 70 * 60 },              // 2 modules combined
+    },
+  },
+};
+
 // Wire the per-testType configs now that the data structures exist. ISEE
-// gets the full grade map + section list. PSAT is empty until content lands.
+// gets the full grade map + section list; PSAT gets its (structurally
+// complete but content-empty) equivalents.
 // (Top-level GRADES / SECTIONS / BATTERY_SECTION_ORDER consts stay in place
 // for the existing ISEE code paths; future PSAT work will use the per-test
 // wrappers via currentTest().grades / currentTest().sections.)
 TESTS.isee.grades = GRADES;
 TESTS.isee.sections = SECTIONS;
-TESTS.psat.grades = {};
-TESTS.psat.sections = [];
+TESTS.psat.sections = PSAT_SECTIONS;
 
 const MASTERY_THRESHOLD = 3;
 // Storage key retained from previous version to preserve user progress across the rebrand.
@@ -2304,6 +2386,9 @@ const SECTION_EMOJI = {
   math_achievement:  "🔢",
   reading:           "📖",
   essay:             "📝",
+  // PSAT
+  psat_rw:           "📚",
+  psat_math:         "📐",
 };
 function sectionEmoji(key) { return SECTION_EMOJI[key] || "•"; }
 
@@ -2426,7 +2511,7 @@ const state = {
       middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
     },
     psat: {
-      // PSAT-shaped grades land here when content exists. Empty for now.
+      psat89: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
     },
   },
 };
@@ -2690,20 +2775,34 @@ function loadProgress() {
           if (!state.lifetimes.isee[g].mistakes) state.lifetimes.isee[g].mistakes = {};
         }
       }
-      // PSAT has no defaults yet — accept any saved shape as-is.
-      state.lifetimes.psat = { ...state.lifetimes.psat, ...incomingPsat };
+      // Layer incoming PSAT data over the defaults rather than replacing
+      // (preserves any defaults the in-memory state already populated).
+      for (const g of Object.keys(state.lifetimes.psat)) {
+        if (incomingPsat[g]) {
+          Object.assign(state.lifetimes.psat[g], incomingPsat[g]);
+          if (!state.lifetimes.psat[g].mistakes) state.lifetimes.psat[g].mistakes = {};
+        }
+      }
+      // Catch any PSAT grades from a save the current build doesn't know
+      // about (forward-compat) — accept their shape verbatim.
+      for (const g of Object.keys(incomingPsat)) {
+        if (!state.lifetimes.psat[g]) state.lifetimes.psat[g] = incomingPsat[g];
+      }
     }
-    // Migration: add new gamification fields for older saved states (ISEE only;
-    // PSAT lifetimes don't exist yet so nothing to backfill there).
-    for (const g of Object.keys(state.lifetimes.isee)) {
-      const L = state.lifetimes.isee[g];
-      if (L.perfectTests === undefined)     L.perfectTests = 0;
-      if (L.totalTests === undefined)       L.totalTests = 0;
-      if (L.longestTestStreak === undefined) L.longestTestStreak = 0;
-      if (!L.bestByTest)                    L.bestByTest = {};
-      if (!Array.isArray(L.essays))         L.essays = [];
-      if (!Array.isArray(L.tests))          L.tests = [];
-      if (L.rewardsBanked === undefined)    L.rewardsBanked = 0;
+    // Migration: add new gamification fields for older saved states. Same
+    // shape applies to every test type's grades.
+    for (const testType of Object.keys(state.lifetimes)) {
+      for (const g of Object.keys(state.lifetimes[testType])) {
+        const L = state.lifetimes[testType][g];
+        if (L.perfectTests === undefined)     L.perfectTests = 0;
+        if (L.totalTests === undefined)       L.totalTests = 0;
+        if (L.longestTestStreak === undefined) L.longestTestStreak = 0;
+        if (!L.bestByTest)                    L.bestByTest = {};
+        if (!Array.isArray(L.essays))         L.essays = [];
+        if (!Array.isArray(L.tests))          L.tests = [];
+        if (L.rewardsBanked === undefined)    L.rewardsBanked = 0;
+        if (!L.mistakes)                      L.mistakes = {};
+      }
     }
   } catch (_) {}
 }
@@ -3924,6 +4023,38 @@ function applyTestTypeToHome() {
   // they reflect ISEE state and would be misleading.
   $("monetizedHeaderBadge").classList.toggle("hidden", isPsat || !state.monetized);
   $("bankedHeaderBadge").classList.toggle("hidden", isPsat);
+  // Populate PSAT preview rows when PSAT is active. Reads live from the
+  // configured grade's pools so the counts update automatically as content
+  // banks fill up — no UI changes needed when entries are appended.
+  if (isPsat) renderPsatPreviewList();
+}
+
+// Renders the planned-sections list inside the PSAT stub. Each row shows
+// the section, its full-test target, and a live "X ready / Y planned" pill.
+// Once a section's pool reaches its full-test target, the pill turns green.
+function renderPsatPreviewList() {
+  const host = $("psatPreviewList");
+  if (!host) return;
+  const grade = TESTS.psat.grades[TESTS.psat.defaultGrade];
+  if (!grade) { host.innerHTML = ""; return; }
+  host.innerHTML = TESTS.psat.sections.map(section => {
+    const pool = grade.pools[section.poolKey] || [];
+    const fullCount = (grade.testsFull[section.key] || {}).questionCount || 0;
+    const ready = pool.length;
+    const target = fullCount;
+    const isReady = ready >= target && target > 0;
+    const countText = target > 0 ? `${ready} / ${target} ready` : `${ready} ready`;
+    return `
+      <div class="psat-preview-row">
+        <div class="pv-emoji">${sectionEmoji(section.key)}</div>
+        <div class="pv-main">
+          <div class="pv-name">${escapeHtml(section.name)}</div>
+          <div class="pv-desc">${escapeHtml(section.description)}</div>
+        </div>
+        <div class="pv-count ${isReady ? "ready" : ""}">${countText}</div>
+      </div>
+    `;
+  }).join("");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
