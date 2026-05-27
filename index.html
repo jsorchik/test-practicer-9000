@@ -1755,6 +1755,13 @@
     background: rgba(255,255,255,.05);
     color: var(--text);
     font-family: inherit;
+    /* CSS-level digit masking so we can use type="text" and skip the
+       browser/password-manager "save this password?" prompt. Supported in
+       Safari + Chrome/Edge 105+ + Firefox 119+ — covers everything we
+       care about. The PIN rotates daily, so saving it would be wrong
+       anyway. */
+    -webkit-text-security: disc;
+    text-security: disc;
   }
   .pin-input:focus { outline: none; border-color: var(--accent); }
   .pin-error { color: var(--bad); font-size: 14px; margin-top: 10px; font-weight: 600; }
@@ -2518,7 +2525,7 @@
       <div class="modal-title">🔒 Parent PIN</div>
       <div class="modal-body">
         <p>Enter the parent PIN to set the payout and start the test.</p>
-        <input type="password" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="12" id="batteryPinInput" class="pin-input" placeholder="• • • •" />
+        <input type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" autocorrect="off" autocapitalize="off" spellcheck="false" data-1p-ignore data-lpignore="true" data-bwignore="true" maxlength="12" id="batteryPinInput" class="pin-input" placeholder="• • • •" />
         <div id="batteryPinError" class="pin-error hidden">That's not the right PIN. Try again.</div>
       </div>
       <div class="modal-actions">
@@ -2835,7 +2842,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.13";
+const APP_VERSION = "3.13.1";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
