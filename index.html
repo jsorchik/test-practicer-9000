@@ -1969,6 +1969,9 @@ const STORAGE_KEY = "isee-progress-v5";
 // monetized earnings. Faster than this and we assume the kid is
 // random-clicking; payout for that test is $0.
 const MIN_SEC_PER_QUESTION = 5;
+// Anti-spam for essays: kid has to spend at least this long writing
+// before the payout counts (avoids 30-second gibberish submissions).
+const ESSAY_MIN_SEC = 5 * 60;  // 5 minutes
 
 // Section icons — used in section cards, stats page, battery progress, etc.
 const SECTION_EMOJI = {
@@ -2651,12 +2654,11 @@ function renderSectionsGrid() {
           ? `1 prompt · ${fmtTime(t.durationSec)}`
           : `${t.questionCount} questions · ${fmtTime(t.durationSec)}`)
       : section.parent;
-    // Payout chip — shows max possible $ for a perfect score on this test
+    // Payout chip — shows max possible $ for a perfect attempt
     // (only when monetized + test mode)
     let payoutChip = "";
     if (state.monetized && state.mode === "test" && t) {
-      const qc = section.isEssay ? 0 : t.questionCount;
-      const max = maxTestEarnings(qc);
+      const max = section.isEssay ? maxEssayEarnings() : maxTestEarnings(t.questionCount);
       payoutChip = `<div class="payout-chip">💰 up to $${max.toFixed(2)}</div>`;
     }
     card.innerHTML = `
@@ -2688,7 +2690,7 @@ function renderSectionsGrid() {
         const section = SECTIONS.find(s => s.key === k);
         const sCfg = testConfigFor(section);
         if (!sCfg) continue;
-        if (section.isEssay) { maxSum += cfg.testBase; continue; }
+        if (section.isEssay) { maxSum += maxEssayEarnings(); continue; }
         maxSum += maxTestEarnings(sCfg.questionCount);
       }
       maxSum += cfg.mtdCompletionBonus;
@@ -3004,6 +3006,17 @@ function updatePayoutPreview() {
   const oneAt85   = oneTest(Math.round(sampleQ * 0.85), sampleQ);
   const oneAt100  = oneTest(sampleQ, sampleQ);
   // Full MTD: sum of section payouts at given accuracy + completion bonus
+  const goalWords = state.gradeLevel === "lower" ? 150 : 300;
+  // Approximate essay earnings based on the accuracy band: assume the kid
+  // hits the word goal at 100%, ~200-word tier at 85%, etc.
+  const essayAtAcc = (acc) => {
+    const approxWords = Math.round(goalWords * acc);
+    if (approxWords >= Math.round(goalWords * 1.5)) return 2.00;
+    if (approxWords >= goalWords)                   return 1.50;
+    if (approxWords >= 200)                         return 1.00;
+    if (approxWords >= 100)                         return 0.50;
+    return 0;
+  };
   const mtdAt = (acc) => {
     let sum = 0;
     for (const k of BATTERY_SECTION_ORDER) {
@@ -3011,7 +3024,7 @@ function updatePayoutPreview() {
       const section = SECTIONS.find(s => s.key === k);
       const sCfg = testConfigFor(section);
       if (!sCfg) continue;
-      if (section.isEssay) { sum += cfg.testBase; continue; }
+      if (section.isEssay) { sum += essayAtAcc(acc); continue; }
       const c = Math.round(sCfg.questionCount * acc);
       sum += oneTest(c, sCfg.questionCount);
     }
@@ -3230,6 +3243,19 @@ function maxTestEarnings(total) {
   return cfg.testBase + total * cfg.perCorrect + cfg.testGoodBonus + cfg.testGreatBonus;
 }
 
+// Tiered essay payout. Words count more if the kid hits the grade-level
+// goal (150 for Lower, 300 for Bridge/Middle). Anti-spam is applied at the
+// caller via ESSAY_MIN_SEC; this function returns the gross tier value.
+function calculateEssayEarnings(words, gradeKey = state.gradeLevel) {
+  const goal = gradeKey === "lower" ? 150 : 300;
+  if (words >= Math.round(goal * 1.5)) return 2.00;   // stretch
+  if (words >= goal)                   return 1.50;   // hit the goal
+  if (words >= 200)                    return 1.00;   // real attempt past 200
+  if (words >= 100)                    return 0.50;   // minimum real effort
+  return 0;                                            // not enough to count
+}
+function maxEssayEarnings() { return 2.00; }
+
 function calculateBatteryReward() {
   // Sum per-section payouts; add the MTD completion bonus on top.
   // Apply the same anti-spam check per section as for individual tests.
@@ -3238,10 +3264,12 @@ function calculateBatteryReward() {
   const segments = [];
   for (const r of state.battery.results) {
     if (r.isEssay) {
-      // Essays don't have a correct count, so they just get the test base.
-      const segEarned = cfg.testBase;
+      // Essay: r.correct holds word count, r.time the elapsed seconds.
+      // Same tiered payout as standalone essays + same min-time anti-spam.
+      const rushed = r.time < ESSAY_MIN_SEC && r.correct >= 100;
+      const segEarned = rushed ? 0 : calculateEssayEarnings(r.correct);
       sectionPayouts += segEarned;
-      segments.push({ key: r.key, name: r.sectionName, isEssay: true, earned: segEarned, rushed: false });
+      segments.push({ key: r.key, name: r.sectionName, isEssay: true, words: r.correct, earned: segEarned, rushed });
     } else {
       const minTimeSec = r.total * MIN_SEC_PER_QUESTION;
       const rushed = r.total > 0 && r.time < minTimeSec;
@@ -3316,7 +3344,7 @@ function renderBatteryFinal() {
   for (const seg of r.segments) {
     const emoji = sectionEmoji(seg.key);
     const detail = seg.isEssay
-      ? `essay base`
+      ? `${seg.words} words`
       : `${seg.correct}/${seg.total} · ${Math.round((seg.correct/seg.total)*100)}%`;
     const rushedNote = seg.rushed ? ` <span style="color:#ef4444;font-size:11px;font-weight:700;">⚠️ TOO FAST</span>` : '';
     breakdown.push(
@@ -3911,11 +3939,25 @@ function finishEssay() {
     saveProgress();
   }
   // Battery mode: record and advance instead of rendering normal essay results.
+  // Earnings are computed inside calculateBatteryReward at the end.
   if (state.battery.active) {
     batteryRecordSectionResult(state.section.key, words, words, elapsed, true);
     batteryAdvanceAfterSection();
     return;
   }
+  // Per-essay payout: tiered word count + minimum-time anti-spam. Only when
+  // Monetized Mode is on AND it was a timed essay (practice essays don't
+  // pay out, same as practice multiple-choice).
+  const essayRushed = state.monetized && state.essay.isTest && elapsed < ESSAY_MIN_SEC && words >= 100;
+  const essayEarned = (state.monetized && state.essay.isTest && !essayRushed)
+    ? calculateEssayEarnings(words)
+    : 0;
+  if (essayEarned > 0) {
+    L().rewardsBanked = (L().rewardsBanked || 0) + essayEarned;
+    saveProgress();
+  }
+  state.lastTestEarned = essayEarned;
+  state.lastTestRushed = essayRushed;
   $("celebrationBanner").classList.add("hidden");
   // Celebrate hitting the word-count goal on a timed essay
   if (state.essay.isTest && words >= goal) {
@@ -3928,10 +3970,20 @@ function finishEssay() {
   $("resultScore").textContent = `${words}`;
   $("resultScore").className = "big " + (words >= goal ? "good" : words >= goal * 0.66 ? "ok" : "bad");
   $("resultPct").textContent = `words written`;
+  const essayEarnedCell = essayEarned > 0
+    ? `<div><strong style="color:#fbbf24">💰 $${essayEarned.toFixed(2)}</strong>earned this essay</div>`
+    : essayRushed
+      ? `<div><strong style="color:#ef4444">⚠️ Too fast</strong>no payout (write for at least 5 min)</div>`
+      : '';
+  const essayBankCell = (L().rewardsBanked || 0) > 0
+    ? `<div><strong style="color:#fbbf24">$${L().rewardsBanked.toFixed(2)}</strong>banked total</div>`
+    : '';
   $("resultRow").innerHTML = `
     <div><strong>${words}</strong>words</div>
     <div><strong>${fmtTime(elapsed)}</strong>time used</div>
     ${state.essay.isTest ? `<div><strong>${fmtTime(testConfigFor(state.section).durationSec)}</strong>limit</div>` : ""}
+    ${essayEarnedCell}
+    ${essayBankCell}
   `;
   $("retryBtn").textContent = "New prompt";
   $("reviewList").innerHTML = "";
