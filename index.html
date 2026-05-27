@@ -1767,17 +1767,18 @@
       <div class="modal-body">
         <p>These rules apply to every test and to each section within Mock Test Day. Prefilled with your last values — adjust if you like.</p>
         <div class="payout-group-label">Per test (also each MTD section)</div>
+        <p style="margin:0 0 8px; font-size:12px; color:var(--muted);">Values below are for a 20-question test. Larger tests scale up proportionally (a 40-q test pays 2× the base + bonuses), smaller scale down.</p>
         <div class="payout-grid">
-          <label>Base for finishing a test
+          <label>Base for finishing (per 20q)
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutBase" step="0.25" min="0" /></div>
           </label>
           <label>Per correct answer
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutPerCorrect" step="0.01" min="0" /></div>
           </label>
-          <label>Bonus at ≥85% accuracy
+          <label>Bonus at ≥85% (per 20q)
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGoodBonus" step="0.25" min="0" /></div>
           </label>
-          <label>Bonus at ≥95% accuracy
+          <label>Bonus at ≥95% (per 20q)
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGreatBonus" step="0.25" min="0" /></div>
           </label>
         </div>
@@ -1972,6 +1973,11 @@ const MIN_SEC_PER_QUESTION = 5;
 // Anti-spam for essays: kid has to spend at least this long writing
 // before the payout counts (avoids 30-second gibberish submissions).
 const ESSAY_MIN_SEC = 5 * 60;  // 5 minutes
+// Reference test size for scaling base + bonus payouts. Configured
+// `testBase` / `testGoodBonus` / `testGreatBonus` are "for a 20-q test";
+// larger / smaller tests scale proportionally so a 40-q full test
+// roughly pays 2x of its 20-q half-mode counterpart.
+const REFERENCE_TEST_QUESTIONS = 20;
 
 // Section icons — used in section cards, stats page, battery progress, etc.
 const SECTION_EMOJI = {
@@ -2997,10 +3003,11 @@ function updatePayoutPreview() {
   const sampleQ = (verbalSec && testConfigFor(verbalSec)?.questionCount) || 20;
   const oneTest = (correct, total) => {
     if (total === 0) return cfg.testBase;
+    const scale = total / REFERENCE_TEST_QUESTIONS;
     const acc = correct / total;
-    let v = cfg.testBase + correct * cfg.perCorrect;
-    if (acc >= 0.85) v += cfg.testGoodBonus;
-    if (acc >= 0.95) v += cfg.testGreatBonus;
+    let v = cfg.testBase * scale + correct * cfg.perCorrect;
+    if (acc >= 0.85) v += cfg.testGoodBonus * scale;
+    if (acc >= 0.95) v += cfg.testGreatBonus * scale;
     return v;
   };
   const oneAt85   = oneTest(Math.round(sampleQ * 0.85), sampleQ);
@@ -3226,21 +3233,27 @@ function renderBatteryBreak() {
 // Calculate the dollar earnings for a single test/section. Used both for
 // standalone tests and for each segment within Mock Test Day. Pure function
 // — caller decides whether to actually award based on state.monetized.
+//
+// Base + accuracy bonuses scale by test size (relative to the reference
+// 20-q test). So a 40-q test pays ~2x the base + bonuses of a 20-q test,
+// matching the kid's effort. perCorrect already scales naturally.
 function calculateTestEarnings(correct, total) {
   if (total === 0) return 0;
   const cfg = state.payoutConfig;
+  const scale = total / REFERENCE_TEST_QUESTIONS;
   const acc = correct / total;
-  let earned = cfg.testBase + correct * cfg.perCorrect;
-  if (acc >= 0.85) earned += cfg.testGoodBonus;
-  if (acc >= 0.95) earned += cfg.testGreatBonus;
+  let earned = cfg.testBase * scale + correct * cfg.perCorrect;
+  if (acc >= 0.85) earned += cfg.testGoodBonus * scale;
+  if (acc >= 0.95) earned += cfg.testGreatBonus * scale;
   return earned;
 }
 
 // Highest payout possible for a test of `total` questions (perfect score).
 function maxTestEarnings(total) {
-  if (total === 0) return state.payoutConfig.testBase;  // essay just gets the base
+  if (total === 0) return state.payoutConfig.testBase;  // essay path uses maxEssayEarnings
   const cfg = state.payoutConfig;
-  return cfg.testBase + total * cfg.perCorrect + cfg.testGoodBonus + cfg.testGreatBonus;
+  const scale = total / REFERENCE_TEST_QUESTIONS;
+  return cfg.testBase * scale + total * cfg.perCorrect + cfg.testGoodBonus * scale + cfg.testGreatBonus * scale;
 }
 
 // Tiered essay payout. Words count more if the kid hits the grade-level
