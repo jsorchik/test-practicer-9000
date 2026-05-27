@@ -610,25 +610,26 @@
     border-color: rgba(96,165,250,.55);
     color: var(--text);
   }
+  /* Flagged wins over answered — the kid wants their "come back to this"
+     markers to pop visually at a glance, so the whole cell goes warm-orange
+     regardless of whether they also have an answer recorded. .flagged is
+     declared after .answered so the cascade overrides correctly. */
+  .q-box.flagged {
+    background: rgba(245,158,11,.28);
+    border-color: var(--warn);
+    color: #fde68a;
+  }
   .q-box.current {
     border-color: var(--accent);
     border-width: 2px;
     box-shadow: 0 0 0 3px rgba(96,165,250,.18);
     color: var(--text);
   }
-  /* Flag corner mark — small triangle in the top-right of the box. Combines
-     with .answered when both apply. */
-  .q-box.flagged::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 0 10px 10px 0;
-    border-color: transparent var(--warn) transparent transparent;
-    border-radius: 0 8px 0 0;
+  /* When the current box is also flagged, keep the orange tint visible —
+     the accent ring sits outside via box-shadow, so the fill stays warm. */
+  .q-box.current.flagged {
+    border-color: var(--warn);
+    box-shadow: 0 0 0 3px rgba(245,158,11,.30);
   }
   /* "Flag" button gets a warm tint when the current question is flagged. */
   #flagBtn.flagged-on {
@@ -1353,7 +1354,6 @@
        the screen vertically. Still tap-friendly (28px ≈ Apple's 28pt minimum). */
     .test-nav-strip { gap: 4px; padding: 10px; }
     .q-box { width: 30px; height: 30px; font-size: 13px; }
-    .q-box.flagged::after { border-width: 0 8px 8px 0; }
   }
   /* ─── Banked-so-far chip on battery transition screens ─── */
   .banked-chip {
