@@ -1743,21 +1743,12 @@
     background: rgba(96,165,250,.10);
     border-style: solid;
   }
+  /* Layout container for the reveal block — no background/border of its own;
+     the .ans-block.correct inside provides the green-tinted visual unit
+     (matches the test-results review screen exactly). */
   .review-item .reveal-answer {
     margin-bottom: 8px;
-    padding: 8px 12px;
-    background: rgba(34,197,94,.10);
-    border-left: 3px solid var(--good);
-    border-radius: 6px;
-    font-size: 14px;
-    color: var(--text);
-    line-height: 1.5;
   }
-  .review-item .reveal-answer strong { color: var(--good); }
-  /* Override .review-item .explain's muted color when it appears inside
-     the reveal block — the green-tinted background needs brighter text
-     for readability. */
-  .review-item .reveal-answer .explain { color: var(--text); font-size: 14px; margin-top: 8px; }
   .review-item .mistakes-meta { font-size: 13px; }
   .review-item .section-tag {
     font-size: 12px;
@@ -5746,46 +5737,56 @@ function renderMistakesList() {
     // Look up the entry to surface the correct answer behind a reveal
     // toggle. Pedagogically: active recall > passive reading, so the answer
     // stays hidden until the kid commits to peeking. Inside the reveal we
-    // surface the correct answer + explanation + a Khan Academy brush-up
-    // link (for tagged math/quant entries).
+    // surface the correct answer + explanation + Khan brush-up link using
+    // the same `.ans-block.correct` visual as the test-results review for
+    // consistency across the three review surfaces.
     const reg = QUESTION_REGISTRY[id];
     const entry = reg && reg.entry;
     let answerHtml = "";
     if (entry) {
-      let revealBody = "";
+      // Per-type extract: a string of HTML to render as the answer "word".
+      // Explanations have HTML entities baked in (&gt; &lt;) — match the
+      // makeQuestion pattern: fmtFractions only, no escapeHtml.
+      let answerWord = "";
+      let explanationHtml = "";
       if (m.sectionKey === "verbal_synonyms" || m.sectionKey === "verbal_completion") {
-        // Verbal — show correct word + dictionary definition.
         const correct = entry.correct;
         let def = defLookup(correct);
         if (!def && m.sectionKey === "verbal_synonyms" && entry.meaning) def = entry.meaning;
         const defText = def ? ` — ${escapeHtml(def)}` : "";
-        revealBody = `<div><strong>${escapeHtml(correct)}</strong>${defText}</div>`;
+        answerWord = `<strong>${escapeHtml(correct)}</strong>${defText}`;
       } else if (entry.type === "quantComparison") {
-        // Quant comparison — show which column or "equal"/"can't be determined".
         const map = { a: "Column A is greater", b: "Column B is greater", equal: "The two quantities are equal", cant: "The relationship cannot be determined" };
-        revealBody = `<div><strong>${escapeHtml(map[entry.answer] || entry.answer)}</strong></div>`;
-        // Explanations already contain HTML entities (&gt; &lt;) — pass through
-        // raw (only fmtFractions for fraction stacking) to avoid double-escape.
-        if (entry.explanation) revealBody += `<div class="explain">${fmtFractions(entry.explanation)}</div>`;
+        answerWord = `<strong>${escapeHtml(map[entry.answer] || entry.answer)}</strong>`;
+        if (entry.explanation) explanationHtml = fmtFractions(entry.explanation);
       } else if (entry.type === "psatMathGridIn") {
-        revealBody = `<div><strong>${escapeHtml(String(entry.correct))}</strong></div>`;
-        if (entry.explanation) revealBody += `<div class="explain">${fmtFractions(entry.explanation)}</div>`;
+        answerWord = `<strong>${escapeHtml(String(entry.correct))}</strong>`;
+        if (entry.explanation) explanationHtml = fmtFractions(entry.explanation);
       } else if (entry.type === "psatRW") {
         const correct = entry.choices && entry.choices[entry.correct];
-        revealBody = `<div><strong>${escapeHtml(String(correct || ""))}</strong></div>`;
-        if (entry.explanation) revealBody += `<div class="explain">${entry.explanation}</div>`;
+        answerWord = `<strong>${escapeHtml(String(correct || ""))}</strong>`;
+        if (entry.explanation) explanationHtml = entry.explanation;
       } else if (entry.correct !== undefined) {
-        // Generic MCQ (math, reading, psatMath) — correct is the right answer string.
-        revealBody = `<div><strong>${fmtFractions(escapeHtml(String(entry.correct)))}</strong></div>`;
-        if (entry.explanation) revealBody += `<div class="explain">${fmtFractions(entry.explanation)}</div>`;
+        answerWord = `<strong>${fmtFractions(escapeHtml(String(entry.correct)))}</strong>`;
+        if (entry.explanation) explanationHtml = fmtFractions(entry.explanation);
       }
-      // Khan brush-up link for any tagged entry (math/quant only — verbal
-      // entries don't carry topics, so brushUpLinkFor returns "").
+      // Khan brush-up link for tagged math/quant entries.
       const brushUp = brushUpLinkFor(entry);
-      if (revealBody || brushUp) {
+      if (answerWord || brushUp) {
+        // Same .ans-block.correct visual the test-results screen uses, so
+        // the three review surfaces all share the same "this is the right
+        // answer" treatment.
+        const ansBlock = answerWord
+          ? `<div class="ans-block correct">
+               <div class="ans-label">Correct answer</div>
+               <div class="ans-word">${answerWord}</div>
+             </div>`
+          : "";
+        const explainBlock = explanationHtml ? `<div class="explain">${explanationHtml}</div>` : "";
         answerHtml = `<button class="reveal-btn" data-reveal-id="${escapeHtml(id)}">👁 Reveal answer</button>
                       <div class="reveal-answer hidden" id="reveal-${escapeHtml(id)}">
-                        ${revealBody}
+                        ${ansBlock}
+                        ${explainBlock}
                         ${brushUp}
                       </div>`;
       }
