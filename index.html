@@ -1051,6 +1051,108 @@
     letter-spacing: .3px;
     font-variant-numeric: tabular-nums;
   }
+  /* ─── LOCK IN splash (test launch hype overlay) ─── */
+  .lock-in-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 50000;
+    background: linear-gradient(135deg, #f472b6 0%, #a855f7 25%, #6366f1 50%, #06b6d4 75%, #10b981 100%);
+    background-size: 400% 400%;
+    animation: lis-bg-shift 3s ease infinite;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    overflow: hidden;
+    padding: 24px;
+  }
+  @keyframes lis-bg-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+  .lock-in-phrase {
+    font-size: clamp(32px, 7vw, 80px);
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 30px rgba(255,255,255,.6), 0 6px 24px rgba(0,0,0,.35), 0 0 60px rgba(255,255,255,.3);
+    letter-spacing: 1.5px;
+    text-align: center;
+    line-height: 1.05;
+    margin-bottom: 30px;
+    animation: lis-phrase-burst 0.55s cubic-bezier(.34,1.56,.64,1), lis-phrase-wobble 2s ease-in-out 0.55s infinite;
+    z-index: 2;
+  }
+  @keyframes lis-phrase-burst {
+    0%   { transform: scale(0.3) rotate(-8deg); opacity: 0; }
+    60%  { transform: scale(1.15) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  @keyframes lis-phrase-wobble {
+    0%, 100% { transform: scale(1) rotate(-1deg); }
+    50%      { transform: scale(1.04) rotate(1deg); }
+  }
+  .lock-in-countdown {
+    font-size: clamp(120px, 28vw, 260px);
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 40px white, 0 0 80px rgba(255,255,255,.6), 0 8px 32px rgba(0,0,0,.4);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    z-index: 2;
+  }
+  .lock-in-countdown.pop { animation: lis-count-pop 0.9s ease; }
+  @keyframes lis-count-pop {
+    0%   { transform: scale(0.4); opacity: 0; }
+    25%  { transform: scale(1.45); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .lock-in-go {
+    font-size: clamp(80px, 18vw, 180px);
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 60px #fde047, 0 0 120px #fbbf24, 0 8px 32px rgba(0,0,0,.4);
+    letter-spacing: 4px;
+    z-index: 2;
+    animation: lis-go-explode 0.6s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes lis-go-explode {
+    0%   { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+    50%  { transform: scale(1.6) rotate(5deg); opacity: 1; }
+    100% { transform: scale(1.2) rotate(0); opacity: 1; }
+  }
+  .lock-in-emojis {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .lock-in-emoji {
+    position: absolute;
+    bottom: -80px;
+    animation: lis-float-up linear infinite;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,.3));
+  }
+  @keyframes lis-float-up {
+    0%   { transform: translateY(0) rotate(0); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateY(-115vh) rotate(720deg); opacity: 0; }
+  }
+  .lock-in-skip {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    color: rgba(255,255,255,.7);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .5px;
+    z-index: 2;
+    text-transform: uppercase;
+  }
+
   .kbd {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     background: rgba(255,255,255,.06);
@@ -2135,6 +2237,10 @@
 <canvas id="confettiCanvas"></canvas>
 <div class="streak-toast" id="streakToast">🔥 5 in a row!</div>
 
+<!-- LOCK IN splash — overlay shown for ~3-4s when a test launches.
+     Big animated hype text, countdown 3-2-1, floating emojis, tap to skip. -->
+<div class="lock-in-splash hidden" id="lockInSplash"></div>
+
 <!-- Build stamp — populated at boot from APP_VERSION / APP_VERSION_DATE so
      the parent can tell what version is running after a hard refresh. -->
 <footer class="app-footer" id="appFooter"></footer>
@@ -2494,7 +2600,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.7";
+const APP_VERSION = "3.8";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -4711,6 +4817,86 @@ function practiceAnswer(i) {
 // ════════════════════════════════════════════════════════════════════════════
 // TEST MODE
 // ════════════════════════════════════════════════════════════════════════════
+// ─── LOCK IN splash (pre-test hype overlay) ─────────────────────────────────
+// Phrase pool rotates randomly each launch. Gen-alpha flavored; the kid
+// thinks they're funny. Pair: text + flanking emoji that fits the vibe.
+const HYPE_PHRASES = [
+  { text: "LOCK IN, BRO",          emoji: "🔒" },
+  { text: "LET HIM COOK",          emoji: "👨‍🍳" },
+  { text: "GO MODE: ACTIVATED",    emoji: "🚀" },
+  { text: "FULL SEND",             emoji: "💯" },
+  { text: "GIGABRAIN MODE",        emoji: "🧠" },
+  { text: "TIME TO ZONE IN",       emoji: "🎯" },
+  { text: "NO CAP, FULL FOCUS",    emoji: "🧢" },
+  { text: "MAIN CHARACTER ENERGY", emoji: "💫" },
+  { text: "RIZZ UP THIS TEST",     emoji: "🔥" },
+  { text: "TURN ON THE BRAIN",     emoji: "⚡" },
+  { text: "BUSSIN' BRAIN MOMENT",  emoji: "✨" },
+  { text: "BIG W INCOMING",        emoji: "🏆" },
+  { text: "WE EATING TODAY",       emoji: "🍽️" },
+];
+const HYPE_FLOATERS = ['🔥','💯','🚀','⚡','🎯','🧠','📈','🦾','✨','💫','🦅','💎','🏆','⭐','💥'];
+
+function showLockInSplash(onDone) {
+  const splash = $("lockInSplash");
+  if (!splash) { onDone(); return; }
+  const phrase = HYPE_PHRASES[Math.floor(Math.random() * HYPE_PHRASES.length)];
+  // 18 floating emojis at random positions, sizes, delays, and durations
+  let emojiHtml = "";
+  for (let i = 0; i < 18; i++) {
+    const e = HYPE_FLOATERS[Math.floor(Math.random() * HYPE_FLOATERS.length)];
+    const left = Math.random() * 100;
+    const delay = Math.random() * 2.5;
+    const dur = 2.2 + Math.random() * 1.6;
+    const size = 28 + Math.random() * 36;
+    emojiHtml += `<span class="lock-in-emoji" style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s;font-size:${size}px">${e}</span>`;
+  }
+  splash.innerHTML = `
+    <div class="lock-in-emojis">${emojiHtml}</div>
+    <div class="lock-in-phrase">${phrase.emoji} ${phrase.text} ${phrase.emoji}</div>
+    <div class="lock-in-countdown pop" id="lockInNum">3</div>
+    <div class="lock-in-skip">tap to skip</div>
+  `;
+  splash.classList.remove("hidden");
+
+  let n = 3;
+  const timeouts = [];
+  let done = false;
+  function finish() {
+    if (done) return;
+    done = true;
+    timeouts.forEach(clearTimeout);
+    splash.classList.add("hidden");
+    splash.innerHTML = "";  // free emoji DOM + reset for next launch
+    splash.removeEventListener("click", finish);
+    onDone();
+  }
+  splash.addEventListener("click", finish);
+
+  // Tick the countdown 3 → 2 → 1, then "GO!" briefly, then finish.
+  function tick() {
+    n -= 1;
+    const numEl = $("lockInNum");
+    if (!numEl) { finish(); return; }
+    if (n >= 1) {
+      numEl.textContent = String(n);
+      // Re-trigger pop animation
+      numEl.classList.remove("pop");
+      void numEl.offsetWidth;  // reflow
+      numEl.classList.add("pop");
+      timeouts.push(setTimeout(tick, 800));
+    } else {
+      // "GO!" flash, then dismiss
+      numEl.outerHTML = `<div class="lock-in-go" id="lockInNum">GO! 🚀</div>`;
+      // Confetti for max hype
+      try { fireConfetti({ intensity: 1.0, durationMs: 1200 }); } catch (_) {}
+      timeouts.push(setTimeout(finish, 700));
+    }
+  }
+  // Brief hold on "3" so the phrase entrance animation completes
+  timeouts.push(setTimeout(tick, 900));
+}
+
 function startTest() {
   state.mode = "test";
   const section = state.section;
@@ -4783,9 +4969,21 @@ function startTest() {
   $("prevBtn").classList.remove("hidden");
   $("masterBtn").classList.add("hidden");
   $("testNavStrip").classList.remove("hidden");
-  startTimer();
-  showView("quiz");
-  renderQuiz();
+  // Hype-splash overlay before the test starts. Defer timer start + view
+  // show until the splash dismisses (or is tapped to skip) — otherwise
+  // the kid loses test time staring at the splash. Battery mode skips
+  // the splash since the per-section transition screen already provides
+  // a "lock in" beat between sections.
+  const launchTest = () => {
+    startTimer();
+    showView("quiz");
+    renderQuiz();
+  };
+  if (state.battery.active) {
+    launchTest();
+  } else {
+    showLockInSplash(launchTest);
+  }
 }
 
 function startTimer() {
