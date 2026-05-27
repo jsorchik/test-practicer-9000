@@ -186,6 +186,42 @@
     padding: 28px 24px;
     margin-bottom: 16px;
   }
+  /* Sparkle treatment mirroring the section cards' lite-sparkle — hints that
+     review pays out under monetized mode. Same shimmer keyframes. */
+  .review-mode-panel.lite-sparkle {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(251,191,36,0.25);
+  }
+  .review-mode-panel.lite-sparkle::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 40%, rgba(251, 191, 36, 0.07) 50%, transparent 60%);
+    transform: translateX(-100%);
+    animation: lite-shimmer 5s linear infinite;
+    pointer-events: none;
+  }
+  /* Bounty chip shown above the headline when monetized — quick visual
+     reminder of what each mastery is worth. */
+  .review-bounty-chip {
+    display: flex;
+    width: fit-content;
+    align-items: center;
+    gap: 6px;
+    margin: 0 auto 14px;
+    padding: 6px 12px;
+    background: rgba(251,191,36,0.14);
+    border: 1px solid rgba(251,191,36,0.35);
+    border-radius: 999px;
+    color: #fbbf24;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    /* Sit above the shimmer pseudo-element so it doesn't get washed over. */
+    position: relative;
+    z-index: 1;
+  }
   .review-headline {
     font-size: 22px;
     font-weight: 800;
@@ -1596,6 +1632,7 @@
 
   <!-- Review-mode panel: replaces the section grid when Review is active -->
   <div class="review-mode-panel hidden" id="reviewModePanel">
+    <div class="review-bounty-chip hidden" id="reviewBountyChip">💰 $0.10 per mastered</div>
     <div class="review-headline" id="reviewHeadline">—</div>
     <div class="review-mode-actions">
       <button class="primary" id="startReviewBtn">Start Review →</button>
@@ -2955,6 +2992,20 @@ function renderReviewModePanel(stats) {
   $("startReviewBtn").disabled = stats.active === 0;
   $("startReviewBtn").textContent = stats.active === 0 ? "Nothing to review" : `Start Review →`;
   $("viewMistakesBtn").style.display = stats.mastered + stats.active > 0 ? "" : "none";
+
+  // Sparkle + bounty chip when monetized AND a bounty is configured (parent
+  // could set it to $0 to opt out). Skip if there are no active mistakes
+  // since there's nothing to earn on right now.
+  const bounty = Number(state.payoutConfig.reviewMasteryBounty) || 0;
+  const showSparkle = state.monetized && bounty > 0 && stats.active > 0;
+  $("reviewModePanel").classList.toggle("lite-sparkle", showSparkle);
+  const chip = $("reviewBountyChip");
+  if (showSparkle) {
+    chip.textContent = `💰 $${bounty.toFixed(2)} per mastered`;
+    chip.classList.remove("hidden");
+  } else {
+    chip.classList.add("hidden");
+  }
 
   // Per-section breakdown of active mistakes for context
   const counts = {};
