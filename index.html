@@ -2535,7 +2535,6 @@
     <div id="batteryStageConfig" class="hidden">
       <div class="modal-title">💰 Monetized Settings</div>
       <div class="modal-body">
-        <p style="font-size:13px;color:var(--muted);">Each test type has its own switch + payouts so a kid finishing a 5-question Unicorn Quest doesn't pay out like a kid finishing a Mock Test Day. Changes save automatically.</p>
         <div id="settingsCardsContainer"></div>
       </div>
       <div class="modal-actions">
@@ -2836,7 +2835,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.12";
+const APP_VERSION = "3.13";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -4823,11 +4822,96 @@ function settingsCardHTML(testType) {
             <div class="dollar-wrap"><span>$</span><input type="number" step="0.05" min="0" data-payout="${testType}|reviewMasteryBounty" value="${(pc.reviewMasteryBounty || 0).toFixed(2)}" /></div>
           </label>
         </div>
+        ${previewHtmlFor(testType)}
         <div class="settings-card-reset">
           <button type="button" data-reset-payouts="${testType}">↻ Reset payouts to defaults</button>
         </div>
       </div>
       ` : ""}
+    </div>
+  `;
+}
+
+// ─── Per-test-type payout preview ─────────────────────────────────────────
+// "Given the values in this card, what would the kid actually earn?"
+// Shows sample per-test payouts at 85% / 100% accuracy + (ISEE only) the
+// full Mock Test Day total at 85/95/100% + the review mastery rate. Picks
+// a representative section for each test type (verbal_combined for ISEE,
+// psat_rw for PSAT, tiny_letters for Tiny) under that type's default
+// grade + the kid's current testVolume.
+function previewSampleConfig(testType) {
+  const tt = TESTS[testType];
+  if (!tt) return null;
+  const gradeKey = tt.defaultGrade || Object.keys(tt.grades || {})[0];
+  const grade = (tt.grades || {})[gradeKey];
+  if (!grade) return null;
+  const bucket = state.testVolume === "full" ? (grade.testsFull || grade.tests) : grade.tests;
+  const sections = tt.sections || [];
+  for (const s of sections) {
+    if (s.isEssay) continue;
+    // Skip individual verbal cards in favor of the canonical combined one
+    // (matches what shows up in test mode).
+    if (s.key === "verbal_synonyms" || s.key === "verbal_completion") continue;
+    const cfg = bucket && bucket[s.key];
+    if (cfg && cfg.questionCount) return { sectionKey: s.key, questionCount: cfg.questionCount, gradeKey };
+  }
+  return null;
+}
+
+function previewHtmlFor(testType) {
+  const pc = state.payoutConfigByType[testType] || DEFAULT_PAYOUT_CONFIG_BY_TYPE[testType] || DEFAULT_PAYOUT_CONFIG;
+  const sample = previewSampleConfig(testType);
+  if (!sample) return "";
+  const sampleQ = sample.questionCount;
+  const scale = payoutScale();
+  const oneTest = (correct, total) => {
+    if (total === 0) return pc.testBase * scale;
+    const acc = correct / total;
+    let v = pc.testBase * scale + correct * pc.perCorrect;
+    if (acc >= 0.85) v += pc.testGoodBonus * scale;
+    if (acc >= 0.95) v += pc.testGreatBonus * scale;
+    return v;
+  };
+  const oneAt85 = oneTest(Math.round(sampleQ * 0.85), sampleQ);
+  const oneAt100 = oneTest(sampleQ, sampleQ);
+
+  let mtdLine = "";
+  if (testType === "isee") {
+    const grade = TESTS.isee.grades[sample.gradeKey];
+    const bucket = state.testVolume === "full" ? (grade.testsFull || grade.tests) : grade.tests;
+    const goalWords = sample.gradeKey === "lower" ? 150 : 300;
+    const essayAtAcc = (acc) => {
+      const approxWords = Math.round(goalWords * acc);
+      if (approxWords >= Math.round(goalWords * 1.5)) return 2.00;
+      if (approxWords >= goalWords)                   return 1.50;
+      if (approxWords >= 200)                         return 1.00;
+      if (approxWords >= 100)                         return 0.50;
+      return 0;
+    };
+    const mtdAt = (acc) => {
+      let sum = 0;
+      for (const k of BATTERY_SECTION_ORDER) {
+        if (k === "break") continue;
+        const section = SECTIONS.find(s => s.key === k);
+        if (!section) continue;
+        const sCfg = bucket && bucket[section.key];
+        if (!sCfg) continue;
+        if (section.isEssay) { sum += essayAtAcc(acc); continue; }
+        const c = Math.round(sCfg.questionCount * acc);
+        sum += oneTest(c, sCfg.questionCount);
+      }
+      return sum + pc.mtdCompletionBonus;
+    };
+    mtdLine = `<br><strong>Full MTD</strong>: 85% → <strong>$${mtdAt(0.85).toFixed(2)}</strong> · 95% → <strong>$${mtdAt(0.95).toFixed(2)}</strong> · 100% → <strong>$${mtdAt(1).toFixed(2)}</strong>`;
+  }
+
+  const volLabel = state.testVolume === "full" ? "full" : "half";
+  const gradeLabel = (TESTS[testType].grades?.[sample.gradeKey]?.label) || sample.gradeKey;
+  return `
+    <div class="payout-preview" data-preview="${testType}">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Estimate — ${volLabel}-length, ${escapeHtml(gradeLabel)} kid</div>
+      <strong>Per test</strong> (${sampleQ}-q): 85% → <strong>$${oneAt85.toFixed(2)}</strong> · 100% → <strong>$${oneAt100.toFixed(2)}</strong>${mtdLine}<br>
+      <strong>Review mastery</strong>: <strong>$${(pc.reviewMasteryBounty || 0).toFixed(2)}</strong> per mistake mastered
     </div>
   `;
 }
@@ -4846,7 +4930,9 @@ function wireSettingsCard(testType) {
       renderHome();
     });
   }
-  // Payout fields — auto-save on input
+  // Payout fields — auto-save on input + live-update the preview in this
+  // card. Preview replacement is done in-place via outerHTML so the
+  // surrounding inputs keep their focus + caret position mid-edit.
   card.querySelectorAll("[data-payout]").forEach(inp => {
     inp.addEventListener("input", () => {
       const [tt, field] = inp.dataset.payout.split("|");
@@ -4856,6 +4942,8 @@ function wireSettingsCard(testType) {
       }
       state.payoutConfigByType[tt][field] = v;
       saveProgress();
+      const pv = card.querySelector(`[data-preview="${testType}"]`);
+      if (pv) pv.outerHTML = previewHtmlFor(testType);
     });
   });
   // Reset payouts to defaults
