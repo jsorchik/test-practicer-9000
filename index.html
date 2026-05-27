@@ -72,6 +72,56 @@
   .view-home { width: min(820px, 100%); }
 
   /* Grade selector */
+  /* Top-level test type pill toggle (ISEE / PSAT). Visually distinct from
+     the grade pills below it so the kid (and parent) understand this is
+     a higher-level selector. */
+  .test-type-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .test-type-pill {
+    background: var(--panel);
+    border: 1.5px solid rgba(255,255,255,.06);
+    border-radius: 14px;
+    padding: 14px 18px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .15s, background .15s;
+    font-family: inherit;
+  }
+  .test-type-pill:hover { background: var(--panel-2); }
+  .test-type-pill .tt-label {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: .3px;
+    margin-bottom: 2px;
+  }
+  .test-type-pill .tt-sub { font-size: 13px; color: var(--muted); }
+  .test-type-pill.active {
+    border-color: var(--accent);
+    background: rgba(96,165,250,.10);
+    box-shadow: 0 0 0 1px var(--accent) inset;
+  }
+  .test-type-pill.active .tt-label { color: var(--accent); }
+
+  /* "Coming soon" placeholder shown when testType === "psat". Replaces
+     everything except the test-type toggle itself. */
+  .psat-stub {
+    background: var(--panel);
+    border: 1px dashed rgba(255,255,255,.18);
+    border-radius: 16px;
+    padding: 40px 28px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .psat-stub-emoji { font-size: 56px; margin-bottom: 10px; }
+  .psat-stub-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
+  .psat-stub-body  { font-size: 15px; color: var(--muted); line-height: 1.55; max-width: 500px; margin: 0 auto; }
+
   .grade-toggle {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -1593,6 +1643,35 @@
 
 <!-- ─── HOME VIEW ─── -->
 <div class="view-home" id="viewHome">
+  <!-- Top-level test type toggle. ISEE is the default and the only one with
+       content today; PSAT shows a "coming soon" stub when selected. -->
+  <div class="test-type-toggle" id="testTypeToggle">
+    <button class="test-type-pill active" id="testTypeIsee" data-type="isee">
+      <div class="tt-label">ISEE</div>
+      <div class="tt-sub">Independent School Entrance Exam</div>
+    </button>
+    <button class="test-type-pill" id="testTypePsat" data-type="psat">
+      <div class="tt-label">PSAT</div>
+      <div class="tt-sub">Preliminary SAT</div>
+    </button>
+  </div>
+
+  <!-- PSAT stub panel — shown when testType === "psat". Hidden otherwise. -->
+  <div class="psat-stub hidden" id="psatStubPanel">
+    <div class="psat-stub-emoji">🛠️</div>
+    <div class="psat-stub-title">PSAT mode is coming soon</div>
+    <div class="psat-stub-body">
+      We're stubbing this in alongside ISEE so the structural pieces are
+      in place — separate question banks, separate progress tracking,
+      separate payouts. Content is still being written.
+    </div>
+    <div class="psat-stub-body" style="font-size:13px;color:var(--muted);margin-top:14px;">
+      Toggle back to ISEE above to keep practicing.
+    </div>
+  </div>
+
+  <!-- Everything below is ISEE-specific UI. Hidden when PSAT is active. -->
+  <div id="iseeHomeSection">
   <div class="grade-toggle">
     <button class="grade-pill" id="gradeLower">
       <div class="label">Lower Level</div>
@@ -1655,6 +1734,7 @@
       <button id="resetProgress">Reset this level</button>
     </div>
   </div>
+  </div><!-- end #iseeHomeSection -->
 </div>
 
 <!-- ─── QUIZ VIEW ─── -->
@@ -2037,6 +2117,27 @@
 // Test counts/durations are roughly half the real section, which is enough
 // to drill timing without exhausting the student.
 // ════════════════════════════════════════════════════════════════════════════
+// Top-level test type registry. The app started as ISEE-only; PSAT is being
+// stubbed in as a separate test type with its own (eventually) content banks,
+// section configs, and lifetimes. For now PSAT is a placeholder with no
+// content — the toggle exists so the structural separation can be validated
+// before committing to building PSAT question banks.
+const TESTS = {
+  isee: {
+    label: "ISEE",
+    sub: "Independent School Entrance Exam",
+    defaultGrade: "middle",
+    // grades / sections are wired up below — referenced via TESTS.isee.grades
+    // etc. after the data structures are declared.
+  },
+  psat: {
+    label: "PSAT",
+    sub: "Preliminary SAT — coming soon",
+    defaultGrade: null,
+    // grades / sections empty until PSAT content lands.
+  },
+};
+
 const GRADES = {
   lower: {
     label: "Lower Level",
@@ -2139,6 +2240,16 @@ const SECTIONS = [
   { key: "reading",           name: "Reading Comprehension",        parent: "Reading",          description: "Read a short passage, then answer questions about it.", poolKey: "reading", isReading: true },
   { key: "essay",             name: "Essay",                        parent: "Writing",          description: "Write a thoughtful response to one prompt.", poolKey: "essays",  isEssay: true },
 ];
+
+// Wire the per-testType configs now that the data structures exist. ISEE
+// gets the full grade map + section list. PSAT is empty until content lands.
+// (Top-level GRADES / SECTIONS / BATTERY_SECTION_ORDER consts stay in place
+// for the existing ISEE code paths; future PSAT work will use the per-test
+// wrappers via currentTest().grades / currentTest().sections.)
+TESTS.isee.grades = GRADES;
+TESTS.isee.sections = SECTIONS;
+TESTS.psat.grades = {};
+TESTS.psat.sections = [];
 
 const MASTERY_THRESHOLD = 3;
 // Storage key retained from previous version to preserve user progress across the rebrand.
@@ -2303,16 +2414,42 @@ const state = {
   reviewJustMastered: false,
   // Essay
   essay: { prompt: "", text: "", startMs: 0, endMs: 0, timerInterval: null, isTest: false },
-  // Persistent — separate per grade level
+  // Top-level test type — wraps grade levels + lifetimes. "isee" is the
+  // original; "psat" is stubbed (no content). Toggled from the home view.
+  testType: "isee",
+  // Persistent — separate per testType + grade level. Old saves had a flat
+  // {lower, bridge, middle} shape; loadProgress migrates them under isee.
   lifetimes: {
-    lower:  { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
-    bridge: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
-    middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
+    isee: {
+      lower:  { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
+      bridge: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
+      middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
+    },
+    psat: {
+      // PSAT-shaped grades land here when content exists. Empty for now.
+    },
   },
 };
-// Shortcut accessor for current grade's lifetime stats
-function L() { return state.lifetimes[state.gradeLevel]; }
-function currentGrade() { return GRADES[state.gradeLevel]; }
+// Read-only stub returned by L() when the current testType has no grade
+// entry (e.g. PSAT mode before content lands). Frozen so any accidental
+// write throws loudly rather than corrupting silently.
+const EMPTY_LIFETIME = Object.freeze({
+  score: 0, total: 0, streak: 0, best: 0, mistakes: {},
+  perfectTests: 0, totalTests: 0, longestTestStreak: 0,
+  bestByTest: {}, essays: [], tests: [], rewardsBanked: 0,
+});
+// Shortcut accessors. L() falls back to the frozen stub in PSAT mode so
+// readers (header chips, etc.) don't crash. currentGrade() falls back to
+// undefined-safe access via currentGrades().
+function currentTest() { return TESTS[state.testType] || TESTS.isee; }
+function currentGrades() { return currentTest().grades || {}; }
+function L() {
+  const t = state.lifetimes[state.testType];
+  if (!t) return EMPTY_LIFETIME;
+  const g = t[state.gradeLevel];
+  return g || EMPTY_LIFETIME;
+}
+function currentGrade() { return currentGrades()[state.gradeLevel]; }
 function poolFor(section) {
   if (!section) return [];
   if (section.isEssay) return currentGrade().pools.essays;
@@ -2538,17 +2675,28 @@ function loadProgress() {
         state.payoutConfig.reviewMasteryBounty = DEFAULT_PAYOUT_CONFIG.reviewMasteryBounty;
       }
     }
+    // testType is new — accept saved value if it matches a known test type.
+    if (data.testType && TESTS[data.testType]) state.testType = data.testType;
     if (data.lifetimes) {
-      for (const k of Object.keys(state.lifetimes)) {
-        if (data.lifetimes[k]) {
-          Object.assign(state.lifetimes[k], data.lifetimes[k]);
-          if (!state.lifetimes[k].mistakes) state.lifetimes[k].mistakes = {};
+      // Migration: pre-testType saves had a flat {lower, bridge, middle}
+      // shape with grades at the top level. New shape nests under testType.
+      // Detect old by presence of any ISEE grade key at the top.
+      const looksFlat = ("lower" in data.lifetimes) || ("bridge" in data.lifetimes) || ("middle" in data.lifetimes);
+      const incomingIsee = looksFlat ? data.lifetimes : (data.lifetimes.isee || {});
+      const incomingPsat = data.lifetimes.psat || {};
+      for (const g of Object.keys(state.lifetimes.isee)) {
+        if (incomingIsee[g]) {
+          Object.assign(state.lifetimes.isee[g], incomingIsee[g]);
+          if (!state.lifetimes.isee[g].mistakes) state.lifetimes.isee[g].mistakes = {};
         }
       }
+      // PSAT has no defaults yet — accept any saved shape as-is.
+      state.lifetimes.psat = { ...state.lifetimes.psat, ...incomingPsat };
     }
-    // Migration: add new gamification fields for older saved states
-    for (const k of Object.keys(state.lifetimes)) {
-      const L = state.lifetimes[k];
+    // Migration: add new gamification fields for older saved states (ISEE only;
+    // PSAT lifetimes don't exist yet so nothing to backfill there).
+    for (const g of Object.keys(state.lifetimes.isee)) {
+      const L = state.lifetimes.isee[g];
       if (L.perfectTests === undefined)     L.perfectTests = 0;
       if (L.totalTests === undefined)       L.totalTests = 0;
       if (L.longestTestStreak === undefined) L.longestTestStreak = 0;
@@ -2563,6 +2711,7 @@ function saveProgress() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       gradeLevel: state.gradeLevel,
+      testType: state.testType,
       testVolume: state.testVolume,
       monetized: state.monetized,
       payoutConfig: state.payoutConfig,
@@ -2809,6 +2958,11 @@ const PATH_TO_VIEW = Object.fromEntries(Object.entries(ROUTABLE_VIEWS).map(([k,v
 let suppressHashUpdate = false;  // set true when handling popstate to avoid loops
 
 function showView(name) {
+  // PSAT mode is content-empty — every non-home view (quiz, stats, essays,
+  // past tests, mistakes) is ISEE-specific. If something tries to route
+  // there in PSAT mode (deep-link, popstate, etc.), fall back to home so
+  // the kid never lands on an empty/broken view.
+  if (state.testType === "psat" && name !== "home") name = "home";
   state.view = name;
   // Update browser URL for the routable views (home / stats / essays /
   // mistakes). Doesn't run when this showView was triggered by popstate.
@@ -2845,6 +2999,11 @@ function showView(name) {
 // HOME VIEW
 // ════════════════════════════════════════════════════════════════════════════
 function renderHome() {
+  // Test type pills + show/hide ISEE vs PSAT sub-views. In PSAT mode the
+  // rest of this function still runs (cheap, harmless) but its outputs
+  // sit in #iseeHomeSection which is hidden.
+  applyTestTypeToHome();
+
   // Grade pills
   $("gradeLower").classList.toggle("active", state.gradeLevel === "lower");
   $("gradeBridge").classList.toggle("active", state.gradeLevel === "bridge");
@@ -2892,9 +3051,11 @@ function renderMonetizedToggle() {
   if (!btn) return;
   btn.textContent = state.monetized ? "💰 Monetized: ON" : "💰 Monetized: OFF";
   btn.classList.toggle("on", state.monetized);
-  // Header badge — visible only when monetized is on
+  // Header badge — visible only when monetized is on AND we're in ISEE
+  // mode (PSAT has its own future accounting; current state.monetized is
+  // ISEE-scoped).
   const badge = $("monetizedHeaderBadge");
-  if (badge) badge.classList.toggle("hidden", !state.monetized);
+  if (badge) badge.classList.toggle("hidden", !state.monetized || state.testType === "psat");
 }
 
 // Builds the section cards (and the Mock Test Day card, shown in test mode).
@@ -3737,6 +3898,32 @@ function setGrade(grade) {
   state.gradeLevel = grade;
   saveProgress();
   renderHome();
+}
+
+// Top-level test type toggle (ISEE vs PSAT). When switching to PSAT we leave
+// state.gradeLevel pointing to whatever ISEE grade was last selected — that
+// way toggling back to ISEE restores the kid's spot. PSAT is content-empty
+// for now, so the home view renders a placeholder panel.
+function setTestType(type) {
+  if (!TESTS[type] || type === state.testType) return;
+  state.testType = type;
+  saveProgress();
+  renderHome();
+}
+
+// Reflects state.testType into the home view: pills' .active class + show /
+// hide the PSAT stub vs the ISEE section. Plus header chips that don't make
+// sense in PSAT mode (banked + monetized indicate ISEE payouts).
+function applyTestTypeToHome() {
+  const isPsat = state.testType === "psat";
+  $("testTypeIsee").classList.toggle("active", !isPsat);
+  $("testTypePsat").classList.toggle("active",  isPsat);
+  $("psatStubPanel").classList.toggle("hidden", !isPsat);
+  $("iseeHomeSection").classList.toggle("hidden", isPsat);
+  // Header chips: hide the banked + monetized badges in PSAT mode since
+  // they reflect ISEE state and would be misleading.
+  $("monetizedHeaderBadge").classList.toggle("hidden", isPsat || !state.monetized);
+  $("bankedHeaderBadge").classList.toggle("hidden", isPsat);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -4789,6 +4976,8 @@ function renderMistakesList() {
 // ════════════════════════════════════════════════════════════════════════════
 // EVENT WIRING
 // ════════════════════════════════════════════════════════════════════════════
+$("testTypeIsee").addEventListener("click", () => setTestType("isee"));
+$("testTypePsat").addEventListener("click", () => setTestType("psat"));
 $("gradeLower").addEventListener("click", () => setGrade("lower"));
 $("gradeBridge").addEventListener("click", () => setGrade("bridge"));
 $("gradeMiddle").addEventListener("click", () => setGrade("middle"));
