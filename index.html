@@ -2842,7 +2842,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.13.1";
+const APP_VERSION = "3.13.2";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -4171,18 +4171,27 @@ function showView(name) {
   // Hide home button during battery (kid is locked in) and on the home view.
   const hideBack = name === "home" || state.battery.active;
   $("backBtn").classList.toggle("hidden", hideBack);
-  // Banked-balance badge in header: only on the home view (during tests
-  // it would leak right/wrong feedback as the value would change). Shown
-  // whenever the bank has anything in it — even if all Monetized switches
-  // are currently off, the parent still owes whatever's already accrued.
-  const bankedBadge = $("bankedHeaderBadge");
-  if (bankedBadge) {
-    const showBanked = name === "home" && (state.rewardsBanked || 0) > 0;
-    bankedBadge.classList.toggle("hidden", !showBanked);
-    if (showBanked) bankedBadge.textContent = `💰 $${state.rewardsBanked.toFixed(2)} banked`;
-  }
+  // Banked-balance badge in header — refreshed both here (on view changes)
+  // and from renderHome / Settings auto-save / finishTest so the chip stays
+  // current even when the home view doesn't get re-shown after a payout.
+  refreshBankedBadge(name);
   // Tiny mascot lives only inside the quiz view in tiny mode.
   if (name !== "quiz") tinyMascotHide();
+}
+
+// Update the "$X.XX banked" header chip. Only visible on the home view
+// (during tests the chip would leak feedback as it'd change after each
+// correct answer that bumps the bank). Shown whenever the bank > 0
+// regardless of monetized switches — the parent owes whatever's accrued
+// even if every switch is now off. viewName defaults to the current view
+// so render paths that don't know which view is showing still work.
+function refreshBankedBadge(viewName) {
+  const bankedBadge = $("bankedHeaderBadge");
+  if (!bankedBadge) return;
+  const v = viewName || state.view;
+  const showBanked = v === "home" && (state.rewardsBanked || 0) > 0;
+  bankedBadge.classList.toggle("hidden", !showBanked);
+  if (showBanked) bankedBadge.textContent = `💰 $${state.rewardsBanked.toFixed(2)} banked`;
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -4234,6 +4243,10 @@ function renderHome() {
   $("lifetimeBest").textContent = `${L().best}`;
   // Monetized toggle button label/state
   renderMonetizedToggle();
+  // Banked-balance chip — refreshed here so payouts that happen on the
+  // home view (mark-paid, manual edit, finishTest returning to home) keep
+  // the chip current without needing a showView re-trigger.
+  refreshBankedBadge("home");
 }
 
 function renderMonetizedToggle() {
