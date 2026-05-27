@@ -4168,21 +4168,25 @@ function renderQuiz(picked = -1) {
 
   if (mode === "test") {
     // Test mode never shows per-question feedback. The action bar is:
-    //   ← Prev   ⚑ Flag   [Submit Section]  ⋯  Next →
-    // On the last question, Next disappears and Submit Section becomes the
-    // primary action (Enter triggers it).
+    //   ← Prev   ⚑ Flag   ⋯   Next →   [Submit Section]
+    // Submit Section is hidden until the kid has either reached the last
+    // question or touched every question (answered or flagged) — guards
+    // against accidentally ending the test mid-way through. Practically
+    // matches "I'm at the end" or "I've made a pass and marked my doubts."
     fbEl.className = "feedback";
     fbEl.innerHTML = "";
     const total = state.testQueue.length;
     const onFirst = state.testIndex === 0;
     const onLast  = state.testIndex === total - 1;
     const ans = state.testAnswers[state.testIndex];
+    const allTouched = state.testAnswers.every(a => a.picked !== null || a.flagged);
+    const showSubmit = onLast || allTouched;
     prevBtn.classList.remove("hidden");
     prevBtn.disabled = onFirst;
     flagBtn.classList.remove("hidden");
     flagBtn.textContent = ans?.flagged ? "⚑ Unflag" : "⚑ Flag";
     flagBtn.classList.toggle("flagged-on", !!ans?.flagged);
-    finishBtn.classList.remove("hidden");
+    finishBtn.classList.toggle("hidden", !showSubmit);
     finishBtn.textContent = "Submit Section";
     if (onLast) {
       nextBtn.classList.add("hidden");
