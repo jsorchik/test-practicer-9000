@@ -2459,9 +2459,9 @@
 
     <!-- Stage 3: payout config -->
     <div id="batteryStageConfig" class="hidden">
-      <div class="modal-title">💰 Monetized Mode — set the payout</div>
+      <div class="modal-title" id="payoutConfigTitle">💰 Monetized Mode — set the payout</div>
       <div class="modal-body">
-        <p>These rules apply to every test and to each section within Mock Test Day. Prefilled with your last values — adjust if you like.</p>
+        <p>These values apply to <strong id="payoutConfigScope">the active test type</strong>. Each test type (ISEE, PSAT, Unicorn Quest) has its own payout settings — toggle between them on the home view to configure each separately.</p>
         <div class="payout-group-label">Per test (also each MTD section)</div>
         <p style="margin:0 0 8px; font-size:12px; color:var(--muted);">Values below are for a full-length test. Half-length tests automatically pay half the base + bonuses (per-correct stays the same).</p>
         <div class="payout-grid">
@@ -2800,7 +2800,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.9.2";
+const APP_VERSION = "3.9.3";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -4564,6 +4564,12 @@ function batteryShowStage(stage) {
     // Prefill from the active testType's payoutConfig. Each test type has
     // its own (Unicorn Quest's are tuned for shorter tests + younger user).
     const _pc = activePayoutConfig();
+    // Title + scope label make it obvious which test type the parent is
+    // configuring (otherwise the modal looks generic and they might think
+    // it's a global setting).
+    const ttLabel = currentTest().label;
+    $("payoutConfigTitle").innerHTML = `💰 Payouts for <span style="color:var(--accent)">${escapeHtml(ttLabel)}</span>`;
+    $("payoutConfigScope").textContent = ttLabel;
     $("payoutBase").value          = _pc.testBase.toFixed(2);
     $("payoutPerCorrect").value    = _pc.perCorrect.toFixed(2);
     $("payoutGoodBonus").value     = _pc.testGoodBonus.toFixed(2);
