@@ -1767,18 +1767,18 @@
       <div class="modal-body">
         <p>These rules apply to every test and to each section within Mock Test Day. Prefilled with your last values — adjust if you like.</p>
         <div class="payout-group-label">Per test (also each MTD section)</div>
-        <p style="margin:0 0 8px; font-size:12px; color:var(--muted);">Values below are for a 20-question test. Larger tests scale up proportionally (a 40-q test pays 2× the base + bonuses), smaller scale down.</p>
+        <p style="margin:0 0 8px; font-size:12px; color:var(--muted);">Values below are for a full-length test. Half-length tests automatically pay half the base + bonuses (per-correct stays the same).</p>
         <div class="payout-grid">
-          <label>Base for finishing (per 20q)
+          <label>Base for finishing
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutBase" step="0.25" min="0" /></div>
           </label>
           <label>Per correct answer
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutPerCorrect" step="0.01" min="0" /></div>
           </label>
-          <label>Bonus at ≥85% (per 20q)
+          <label>Bonus at ≥85% accuracy
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGoodBonus" step="0.25" min="0" /></div>
           </label>
-          <label>Bonus at ≥95% (per 20q)
+          <label>Bonus at ≥95% accuracy
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGreatBonus" step="0.25" min="0" /></div>
           </label>
         </div>
@@ -1973,11 +1973,14 @@ const MIN_SEC_PER_QUESTION = 5;
 // Anti-spam for essays: kid has to spend at least this long writing
 // before the payout counts (avoids 30-second gibberish submissions).
 const ESSAY_MIN_SEC = 5 * 60;  // 5 minutes
-// Reference test size for scaling base + bonus payouts. Configured
-// `testBase` / `testGoodBonus` / `testGreatBonus` are "for a 20-q test";
-// larger / smaller tests scale proportionally so a 40-q full test
-// roughly pays 2x of its 20-q half-mode counterpart.
-const REFERENCE_TEST_QUESTIONS = 20;
+// Base + accuracy bonus payouts are configured "for a full-length test".
+// Half-mode tests pay exactly half (so two half tests are worth the same as
+// one full test of the same section, never more). Per-correct portion stays
+// the same and scales naturally with question count.
+const HALF_MODE_PAYOUT_SCALE = 0.5;
+function payoutScale() {
+  return state.testVolume === "full" ? 1.0 : HALF_MODE_PAYOUT_SCALE;
+}
 
 // Section icons — used in section cards, stats page, battery progress, etc.
 const SECTION_EMOJI = {
@@ -2054,15 +2057,16 @@ const state = {
   monetized: false,
   parentPin: "6969",
   payoutConfig: {
-    // Per-test / per-MTD-segment rewards (apply to every individual test AND
-    // to each section within Mock Test Day). Defaults are calibrated so
-    // ~30 min of solid 85% work pays ~$5, matching the user's manual rate:
-    //   Half-mode Middle test (20q / 10min) at 85% → $1.85 = ~$5.55/30min
-    //   Full Middle MTD (160q / 200min) at 85%     → $16.30 = ~$4.89/30min
-    testBase:       0.50,        // $ for completing any test (or one MTD section)
-    perCorrect:     0.05,        // $ per correct answer
-    testGoodBonus:  0.50,        // $ bonus if this test/section ≥ 85%
-    testGreatBonus: 1.00,        // $ bonus if this test/section ≥ 95%
+    // Per-test / per-MTD-segment rewards. All values are "for a full-length
+    // test"; half-mode tests automatically pay half the base + bonuses.
+    // perCorrect is unscaled — every right answer pays the same.
+    // Defaults are calibrated to ~$5 per 30 min of solid 85% work:
+    //   Full Middle verbal (40q / 20min) at 85% → ~$3.70 = ~$5.55/30min
+    //   Half Middle verbal (20q / 10min) at 85% → ~$1.85 = ~$5.55/30min
+    testBase:       1.00,        // $ for completing a full-length test
+    perCorrect:     0.05,        // $ per correct answer (unscaled)
+    testGoodBonus:  1.00,        // $ bonus if test ≥ 85% (full-test value)
+    testGreatBonus: 2.00,        // $ bonus if test ≥ 95% (full-test value)
     // Extra reward layered on top of all section payouts when the kid
     // finishes the whole MTD chain:
     mtdCompletionBonus: 5.00,
@@ -3002,8 +3006,8 @@ function updatePayoutPreview() {
   const verbalSec = SECTIONS.find(s => s.key === "verbal_combined");
   const sampleQ = (verbalSec && testConfigFor(verbalSec)?.questionCount) || 20;
   const oneTest = (correct, total) => {
-    if (total === 0) return cfg.testBase;
-    const scale = total / REFERENCE_TEST_QUESTIONS;
+    if (total === 0) return cfg.testBase * payoutScale();
+    const scale = payoutScale();
     const acc = correct / total;
     let v = cfg.testBase * scale + correct * cfg.perCorrect;
     if (acc >= 0.85) v += cfg.testGoodBonus * scale;
@@ -3037,7 +3041,9 @@ function updatePayoutPreview() {
     }
     return sum + cfg.mtdCompletionBonus;
   };
+  const volLabel = state.testVolume === "full" ? "full" : "half";
   $("payoutPreview").innerHTML =
+    `<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Sample payouts assuming kid is in <strong>${volLabel} mode</strong> (toggle on home view)</div>` +
     `<strong>Per test</strong> (${sampleQ}-q sample): 85% → <strong>$${oneAt85.toFixed(2)}</strong> · 100% → <strong>$${oneAt100.toFixed(2)}</strong><br>` +
     `<strong>Full Mock Test Day</strong>: 85% → <strong>$${mtdAt(0.85).toFixed(2)}</strong> · 95% → <strong>$${mtdAt(0.95).toFixed(2)}</strong> · 100% → <strong>$${mtdAt(1).toFixed(2)}</strong>`;
 }
@@ -3234,13 +3240,13 @@ function renderBatteryBreak() {
 // standalone tests and for each segment within Mock Test Day. Pure function
 // — caller decides whether to actually award based on state.monetized.
 //
-// Base + accuracy bonuses scale by test size (relative to the reference
-// 20-q test). So a 40-q test pays ~2x the base + bonuses of a 20-q test,
-// matching the kid's effort. perCorrect already scales naturally.
+// Base + accuracy bonuses are halved in half-mode (so two half tests of the
+// same section equal one full test). perCorrect is unaffected — every right
+// answer pays the same regardless of volume.
 function calculateTestEarnings(correct, total) {
   if (total === 0) return 0;
   const cfg = state.payoutConfig;
-  const scale = total / REFERENCE_TEST_QUESTIONS;
+  const scale = payoutScale();
   const acc = correct / total;
   let earned = cfg.testBase * scale + correct * cfg.perCorrect;
   if (acc >= 0.85) earned += cfg.testGoodBonus * scale;
@@ -3250,9 +3256,9 @@ function calculateTestEarnings(correct, total) {
 
 // Highest payout possible for a test of `total` questions (perfect score).
 function maxTestEarnings(total) {
-  if (total === 0) return state.payoutConfig.testBase;  // essay path uses maxEssayEarnings
+  if (total === 0) return state.payoutConfig.testBase * payoutScale();
   const cfg = state.payoutConfig;
-  const scale = total / REFERENCE_TEST_QUESTIONS;
+  const scale = payoutScale();
   return cfg.testBase * scale + total * cfg.perCorrect + cfg.testGoodBonus * scale + cfg.testGreatBonus * scale;
 }
 
