@@ -2334,7 +2334,10 @@ function escapeHtml(s) {
 function appConfirm({ title = "Are you sure?", body = "", okLabel = "Yes", cancelLabel = "Cancel", danger = false } = {}) {
   return new Promise(resolve => {
     $("confirmTitle").textContent = title;
-    $("confirmBody").textContent = body;
+    // innerHTML so callers can pass markup (e.g. <br>, <strong>). All current
+    // call sites build their bodies from numbers + static label strings; do
+    // not feed user-typed content through here without escaping.
+    $("confirmBody").innerHTML = body;
     $("confirmOkBtn").textContent = okLabel;
     $("confirmCancelBtn").textContent = cancelLabel;
     $("confirmModal").classList.remove("hidden");
