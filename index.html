@@ -2836,7 +2836,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.11";
+const APP_VERSION = "3.12";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -4702,24 +4702,54 @@ function renderSettingsCards() {
   for (const tt of SETTINGS_CARD_TYPES) wireSettingsCard(tt);
 }
 
-// Single global banked row at the top of the Settings modal. Shown whenever
-// the bank has anything in it, regardless of whether any test type's switch
-// is currently on — the parent still owes whatever's already accrued.
+// Single global banked row at the top of the Settings modal. Always shown
+// (even at $0) so a parent can manually credit the kid for off-app work or
+// fix a wrong total. The amount is an editable input — typing in it
+// auto-saves on each change. Home header chip still hides at $0 (kid UI),
+// so an empty modal row doesn't leak into the home view.
 function settingsGlobalBankedHTML() {
   const amt = state.rewardsBanked || 0;
-  if (amt <= 0) return "";
   return `
     <div class="settings-banked-row" id="settingsGlobalBanked" style="margin-top:14px;">
-      <div>
+      <div style="display:flex; align-items:center; gap:8px;">
         <span class="banked-grade">Banked:</span>
-        <span class="banked-amt-text" id="settingsGlobalBankedAmt">$${amt.toFixed(2)}</span>
+        <div class="dollar-wrap" style="width:100px;">
+          <span>$</span>
+          <input type="number" step="0.01" min="0" id="settingsGlobalBankedInput" value="${amt.toFixed(2)}" />
+        </div>
       </div>
-      <button type="button" id="settingsGlobalMarkPaid">Mark paid</button>
+      <button type="button" id="settingsGlobalMarkPaid" ${amt <= 0 ? `disabled style="opacity:.4;cursor:not-allowed;"` : ""}>Mark paid</button>
     </div>
   `;
 }
 
 function wireGlobalBanked() {
+  // Editable amount — auto-save on each keystroke. Negative values clamp to 0
+  // (matches the per-test payout field behavior).
+  const inp = document.getElementById("settingsGlobalBankedInput");
+  if (inp) {
+    inp.addEventListener("input", () => {
+      const v = Math.max(0, Number(inp.value) || 0);
+      state.rewardsBanked = v;
+      saveProgress();
+      // Toggle the Mark Paid button enabled-state without re-rendering the
+      // whole modal (preserves cursor + focus mid-edit).
+      const mp = document.getElementById("settingsGlobalMarkPaid");
+      if (mp) {
+        if (v <= 0) {
+          mp.setAttribute("disabled", "");
+          mp.style.opacity = ".4";
+          mp.style.cursor = "not-allowed";
+        } else {
+          mp.removeAttribute("disabled");
+          mp.style.opacity = "";
+          mp.style.cursor = "";
+        }
+      }
+      renderHome();
+    });
+  }
+  // Mark Paid — one-click zero with confirmation.
   const btn = document.getElementById("settingsGlobalMarkPaid");
   if (!btn) return;
   btn.addEventListener("click", async () => {
@@ -4734,7 +4764,6 @@ function wireGlobalBanked() {
     if (!ok) return;
     state.rewardsBanked = 0;
     saveProgress();
-    // Re-render so the row disappears (amt is now 0) and the home chip clears.
     renderSettingsCards();
     renderHome();
   });
