@@ -2898,11 +2898,18 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   if (entry.type === "psatRW") {
     const sub = entry.subtype || "comprehension";
     const promptLine = PSAT_RW_PROMPTS[sub] || PSAT_RW_PROMPTS.comprehension;
+    // Allow <u>...</u> in the passage (writing-edit subtype wraps the variable
+    // portion in it). Escape everything else first, then re-enable just those
+    // two tags. The allowlist is explicit so we don't accidentally render
+    // anything else if content writers stick odd HTML in.
+    const safePassage = escapeHtml(entry.passage)
+      .replace(/&lt;u&gt;/g, "<u>")
+      .replace(/&lt;\/u&gt;/g, "</u>");
     return {
       id, sectionKey, entry,
       promptHtml: `
         <div class="prompt">${promptLine}</div>
-        <div class="psat-passage">${escapeHtml(entry.passage)}</div>
+        <div class="psat-passage">${safePassage}</div>
         <div class="question-text">${escapeHtml(entry.question)}</div>`,
       choices: entry.choices.slice(),
       answerIdx: entry.correct,
