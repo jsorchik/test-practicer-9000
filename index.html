@@ -486,6 +486,12 @@
     color: var(--text);
     font-variant-numeric: tabular-nums;
   }
+  /* Slimmer comparison columns when rendered inside a review item (results
+     screen, past-tests history) — same look, less padding. */
+  .qc-cols-review { margin: 4px 0 12px; gap: 8px; }
+  .qc-cols-review .qc-col { padding: 12px 14px; text-align: left; }
+  .qc-cols-review .qc-col .qc-label { font-size: 11px; margin-bottom: 4px; }
+  .qc-cols-review .qc-col .qc-val { font-size: 16px; font-weight: 600; }
 
   .options { display: grid; grid-template-columns: 1fr; gap: 10px; }
   .option {
@@ -914,7 +920,9 @@
   .essay-card-head .good { color: var(--good); }
   .essay-card-head .ok   { color: var(--warn); }
   .essay-card-head .bad  { color: var(--bad);  }
-  /* Per-question review rows inside an expanded past-test card */
+  /* Scrollable container for the per-question review rows inside an
+     expanded past-test card. The rows themselves use .review-item styling
+     (shared with the immediate results screen) for visual consistency. */
   .past-q-list {
     display: flex;
     flex-direction: column;
@@ -923,33 +931,6 @@
     overflow-y: auto;
     padding-right: 4px;
   }
-  .past-q-row {
-    background: rgba(255,255,255,.03);
-    border-left: 3px solid var(--muted);
-    border-radius: 6px;
-    padding: 10px 12px;
-    font-size: 14px;
-    line-height: 1.5;
-  }
-  .past-q-row.good  { border-left-color: var(--good); }
-  .past-q-row.wrong { border-left-color: var(--bad);  }
-  .past-q-row.skipped { border-left-color: var(--muted); }
-  .past-q-head { color: var(--text); margin-bottom: 4px; }
-  .past-q-meta { color: var(--muted); font-size: 13px; }
-  .past-q-exp  { color: var(--muted); font-size: 13px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,.06); }
-  .past-q-tag {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .3px;
-  }
-  .past-q-tag.good    { background: rgba(34,197,94,.18);  color: #86efac; }
-  .past-q-tag.wrong   { background: rgba(239,68,68,.18);  color: #fca5a5; }
-  .past-q-tag.skipped { background: rgba(148,163,184,.18); color: var(--muted); }
   /* ─── Monetized Mode toggle button + state styles ─── */
   #monetizedToggleBtn {
     position: relative;
@@ -3117,23 +3098,16 @@ function renderTestsHistory() {
     const earnedLine = (t.earnedDollars || 0) > 0
       ? ` · <span style="color:#fbbf24;font-weight:700;">💰 $${t.earnedDollars.toFixed(2)}</span>`
       : t.rushed ? ` · <span style="color:#ef4444;">⚠ too fast — no payout</span>` : '';
-    // Per-question review block (inside <details>). Each row shows the
-    // question, the kid's answer, the correct answer, and the explanation.
+    // Per-question review block (inside <details>). Uses the same
+    // renderReviewItem renderer as the immediate results screen so the
+    // visual language is identical between "just finished" and "look at
+    // an old one."
     const reviewRows = (t.answers || []).map((a, i) => {
       const isUnans = a.picked === null || a.picked === undefined;
       const isCorrect = !isUnans && a.picked === a.correctIdx;
       const cls = isUnans ? "skipped" : (isCorrect ? "good" : "wrong");
       const label = isUnans ? "Unanswered" : (isCorrect ? "Correct" : "Wrong");
-      const yourAns = isUnans ? "—" : `${"ABCD"[a.picked]}. ${escapeHtml(String(a.choices[a.picked] || ""))}`;
-      const correctAns = `${"ABCD"[a.correctIdx]}. ${escapeHtml(String(a.choices[a.correctIdx] || ""))}`;
-      return `
-        <div class="past-q-row ${cls}">
-          <div class="past-q-head"><strong>${i + 1}.</strong> ${escapeHtml(a.displayLabel || "").slice(0, 200)}${(a.displayLabel || "").length > 200 ? "…" : ""} <span class="past-q-tag ${cls}">${label}</span></div>
-          ${isCorrect ? "" : `<div class="past-q-meta">Your answer: ${yourAns}</div>`}
-          <div class="past-q-meta">Correct: <strong>${correctAns}</strong></div>
-          ${a.feedbackHtml ? `<div class="past-q-exp">${a.feedbackHtml}</div>` : ""}
-        </div>
-      `;
+      return `<div class="review-item ${cls === "good" ? "" : cls}">${renderReviewItem(a, i, cls, label)}</div>`;
     }).join("");
     return `
       <div class="essay-card">
@@ -4455,22 +4429,81 @@ function renderTestResults() {
 // / explanation" layout.
 function renderReviewItem(a, i, cls, label) {
   const isVerbal = a.sectionKey === "verbal_synonyms" || a.sectionKey === "verbal_completion";
+
+  if (!isVerbal) {
+    // Non-verbal layout: show the question (rendered as side-by-side
+    // columns for quant comparison, otherwise as a question-text block),
+    // then ans-block panels for Your answer / Correct answer matching the
+    // verbal style — easier to scan right/wrong than a single inline row.
+    const reg = QUESTION_REGISTRY[a.id];
+    const entry = reg?.entry;
+    const isQuantComp = entry?.type === "quantComparison";
+
+    // Head: replace the awkward "Column A: ... vs Column B: ..." string
+    // with a short label, since the actual columns render in the detail.
+    // For other non-verbal questions, keep the full question in the head.
+    const headLabelRaw = isQuantComp ? "Quantitative comparison" : a.displayLabel;
+    const headTrunc = escapeHtml(headLabelRaw).slice(0, 200);
+    const more = headLabelRaw.length > 200 ? "…" : "";
+    const nvHead = `
+      <div class="head">
+        <div class="qword">${i + 1}. ${headTrunc}${more}</div>
+        <div class="mark ${cls === "good" ? "good" : cls === "wrong" ? "bad" : ""}">${label}</div>
+      </div>`;
+
+    // Question block: side-by-side columns for quant comparison, nothing
+    // extra for math/reading (the question is already in the head).
+    let questionBlock = "";
+    if (isQuantComp) {
+      questionBlock = `
+        <div class="qc-cols qc-cols-review">
+          <div class="qc-col"><div class="qc-label">Column A</div><div class="qc-val">${fmtFractions(escapeHtml(entry.columnA))}</div></div>
+          <div class="qc-col"><div class="qc-label">Column B</div><div class="qc-val">${fmtFractions(escapeHtml(entry.columnB))}</div></div>
+        </div>`;
+    }
+
+    // Your-answer / Correct-answer blocks, same shape as verbal so the
+    // results screen has consistent visual language for right/wrong.
+    const correctText = renderChoiceText(a.choices[a.correctIdx]);
+    const correctLetter = "ABCD"[a.correctIdx];
+    let nvBlocks = "";
+    if (cls === "wrong" && a.picked !== null) {
+      const yourText = renderChoiceText(a.choices[a.picked]);
+      const yourLetter = "ABCD"[a.picked];
+      nvBlocks += `<div class="ans-block your-wrong">
+        <div class="ans-label">Your answer</div>
+        <div class="ans-word"><strong>${yourLetter}. ${yourText}</strong></div>
+      </div>`;
+      nvBlocks += `<div class="ans-block correct">
+        <div class="ans-label">Correct answer</div>
+        <div class="ans-word"><strong>${correctLetter}. ${correctText}</strong></div>
+      </div>`;
+    } else if (cls === "skipped") {
+      nvBlocks += `<div class="ans-block correct">
+        <div class="ans-label">Correct answer (you didn't answer)</div>
+        <div class="ans-word"><strong>${correctLetter}. ${correctText}</strong></div>
+      </div>`;
+    } else {
+      nvBlocks += `<div class="ans-block correct">
+        <div class="ans-label">Correct answer</div>
+        <div class="ans-word"><strong>${correctLetter}. ${correctText}</strong></div>
+      </div>`;
+    }
+
+    return nvHead + `
+      <div class="detail">
+        ${questionBlock}
+        ${nvBlocks}
+        <div class="explain">${a.feedbackHtml || ""}</div>
+      </div>`;
+  }
+
+  // Verbal — definition-rich layout (below)
   const head = `
     <div class="head">
       <div class="qword">${i + 1}. ${escapeHtml(a.displayLabel).slice(0, 200)}${a.displayLabel.length > 200 ? "…" : ""}</div>
       <div class="mark ${cls === "good" ? "good" : cls === "wrong" ? "bad" : ""}">${label}</div>
     </div>`;
-
-  if (!isVerbal) {
-    // Non-verbal: keep the simple your-answer / correct / explanation form
-    const yourAns = a.picked === null ? "—" : renderChoiceText(a.choices[a.picked]);
-    const correctAns = renderChoiceText(a.choices[a.correctIdx]);
-    return head + `
-      <div class="detail">
-        <div class="ans-row">Your answer: <b>${yourAns}</b> · Correct: <b class="green">${correctAns}</b></div>
-        <div class="explain">${a.feedbackHtml}</div>
-      </div>`;
-  }
 
   // Verbal — definition-rich layout
   const correctWord = String(a.choices[a.correctIdx] || "");
