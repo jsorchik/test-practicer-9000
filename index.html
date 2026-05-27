@@ -1835,32 +1835,122 @@
     color: var(--muted);
     margin-bottom: 6px;
   }
-  .banked-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 14px;
-    background: rgba(251,191,36,0.12);
-    border: 1px solid rgba(251,191,36,0.3);
-    border-radius: 10px;
-    flex-wrap: wrap;
-  }
-  .banked-row .banked-amt {
-    color: var(--text);
-    font-size: 15px;
-  }
-  .banked-row .banked-amt #bankedAmount {
-    color: #fbbf24;
-    font-weight: 800;
-    font-size: 18px;
-  }
+  /* .banked-row was the single-bank summary in the legacy payout modal.
+     Per-test-type Settings modal uses .settings-banked-row instead — see
+     the "Settings card" CSS block further down. */
   @media (max-width: 480px) {
     .payout-grid { grid-template-columns: 1fr; }
     /* Shrink question-navigator boxes so a 40-q full test doesn't take half
        the screen vertically. Still tap-friendly (28px ≈ Apple's 28pt minimum). */
     .test-nav-strip { gap: 4px; padding: 10px; }
     .q-box { width: 30px; height: 30px; font-size: 13px; }
+  }
+  /* ─── Per-test-type Settings card (Monetized Settings modal) ─── */
+  /* Widen the modal a bit so 3 stacked cards (ISEE / PSAT / Unicorn Quest)
+     each have room for the payout grid + banked row without feeling cramped. */
+  #batteryStageConfig + .modal-actions, /* unused, kept to avoid CSS lint complaints */
+  #batteryStageConfig .modal-body { padding-bottom: 4px; }
+  .settings-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 14px;
+  }
+  .settings-card.on {
+    background: rgba(251,191,36,0.06);
+    border-color: rgba(251,191,36,0.35);
+  }
+  .settings-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .settings-card-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .settings-card-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  /* iOS-style switch */
+  .switch {
+    position: relative;
+    width: 50px;
+    height: 28px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,.18);
+    border-radius: 28px;
+    transition: background .18s ease;
+  }
+  .switch .slider::before {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: white;
+    transition: transform .18s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,.4);
+  }
+  .switch input:checked + .slider { background: #22c55e; }
+  .switch input:checked + .slider::before { transform: translateX(22px); }
+  /* Collapsed (toggle off) state — payout fields dim + non-interactive */
+  .settings-card-body { margin-top: 10px; transition: opacity .15s ease; }
+  .settings-card.off .settings-card-body { opacity: .45; pointer-events: none; }
+  .settings-banked-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(251,191,36,0.12);
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 8px;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--text);
+    flex-wrap: wrap;
+  }
+  .settings-banked-row .banked-grade { color: var(--muted); font-size: 12px; }
+  .settings-banked-row .banked-amt-text { color: #fbbf24; font-weight: 800; font-size: 16px; margin-left: 6px; }
+  .settings-banked-row button {
+    padding: 5px 10px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,.15);
+    background: rgba(255,255,255,.05);
+    color: var(--text);
+    font-family: inherit;
+  }
+  .settings-card .payout-group-label { margin-top: 12px; }
+  .settings-card-reset {
+    margin-top: 10px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .settings-card-reset button {
+    padding: 6px 10px;
+    border-radius: 7px;
+    font-size: 12px;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,.15);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: inherit;
   }
   /* ─── Banked-so-far chip on battery transition screens ─── */
   .banked-chip {
@@ -2434,12 +2524,12 @@
     <div id="batteryStageNeedsMonetized" class="hidden">
       <div class="modal-title">💰 Monetized Mode required</div>
       <div class="modal-body">
-        <p>Mock Test Day pays out a real money reward, so a parent has to switch on Monetized Mode first.</p>
+        <p>Mock Test Day pays out a real money reward, so a parent has to switch on Monetized Mode for ISEE first.</p>
         <p style="font-size:13px;color:var(--muted);">This is a one-time setup. After it's on, the kid can run Mock Test Day on their own.</p>
       </div>
       <div class="modal-actions">
         <button class="ghost" id="batteryModalCancel2">Maybe later</button>
-        <button class="primary" id="batteryNeedsMonetizedNext">Parent: enable now →</button>
+        <button class="primary" id="batteryNeedsMonetizedNext">Parent: open Settings →</button>
       </div>
     </div>
 
@@ -2457,53 +2547,19 @@
       </div>
     </div>
 
-    <!-- Stage 3: payout config -->
+    <!-- Stage 3: Settings panel — one card per test type, each independently
+         toggleable + editable. Auto-saves on input (no Save button). The
+         legacy single-config flow used "batteryConfigStart" to submit; the
+         new flow just closes (and launches MTD if state.monetizedFlowAfterEnable
+         was "start-battery"). -->
     <div id="batteryStageConfig" class="hidden">
-      <div class="modal-title" id="payoutConfigTitle">💰 Monetized Mode — set the payout</div>
+      <div class="modal-title">💰 Monetized Settings</div>
       <div class="modal-body">
-        <p>These values apply to <strong id="payoutConfigScope">the active test type</strong>. Each test type (ISEE, PSAT, Unicorn Quest) has its own payout settings — toggle between them on the home view to configure each separately.</p>
-        <div class="payout-group-label">Per test (also each MTD section)</div>
-        <p style="margin:0 0 8px; font-size:12px; color:var(--muted);">Values below are for a full-length test. Half-length tests automatically pay half the base + bonuses (per-correct stays the same).</p>
-        <div class="payout-grid">
-          <label>Base for finishing
-            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutBase" step="0.25" min="0" /></div>
-          </label>
-          <label>Per correct answer
-            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutPerCorrect" step="0.01" min="0" /></div>
-          </label>
-          <label>Bonus at ≥85% accuracy
-            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGoodBonus" step="0.25" min="0" /></div>
-          </label>
-          <label>Bonus at ≥95% accuracy
-            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutGreatBonus" step="0.25" min="0" /></div>
-          </label>
-        </div>
-        <div class="payout-group-label" style="margin-top:14px;">Mock Test Day bonus</div>
-        <div class="payout-grid" style="grid-template-columns:1fr;">
-          <label>Extra for finishing the whole MTD
-            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutMtdBonus" step="0.50" min="0" /></div>
-          </label>
-        </div>
-        <div class="payout-group-label" style="margin-top:14px;">Review queue</div>
-        <p style="margin:0 0 8px; font-size:12px; color:var(--muted);">Paid when a missed question is mastered (answered correctly 3 times in a row). The manual "Mark as mastered" shortcut doesn't pay.</p>
-        <div class="payout-grid" style="grid-template-columns:1fr;">
-          <label>Per mistake mastered
-            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutReviewBounty" step="0.05" min="0" /></div>
-          </label>
-        </div>
-        <div class="payout-preview" id="payoutPreview">Sample payouts —</div>
-        <div style="margin-top:10px;display:flex;justify-content:flex-end;">
-          <button class="ghost" id="payoutResetBtn" type="button">↻ Reset payouts to defaults</button>
-        </div>
-        <div class="payout-group-label" style="margin-top:14px;">Banked balance</div>
-        <div class="banked-row" id="bankedRow">
-          <div class="banked-amt"><span id="bankedAmount">$0.00</span> banked</div>
-          <button class="ghost" id="markPaidBtn" type="button">Mark paid (reset to $0)</button>
-        </div>
+        <p style="font-size:13px;color:var(--muted);">Each test type has its own switch + payouts so a kid finishing a 5-question Unicorn Quest doesn't pay out like a kid finishing a Mock Test Day. Changes save automatically.</p>
+        <div id="settingsCardsContainer"></div>
       </div>
       <div class="modal-actions">
-        <button class="ghost" id="batteryConfigBack">← Back</button>
-        <button class="primary" id="batteryConfigStart">Enable Monetized Mode →</button>
+        <button class="primary" id="batteryConfigStart">Done</button>
       </div>
     </div>
 
@@ -2800,7 +2856,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.9.3";
+const APP_VERSION = "3.10";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -2859,6 +2915,23 @@ const DEFAULT_PAYOUT_CONFIG_BY_TYPE = {
 function activePayoutConfig() {
   const byType = state.payoutConfigByType || {};
   return byType[state.testType] || byType.isee || DEFAULT_PAYOUT_CONFIG;
+}
+
+// Per-test-type monetized switches. Returns whether the CURRENTLY-active
+// test type has its monetized switch on. Anywhere a payout fires (test
+// completion, mastery bounty, essay, sparkle, header chip), this is the
+// gate — not the bare `state.monetizedByType` object — so switching test
+// type changes what's monetized automatically.
+function isMonetizedActive() {
+  return !!(state.monetizedByType && state.monetizedByType[state.testType]);
+}
+function isMonetizedFor(testType) {
+  return !!(state.monetizedByType && state.monetizedByType[testType]);
+}
+// True if ANY test type has monetized on — used for the header chip when
+// the parent wants a "Monetized" visual regardless of which type is active.
+function isAnyMonetized() {
+  return Object.values(state.monetizedByType || {}).some(Boolean);
 }
 
 // Parent PIN to unlock Monetized Mode. Rotates daily to today's MMDD so the
@@ -3024,13 +3097,22 @@ const state = {
   view: "home",
   mode: "practice",              // "practice" | "test" | "review"
   testVolume: "half",            // "half" (shorter practice tests) | "full" (real ISEE timing)
-  // Master switch: when off, no test/MTD pays out money and Mock Test Day
-  // is gated behind an "Enable Monetized Mode" prompt. Toggle lives in the
-  // bottom stats bar; turning it on requires the parent PIN.
+  // Per-test-type monetized switches. Each test type can be independently
+  // enabled or disabled — so a 10yo using Unicorn Quest can't earn money
+  // just because Monetized was on for ISEE. Settings modal exposes each as
+  // its own toggle.
   //
   // PIN is today's date as MMDD (e.g. 0527 for May 27). Rotates daily so
   // the kid can't just memorize a static value — see getCurrentParentPin().
-  monetized: false,
+  monetizedByType: {
+    isee: false,
+    psat: false,
+    tiny: false,
+  },
+  // Set true after the parent enters the PIN this session. Lets the parent
+  // edit Settings without re-entering the PIN every time the modal opens.
+  // Resets on page reload — kid can't blast the modal open without PIN.
+  monetizedSessionUnlocked: false,
   // Per-test-type payout config. Each test type maintains its own values
   // so a kid finishing a 5-question Unicorn Quest doesn't out-earn a
   // 12-year-old finishing a full Mock Test Day. Read via activePayoutConfig()
@@ -3367,7 +3449,23 @@ function loadProgress() {
     // parentPin used to be persisted as a static value (default 6969). It's
     // now computed daily from the current date via getCurrentParentPin(), so
     // we ignore any saved value from older versions.
-    if (typeof data.monetized === "boolean") state.monetized = data.monetized;
+    // Migrate monetized state:
+    //   - New shape: data.monetizedByType = { isee, psat, tiny }
+    //   - Legacy: data.monetized = true|false → applied to ALL test types
+    //     (preserves the old all-or-nothing behavior on load; parent can
+    //     then disable any type they don't want in Settings).
+    if (data.monetizedByType && typeof data.monetizedByType === "object") {
+      for (const t of Object.keys(state.monetizedByType)) {
+        if (typeof data.monetizedByType[t] === "boolean") {
+          state.monetizedByType[t] = data.monetizedByType[t];
+        }
+      }
+    } else if (typeof data.monetized === "boolean") {
+      const v = data.monetized;
+      for (const t of Object.keys(state.monetizedByType)) {
+        state.monetizedByType[t] = v;
+      }
+    }
     // Payout config migration. Three shapes have existed:
     //   (1) ancient: data.payoutConfig with old field names (base, goodBonus, greatBonus)
     //   (2) recent:  data.payoutConfig with new field names (testBase, testGoodBonus, …)
@@ -3486,7 +3584,7 @@ function saveProgress() {
       testType: state.testType,
       lastGradeByType: state.lastGradeByType,
       testVolume: state.testVolume,
-      monetized: state.monetized,
+      monetizedByType: state.monetizedByType,
       payoutConfigByType: state.payoutConfigByType,
       lifetimes: state.lifetimes,
     }));
@@ -4003,7 +4101,7 @@ function recordReviewCorrect(id) {
   const justMastered = !m.mastered && m.correctStreak >= MASTERY_THRESHOLD;
   if (m.correctStreak >= MASTERY_THRESHOLD) m.mastered = true;
   let bountyEarned = 0;
-  if (justMastered && state.monetized) {
+  if (justMastered && isMonetizedActive()) {
     bountyEarned = Math.max(0, Number(activePayoutConfig().reviewMasteryBounty) || 0);
     if (bountyEarned > 0) {
       L().rewardsBanked = (L().rewardsBanked || 0) + bountyEarned;
@@ -4071,7 +4169,7 @@ function showView(name) {
   // it would leak right/wrong feedback as the value would change).
   const bankedBadge = $("bankedHeaderBadge");
   if (bankedBadge) {
-    const showBanked = name === "home" && state.monetized && (L().rewardsBanked || 0) > 0;
+    const showBanked = name === "home" && isMonetizedActive() && (L().rewardsBanked || 0) > 0;
     bankedBadge.classList.toggle("hidden", !showBanked);
     if (showBanked) bankedBadge.textContent = `💰 $${L().rewardsBanked.toFixed(2)} banked`;
   }
@@ -4131,15 +4229,21 @@ function renderHome() {
 }
 
 function renderMonetizedToggle() {
+  // Home-page "Monetized Settings" button. Always opens the Settings modal
+  // (PIN-gated if not unlocked this session). Per-test-type toggles + payout
+  // editing all happen in the modal — this button never directly flips a
+  // toggle on its own, since making it a single switch was confusing (you
+  // had to disable then re-enable to change a value).
   const btn = $("monetizedToggleBtn");
   if (!btn) return;
-  btn.textContent = state.monetized ? "💰 Monetized: ON" : "💰 Monetized: OFF";
-  btn.classList.toggle("on", state.monetized);
-  // Header badge — visible whenever monetized is on. Each test type has
-  // its own payoutConfig + bank now (see payoutConfigByType), so the badge
-  // means "monetized mode is on across all test types" — a single toggle.
+  // "on" highlight when the *currently-selected* test type is monetized,
+  // matching the home-view affordances (sparkle cards, payout chips).
+  btn.textContent = "💰 Monetized Settings";
+  btn.classList.toggle("on", isMonetizedActive());
+  // Header chip mirrors the active test type's status — switching test
+  // type on home changes whether the chip shows.
   const badge = $("monetizedHeaderBadge");
-  if (badge) badge.classList.toggle("hidden", !state.monetized);
+  if (badge) badge.classList.toggle("hidden", !isMonetizedActive());
 }
 
 // Builds the section cards (and the Mock Test Day card, shown in test mode).
@@ -4164,7 +4268,7 @@ function renderSectionsGrid() {
     // Subtle gold shimmer on individual cards when Monetized Mode is on,
     // hinting that completing them pays out. NOT applied in Practice Mode
     // (no payouts in practice).
-    if (state.monetized && state.mode === "test") card.classList.add("lite-sparkle");
+    if (isMonetizedActive() && state.mode === "test") card.classList.add("lite-sparkle");
     const t = testConfigFor(section);
     const poolCount = section.isEssay ? currentGrade().pools.essays.length : poolFor(section).length;
     const available = !!(t && (section.isEssay || poolCount > 0));
@@ -4177,7 +4281,7 @@ function renderSectionsGrid() {
     // Payout chip — shows max possible $ for a perfect attempt
     // (only when monetized + test mode)
     let payoutChip = "";
-    if (state.monetized && state.mode === "test" && t) {
+    if (isMonetizedActive() && state.mode === "test" && t) {
       const max = section.isEssay ? maxEssayEarnings() : maxTestEarnings(t.questionCount);
       payoutChip = `<div class="payout-chip">💰 up to $${max.toFixed(2)}</div>`;
     }
@@ -4200,11 +4304,11 @@ function renderSectionsGrid() {
       .reduce((sum, k) => sum + (testConfigFor(SECTIONS.find(s => s.key === k))?.questionCount || 0), 0);
     const card = document.createElement("button");
     card.className = "section-card mock-test-day";
-    if (!state.monetized) card.classList.add("disabled-mtd");
+    if (!isMonetizedActive()) card.classList.add("disabled-mtd");
     // Compute the max MTD payout for the chip (sum of perfect-section
     // payouts across all 5 testable sections + essay base + completion bonus)
     let mtdPayoutChip = "";
-    if (state.monetized) {
+    if (isMonetizedActive()) {
       const cfg = activePayoutConfig();
       let maxSum = 0;
       for (const k of BATTERY_SECTION_ORDER) {
@@ -4218,9 +4322,9 @@ function renderSectionsGrid() {
       maxSum += cfg.mtdCompletionBonus;
       mtdPayoutChip = `<div class="payout-chip mtd">💰 up to $${maxSum.toFixed(2)}</div>`;
     }
-    const subLine = state.monetized
+    const subLine = isMonetizedActive()
       ? `All sections + MTD bonus when you finish`
-      : `🔒 Turn on Monetized Mode to unlock`;
+      : `🔒 Turn on Monetized for ISEE to unlock`;
     card.innerHTML = `
       <div class="emoji">💰</div>
       <div class="title">Mock Test Day</div>
@@ -4248,7 +4352,7 @@ function renderReviewModePanel(stats) {
   // could set it to $0 to opt out). Skip if there are no active mistakes
   // since there's nothing to earn on right now.
   const bounty = Number(activePayoutConfig().reviewMasteryBounty) || 0;
-  const showSparkle = state.monetized && bounty > 0 && stats.active > 0;
+  const showSparkle = isMonetizedActive() && bounty > 0 && stats.active > 0;
   $("reviewModePanel").classList.toggle("lite-sparkle", showSparkle);
   const chip = $("reviewBountyChip");
   if (showSparkle) {
@@ -4533,7 +4637,10 @@ function startBattery() {
   $("batteryModalTime").textContent = `~${mins} minutes total (including breaks)`;
   $("batteryModalQs").textContent = `${totalQ} timed questions + 1 essay prompt`;
   state.monetizedFlowAfterEnable = "start-battery";
-  if (state.monetized) {
+  // MTD is an ISEE-only feature (PSAT/Tiny have their own thing eventually).
+  // Gate on ISEE's monetized switch specifically — not isMonetizedActive,
+  // which would gate on whichever testType is selected on the home view.
+  if (isMonetizedFor("isee")) {
     batteryShowStage("intro");
   } else {
     batteryShowStage("needs-monetized");
@@ -4541,12 +4648,19 @@ function startBattery() {
   $("batteryModal").classList.remove("hidden");
 }
 
-// Open the modal in "configure only" mode — user clicked the Monetized
-// toggle while it was off. After PIN+config, just turn monetized on and
-// close (no battery launch).
-function openEnableMonetizedFlow() {
-  state.monetizedFlowAfterEnable = "close";
-  batteryShowStage("pin");
+// Open the Settings modal. PIN-gated on first open per session; subsequent
+// opens skip straight to the Settings panel (until page reload). Callers
+// that need to launch something after the parent finishes (e.g. MTD) should
+// set state.monetizedFlowAfterEnable beforehand.
+function openMonetizedSettings() {
+  if (state.monetizedFlowAfterEnable !== "start-battery") {
+    state.monetizedFlowAfterEnable = "close";
+  }
+  if (state.monetizedSessionUnlocked) {
+    batteryShowStage("config");
+  } else {
+    batteryShowStage("pin");
+  }
   $("batteryModal").classList.remove("hidden");
 }
 
@@ -4561,33 +4675,17 @@ function batteryShowStage(stage) {
     setTimeout(() => $("batteryPinInput").focus(), 50);
   }
   if (stage === "config") {
-    // Prefill from the active testType's payoutConfig. Each test type has
-    // its own (Unicorn Quest's are tuned for shorter tests + younger user).
-    const _pc = activePayoutConfig();
-    // Title + scope label make it obvious which test type the parent is
-    // configuring (otherwise the modal looks generic and they might think
-    // it's a global setting).
-    const ttLabel = currentTest().label;
-    $("payoutConfigTitle").innerHTML = `💰 Payouts for <span style="color:var(--accent)">${escapeHtml(ttLabel)}</span>`;
-    $("payoutConfigScope").textContent = ttLabel;
-    $("payoutBase").value          = _pc.testBase.toFixed(2);
-    $("payoutPerCorrect").value    = _pc.perCorrect.toFixed(2);
-    $("payoutGoodBonus").value     = _pc.testGoodBonus.toFixed(2);
-    $("payoutGreatBonus").value    = _pc.testGreatBonus.toFixed(2);
-    $("payoutMtdBonus").value      = _pc.mtdCompletionBonus.toFixed(2);
-    $("payoutReviewBounty").value  = (_pc.reviewMasteryBounty || 0).toFixed(2);
-    $("bankedAmount").textContent  = `$${(L().rewardsBanked || 0).toFixed(2)}`;
-    updatePayoutPreview();
-    // Submit button label depends on whether we're launching MTD after
-    $("batteryConfigStart").textContent = state.monetizedFlowAfterEnable === "start-battery"
-      ? "Enable & start the test →"
-      : "Enable Monetized Mode →";
+    renderSettingsCards();
   }
 }
 
 function tryUnlockPin() {
   const entered = $("batteryPinInput").value.trim();
   if (entered === getCurrentParentPin()) {
+    // Remember the unlock for the rest of this session so the parent can
+    // pop the Settings modal repeatedly without re-typing the PIN (cuts
+    // friction when adjusting payouts mid-session). Resets on page reload.
+    state.monetizedSessionUnlocked = true;
     batteryShowStage("config");
   } else {
     $("batteryPinError").classList.remove("hidden");
@@ -4596,82 +4694,188 @@ function tryUnlockPin() {
   }
 }
 
-function readPayoutConfigFromForm() {
-  return {
-    testBase:            Math.max(0, Number($("payoutBase").value)          || 0),
-    perCorrect:          Math.max(0, Number($("payoutPerCorrect").value)    || 0),
-    testGoodBonus:       Math.max(0, Number($("payoutGoodBonus").value)     || 0),
-    testGreatBonus:      Math.max(0, Number($("payoutGreatBonus").value)    || 0),
-    mtdCompletionBonus:  Math.max(0, Number($("payoutMtdBonus").value)      || 0),
-    reviewMasteryBounty: Math.max(0, Number($("payoutReviewBounty").value)  || 0),
-  };
+// ─── Settings modal — per-test-type cards ─────────────────────────────────
+// The list of test types shown in the modal (in display order). Each card
+// has a toggle + payout fields + banked rows + reset. Single source of truth
+// so adding a new test type only requires updating TESTS + this array.
+const SETTINGS_CARD_TYPES = ["isee", "psat", "tiny"];
+
+function renderSettingsCards() {
+  const container = $("settingsCardsContainer");
+  if (!container) return;
+  container.innerHTML = SETTINGS_CARD_TYPES.map(settingsCardHTML).join("");
+  // Wire up listeners after innerHTML overwrites them on each re-render.
+  for (const tt of SETTINGS_CARD_TYPES) wireSettingsCard(tt);
 }
 
-function updatePayoutPreview() {
-  // Compute sample payouts using the values currently in the form, against
-  // the active grade level + test volume.
-  const cfg = readPayoutConfigFromForm();
-  // For "sample test" — use a typical mid-size section (the verbal_combined
-  // one, since it's the centerpiece). Falls back to 20 q if missing.
-  const verbalSec = SECTIONS.find(s => s.key === "verbal_combined");
-  const sampleQ = (verbalSec && testConfigFor(verbalSec)?.questionCount) || 20;
-  const oneTest = (correct, total) => {
-    if (total === 0) return cfg.testBase * payoutScale();
-    const scale = payoutScale();
-    const acc = correct / total;
-    let v = cfg.testBase * scale + correct * cfg.perCorrect;
-    if (acc >= 0.85) v += cfg.testGoodBonus * scale;
-    if (acc >= 0.95) v += cfg.testGreatBonus * scale;
-    return v;
-  };
-  const oneAt85   = oneTest(Math.round(sampleQ * 0.85), sampleQ);
-  const oneAt100  = oneTest(sampleQ, sampleQ);
-  // Full MTD: sum of section payouts at given accuracy + completion bonus
-  const goalWords = state.gradeLevel === "lower" ? 150 : 300;
-  // Approximate essay earnings based on the accuracy band: assume the kid
-  // hits the word goal at 100%, ~200-word tier at 85%, etc.
-  const essayAtAcc = (acc) => {
-    const approxWords = Math.round(goalWords * acc);
-    if (approxWords >= Math.round(goalWords * 1.5)) return 2.00;
-    if (approxWords >= goalWords)                   return 1.50;
-    if (approxWords >= 200)                         return 1.00;
-    if (approxWords >= 100)                         return 0.50;
-    return 0;
-  };
-  const mtdAt = (acc) => {
-    let sum = 0;
-    for (const k of BATTERY_SECTION_ORDER) {
-      if (k === "break") continue;
-      const section = SECTIONS.find(s => s.key === k);
-      const sCfg = testConfigFor(section);
-      if (!sCfg) continue;
-      if (section.isEssay) { sum += essayAtAcc(acc); continue; }
-      const c = Math.round(sCfg.questionCount * acc);
-      sum += oneTest(c, sCfg.questionCount);
-    }
-    return sum + cfg.mtdCompletionBonus;
-  };
-  const volLabel = state.testVolume === "full" ? "full" : "half";
-  $("payoutPreview").innerHTML =
-    `<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Sample payouts assuming kid is in <strong>${volLabel} mode</strong> (toggle on home view)</div>` +
-    `<strong>Per test</strong> (${sampleQ}-q sample): 85% → <strong>$${oneAt85.toFixed(2)}</strong> · 100% → <strong>$${oneAt100.toFixed(2)}</strong><br>` +
-    `<strong>Full Mock Test Day</strong>: 85% → <strong>$${mtdAt(0.85).toFixed(2)}</strong> · 95% → <strong>$${mtdAt(0.95).toFixed(2)}</strong> · 100% → <strong>$${mtdAt(1).toFixed(2)}</strong><br>` +
-    `<strong>Review mastery</strong>: <strong>$${(cfg.reviewMasteryBounty || 0).toFixed(2)}</strong> per missed question mastered`;
+function settingsCardHTML(testType) {
+  const t = TESTS[testType];
+  if (!t) return "";
+  const on = isMonetizedFor(testType);
+  const pc = state.payoutConfigByType[testType] || DEFAULT_PAYOUT_CONFIG_BY_TYPE[testType] || DEFAULT_PAYOUT_CONFIG;
+  // Banked balance: per (testType x grade), since each grade tracks its own
+  // L().rewardsBanked. Show one row per grade so the parent can mark-paid
+  // each grade independently. Most test types only have one grade (PSAT,
+  // Tiny); ISEE has three (Lower / Bridge / Middle).
+  const grades = t.grades || {};
+  const bankedRows = Object.keys(grades).map(gradeKey => {
+    const lt = ((state.lifetimes[testType] || {})[gradeKey]) || {};
+    const amt = lt.rewardsBanked || 0;
+    const gradeLabel = grades[gradeKey].label || gradeKey;
+    const showLabel = Object.keys(grades).length > 1;  // hide grade label if only one
+    return `
+      <div class="settings-banked-row">
+        <div>
+          ${showLabel ? `<span class="banked-grade">${escapeHtml(gradeLabel)}:</span>` : `<span class="banked-grade">Banked:</span>`}
+          <span class="banked-amt-text" data-banked-amt="${testType}|${gradeKey}">$${amt.toFixed(2)}</span>
+        </div>
+        <button type="button" data-mark-paid="${testType}|${gradeKey}" ${amt <= 0 ? `disabled style="opacity:.4;cursor:not-allowed;"` : ""}>Mark paid</button>
+      </div>
+    `;
+  }).join("");
+  // For Tiny, MTD doesn't exist — hide the MTD bonus field.
+  const showMtd = testType !== "tiny";
+  return `
+    <div class="settings-card ${on ? "on" : "off"}" data-settings-card="${testType}">
+      <div class="settings-card-header">
+        <div>
+          <div class="settings-card-title">${escapeHtml(t.label)}</div>
+          <div class="settings-card-sub">${escapeHtml(t.sub || "")}</div>
+        </div>
+        <label class="switch" title="Turn Monetized Mode on for ${escapeHtml(t.label)}">
+          <input type="checkbox" data-monetized-toggle="${testType}" ${on ? "checked" : ""} />
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="settings-card-body">
+        <div class="payout-group-label">Per test (also each MTD section)</div>
+        <p style="margin:0 0 6px; font-size:11px; color:var(--muted);">Half-length tests automatically pay half base + bonuses. Per-correct is unaffected.</p>
+        <div class="payout-grid">
+          <label>Base for finishing
+            <div class="dollar-wrap"><span>$</span><input type="number" step="0.25" min="0" data-payout="${testType}|testBase" value="${pc.testBase.toFixed(2)}" /></div>
+          </label>
+          <label>Per correct
+            <div class="dollar-wrap"><span>$</span><input type="number" step="0.01" min="0" data-payout="${testType}|perCorrect" value="${pc.perCorrect.toFixed(2)}" /></div>
+          </label>
+          <label>Bonus ≥85%
+            <div class="dollar-wrap"><span>$</span><input type="number" step="0.25" min="0" data-payout="${testType}|testGoodBonus" value="${pc.testGoodBonus.toFixed(2)}" /></div>
+          </label>
+          <label>Bonus ≥95%
+            <div class="dollar-wrap"><span>$</span><input type="number" step="0.25" min="0" data-payout="${testType}|testGreatBonus" value="${pc.testGreatBonus.toFixed(2)}" /></div>
+          </label>
+        </div>
+        ${showMtd ? `
+          <div class="payout-group-label">Mock Test Day bonus</div>
+          <div class="payout-grid" style="grid-template-columns:1fr;">
+            <label>Finishing the whole MTD
+              <div class="dollar-wrap"><span>$</span><input type="number" step="0.50" min="0" data-payout="${testType}|mtdCompletionBonus" value="${pc.mtdCompletionBonus.toFixed(2)}" /></div>
+            </label>
+          </div>
+        ` : ""}
+        <div class="payout-group-label">Review queue</div>
+        <div class="payout-grid" style="grid-template-columns:1fr;">
+          <label>Per mistake mastered (3-in-a-row)
+            <div class="dollar-wrap"><span>$</span><input type="number" step="0.05" min="0" data-payout="${testType}|reviewMasteryBounty" value="${(pc.reviewMasteryBounty || 0).toFixed(2)}" /></div>
+          </label>
+        </div>
+        <div class="payout-group-label" style="margin-top:14px;">Banked balance</div>
+        ${bankedRows}
+        <div class="settings-card-reset">
+          <button type="button" data-reset-payouts="${testType}">↻ Reset payouts to defaults</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function wireSettingsCard(testType) {
+  const card = document.querySelector(`[data-settings-card="${testType}"]`);
+  if (!card) return;
+  // Toggle switch
+  const toggleEl = card.querySelector(`[data-monetized-toggle="${testType}"]`);
+  if (toggleEl) {
+    toggleEl.addEventListener("change", () => {
+      state.monetizedByType[testType] = !!toggleEl.checked;
+      saveProgress();
+      card.classList.toggle("on", toggleEl.checked);
+      card.classList.toggle("off", !toggleEl.checked);
+      // Active-testtype switch flipped → refresh home so chip/sparkle update
+      // even if the parent hasn't closed the modal yet.
+      renderHome();
+    });
+  }
+  // Payout fields — auto-save on input
+  card.querySelectorAll("[data-payout]").forEach(inp => {
+    inp.addEventListener("input", () => {
+      const [tt, field] = inp.dataset.payout.split("|");
+      const v = Math.max(0, Number(inp.value) || 0);
+      if (!state.payoutConfigByType[tt]) {
+        state.payoutConfigByType[tt] = { ...(DEFAULT_PAYOUT_CONFIG_BY_TYPE[tt] || DEFAULT_PAYOUT_CONFIG) };
+      }
+      state.payoutConfigByType[tt][field] = v;
+      saveProgress();
+    });
+  });
+  // Mark paid buttons (per testType x grade)
+  card.querySelectorAll("[data-mark-paid]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const [tt, gradeKey] = btn.dataset.markPaid.split("|");
+      const lt = ((state.lifetimes[tt] || {})[gradeKey]) || null;
+      if (!lt) return;
+      const cur = lt.rewardsBanked || 0;
+      if (cur <= 0) return;
+      const gradeLabel = (TESTS[tt]?.grades?.[gradeKey]?.label) || gradeKey;
+      const ttLabel = TESTS[tt]?.label || tt;
+      const ok = await appConfirm({
+        title: `Mark $${cur.toFixed(2)} as paid?`,
+        body: `Resets the ${ttLabel} (${gradeLabel}) banked balance to $0.00. Do this after you've paid the kid the cash.`,
+        okLabel: "Yes, paid",
+        cancelLabel: "Cancel",
+      });
+      if (!ok) return;
+      lt.rewardsBanked = 0;
+      saveProgress();
+      // Update just this row + home (no full re-render — preserves field focus)
+      const amtEl = card.querySelector(`[data-banked-amt="${tt}|${gradeKey}"]`);
+      if (amtEl) amtEl.textContent = "$0.00";
+      btn.disabled = true;
+      btn.style.opacity = ".4";
+      btn.style.cursor = "not-allowed";
+      renderHome();
+    });
+  });
+  // Reset payouts to defaults
+  const resetBtn = card.querySelector(`[data-reset-payouts="${testType}"]`);
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      const d = DEFAULT_PAYOUT_CONFIG_BY_TYPE[testType] || DEFAULT_PAYOUT_CONFIG;
+      state.payoutConfigByType[testType] = { ...d };
+      saveProgress();
+      // Re-render just this card so the input values reflect the reset.
+      // Cheap full re-render of all cards is fine — modal is small.
+      renderSettingsCards();
+    });
+  }
 }
 
 function confirmStartBattery() {
-  // Save the parent's payout settings (per the active testType) and enable
-  // Monetized Mode (this flow always means parent has approved).
-  state.payoutConfigByType[state.testType] = readPayoutConfigFromForm();
-  state.monetized = true;
+  // Called from the Settings modal's "Done" button. Auto-save has already
+  // written every field change to state, so all we do here is close the
+  // modal + optionally launch MTD if this flow was kicked off by the
+  // "needs-monetized" stage.
   saveProgress();
   $("batteryModal").classList.add("hidden");
   renderMonetizedToggle();
   renderHome();
-  // If this flow was a config-only enable, stop here; otherwise launch MTD.
-  if (state.monetizedFlowAfterEnable !== "start-battery") return;
-  // Show the start-battery intro screen so the kid sees the commitment
-  // checklist before actually starting.
+  // Reset the flow flag so the next time the Settings modal opens it's not
+  // still in "start-battery" mode.
+  const wantsBattery = state.monetizedFlowAfterEnable === "start-battery";
+  state.monetizedFlowAfterEnable = "close";
+  // Only launch MTD if (a) this flow was kicked off by an MTD click AND
+  // (b) the parent actually turned ISEE on while in Settings. Otherwise
+  // leave them on home — they backed out without enabling, no surprise
+  // battery launch.
+  if (!wantsBattery || !isMonetizedFor("isee")) return;
   batteryShowStage("intro");
   $("batteryModal").classList.remove("hidden");
 }
@@ -4859,7 +5063,7 @@ function renderBatteryBreak() {
 
 // Calculate the dollar earnings for a single test/section. Used both for
 // standalone tests and for each segment within Mock Test Day. Pure function
-// — caller decides whether to actually award based on state.monetized.
+// — caller decides whether to actually award based on isMonetizedActive().
 //
 // Base + accuracy bonuses are halved in half-mode (so two half tests of the
 // same section equal one full test). perCorrect is unaffected — every right
@@ -5073,7 +5277,7 @@ function applyTestTypeToHome() {
   // chip's visibility lives in showView (it reads L().rewardsBanked, which
   // is per-testType + per-grade), so each test type naturally shows its
   // own bank balance.
-  $("monetizedHeaderBadge").classList.toggle("hidden", !state.monetized);
+  $("monetizedHeaderBadge").classList.toggle("hidden", !isMonetizedActive());
   // Hide the Essays button when the current testType has no essay section.
   // PSAT + tiny have none; ISEE has it.
   const hasEssay = currentSections().some(s => s.isEssay);
@@ -5510,7 +5714,7 @@ function finishTest() {
   const elapsedSecForCheck = Math.floor((Date.now() - state.testStartMs) / 1000);
   const minTimeSec = total * MIN_SEC_PER_QUESTION;
   const rushed = total > 0 && elapsedSecForCheck < minTimeSec;
-  const perTestEarned = (state.monetized && !rushed) ? calculateTestEarnings(correct, total) : 0;
+  const perTestEarned = (isMonetizedActive() && !rushed) ? calculateTestEarnings(correct, total) : 0;
   state.lastTestRushed = rushed;
   if (perTestEarned > 0) {
     lt.rewardsBanked = (lt.rewardsBanked || 0) + perTestEarned;
@@ -5939,7 +6143,7 @@ function renderQuiz(picked = -1) {
     masterBtn.classList.toggle("hidden", mode !== "review");
     if (mode === "review") {
       const bounty = Number(activePayoutConfig().reviewMasteryBounty) || 0;
-      const showHint = state.monetized && bounty > 0;
+      const showHint = isMonetizedActive() && bounty > 0;
       masterBtn.textContent = showHint
         ? "Mark as mastered (no payout)"
         : "Mark as mastered";
@@ -6037,8 +6241,8 @@ function finishEssay() {
   // Per-essay payout: tiered word count + minimum-time anti-spam. Only when
   // Monetized Mode is on AND it was a timed essay (practice essays don't
   // pay out, same as practice multiple-choice).
-  const essayRushed = state.monetized && state.essay.isTest && elapsed < ESSAY_MIN_SEC && words >= 100;
-  const essayEarned = (state.monetized && state.essay.isTest && !essayRushed)
+  const essayRushed = isMonetizedActive() && state.essay.isTest && elapsed < ESSAY_MIN_SEC && words >= 100;
+  const essayEarned = (isMonetizedActive() && state.essay.isTest && !essayRushed)
     ? calculateEssayEarnings(words)
     : 0;
   if (essayEarned > 0) {
@@ -6137,7 +6341,7 @@ function renderTestResults() {
     : '';
   const earnedCell = (state.lastTestEarned || 0) > 0
     ? `<div><strong style="color:#fbbf24">💰 $${state.lastTestEarned.toFixed(2)}</strong>earned this test</div>`
-    : state.lastTestRushed && state.monetized
+    : state.lastTestRushed && isMonetizedActive()
       ? `<div><strong style="color:#ef4444">⚠️ Too fast</strong>no payout (give it a real try)</div>`
       : '';
   const bankCell = (lt.rewardsBanked || 0) > 0
@@ -6607,66 +6811,29 @@ $("batteryModalCancel2").addEventListener("click", () => $("batteryModal").class
 $("batteryStageIntroStart").addEventListener("click", actuallyLaunchBattery);
 $("batteryNeedsMonetizedNext").addEventListener("click", () => {
   state.monetizedFlowAfterEnable = "start-battery";
-  batteryShowStage("pin");
+  // Skip PIN if the parent already unlocked it this session — they've
+  // proven they're the parent; making them re-type is just friction.
+  batteryShowStage(state.monetizedSessionUnlocked ? "config" : "pin");
 });
 $("batteryPinBack").addEventListener("click", () => {
-  // Go back to whichever screen launched this PIN entry
-  batteryShowStage(state.monetizedFlowAfterEnable === "start-battery" ? "needs-monetized" : "intro");
-  if (state.monetizedFlowAfterEnable === "close") $("batteryModal").classList.add("hidden");
+  // From PIN entry, "Back" returns to whichever screen launched this flow:
+  //   - "start-battery" (MTD flow): back to the "needs-monetized" notice
+  //   - "close" (Settings flow from home): just close the modal entirely
+  if (state.monetizedFlowAfterEnable === "start-battery") {
+    batteryShowStage("needs-monetized");
+  } else {
+    $("batteryModal").classList.add("hidden");
+  }
 });
 $("batteryPinSubmit").addEventListener("click", tryUnlockPin);
 $("batteryPinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlockPin(); });
-$("batteryConfigBack").addEventListener("click", () => batteryShowStage("pin"));
 $("batteryConfigStart").addEventListener("click", confirmStartBattery);
-$("markPaidBtn").addEventListener("click", async () => {
-  const cur = (L().rewardsBanked || 0);
-  if (cur <= 0) return;
-  const ok = await appConfirm({
-    title: `Mark $${cur.toFixed(2)} as paid?`,
-    body: `Resets the banked balance for ${currentGrade().label} to $0.00. Do this after you've paid the kid the cash.`,
-    okLabel: "Yes, paid",
-    cancelLabel: "Cancel",
-  });
-  if (!ok) return;
-  L().rewardsBanked = 0;
-  saveProgress();
-  $("bankedAmount").textContent = "$0.00";
-  renderHome();  // updates header chip
-});
-// Monetized Mode toggle (bottom stats bar)
-$("monetizedToggleBtn").addEventListener("click", async () => {
-  if (state.monetized) {
-    const ok = await appConfirm({
-      title: "Turn off Monetized Mode?",
-      body: "Tests will stop paying out money. The current banked balance is kept and Mock Test Day will be locked until you re-enable.",
-      okLabel: "Yes, turn off",
-      cancelLabel: "Keep it on",
-    });
-    if (!ok) return;
-    state.monetized = false;
-    saveProgress();
-    renderMonetizedToggle();
-    renderHome();
-  } else {
-    openEnableMonetizedFlow();
-  }
-});
-// Live-update the preview as parent edits any payout value
-for (const id of ["payoutBase","payoutPerCorrect","payoutGoodBonus","payoutGreatBonus","payoutMtdBonus","payoutReviewBounty"]) {
-  document.addEventListener("input", (e) => { if (e.target && e.target.id === id) updatePayoutPreview(); });
-}
-// Reset all payout fields to factory defaults for the active testType.
-// (ISEE + PSAT share the standard DEFAULT_PAYOUT_CONFIG; Unicorn Quest
-// resets to its own kid-tuned TINY_DEFAULT_PAYOUT_CONFIG.)
-$("payoutResetBtn").addEventListener("click", () => {
-  const d = DEFAULT_PAYOUT_CONFIG_BY_TYPE[state.testType] || DEFAULT_PAYOUT_CONFIG;
-  $("payoutBase").value          = d.testBase.toFixed(2);
-  $("payoutPerCorrect").value    = d.perCorrect.toFixed(2);
-  $("payoutGoodBonus").value     = d.testGoodBonus.toFixed(2);
-  $("payoutGreatBonus").value    = d.testGreatBonus.toFixed(2);
-  $("payoutMtdBonus").value      = d.mtdCompletionBonus.toFixed(2);
-  $("payoutReviewBounty").value  = d.reviewMasteryBounty.toFixed(2);
-  updatePayoutPreview();
+// Monetized Settings button (bottom stats bar) — always opens the Settings
+// modal; the per-type toggles live inside it. PIN-gated on first open per
+// session, then unlocked until page reload. Mark-paid + reset + per-field
+// auto-save are wired up inside renderSettingsCards/wireSettingsCard.
+$("monetizedToggleBtn").addEventListener("click", () => {
+  openMonetizedSettings();
 });
 $("batteryModal").addEventListener("click", (e) => {
   // Dismiss when the user taps the backdrop (but not the card itself).
