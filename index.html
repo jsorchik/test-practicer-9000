@@ -3587,8 +3587,9 @@ function finishTest() {
   // Anti-spam: if the kid blasted through faster than 5 sec/question (the
   // minimum for a plausible real attempt), no payout. Saves the parent
   // from paying for random-guess speedruns.
+  const elapsedSecForCheck = Math.floor((Date.now() - state.testStartMs) / 1000);
   const minTimeSec = total * MIN_SEC_PER_QUESTION;
-  const rushed = total > 0 && elapsed < minTimeSec;
+  const rushed = total > 0 && elapsedSecForCheck < minTimeSec;
   const perTestEarned = (state.monetized && !rushed) ? calculateTestEarnings(correct, total) : 0;
   state.lastTestRushed = rushed;
   if (perTestEarned > 0) {
