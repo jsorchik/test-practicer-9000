@@ -1919,7 +1919,17 @@
             <div class="dollar-wrap"><span>$</span><input type="number" id="payoutMtdBonus" step="0.50" min="0" /></div>
           </label>
         </div>
+        <div class="payout-group-label" style="margin-top:14px;">Review queue</div>
+        <p style="margin:0 0 8px; font-size:12px; color:var(--muted);">Paid when a missed question is mastered (answered correctly 3 times in a row). The manual "Mark as mastered" shortcut doesn't pay.</p>
+        <div class="payout-grid" style="grid-template-columns:1fr;">
+          <label>Per mistake mastered
+            <div class="dollar-wrap"><span>$</span><input type="number" id="payoutReviewBounty" step="0.05" min="0" /></div>
+          </label>
+        </div>
         <div class="payout-preview" id="payoutPreview">Sample payouts —</div>
+        <div style="margin-top:10px;display:flex;justify-content:flex-end;">
+          <button class="ghost" id="payoutResetBtn" type="button">↻ Reset payouts to defaults</button>
+        </div>
         <div class="payout-group-label" style="margin-top:14px;">Banked balance</div>
         <div class="banked-row" id="bankedRow">
           <div class="banked-amt"><span id="bankedAmount">$0.00</span> banked</div>
@@ -2113,6 +2123,30 @@ function payoutScale() {
   return state.testVolume === "full" ? 1.0 : HALF_MODE_PAYOUT_SCALE;
 }
 
+// Factory defaults for the payout config. Used at first-launch initialization
+// and when the parent taps the "Reset to defaults" button in the modal.
+// All values except perCorrect and reviewMasteryBounty are "for a full-length
+// test"; half-mode automatically pays half the base + accuracy bonuses.
+// Calibrated to ~$5 per 30 min of solid 85% work.
+const DEFAULT_PAYOUT_CONFIG = {
+  testBase:            1.00,  // $ for completing a full-length test
+  perCorrect:          0.05,  // $ per correct answer (unscaled)
+  testGoodBonus:       1.50,  // $ bonus if test ≥ 85% (full-test value)
+  testGreatBonus:      2.50,  // $ bonus if test ≥ 95% (full-test value)
+  mtdCompletionBonus:  5.00,  // $ extra for finishing the whole MTD chain
+  reviewMasteryBounty: 0.10,  // $ per mistake mastered (3 in a row)
+};
+
+// Parent PIN to unlock Monetized Mode. Rotates daily to today's MMDD so the
+// kid can't memorize a fixed value — they'd have to look up today's date,
+// type it, and remember to re-enter it the next day.
+function getCurrentParentPin() {
+  const d = new Date();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return mm + dd;
+}
+
 // Section icons — used in section cards, stats page, battery progress, etc.
 const SECTION_EMOJI = {
   verbal_synonyms:   "🔤",
@@ -2178,30 +2212,14 @@ const state = {
   view: "home",
   mode: "practice",              // "practice" | "test" | "review"
   testVolume: "half",            // "half" (shorter practice tests) | "full" (real ISEE timing)
-  // Parent-controlled gate for Mock Test Day. PIN persists in localStorage;
-  // default 6969. Payout config is per-battery; parent reviews + can tweak
-  // in the unlock modal each time they start a battery. Defaults below match
-  // the formula we've been shipping with.
   // Master switch: when off, no test/MTD pays out money and Mock Test Day
   // is gated behind an "Enable Monetized Mode" prompt. Toggle lives in the
   // bottom stats bar; turning it on requires the parent PIN.
+  //
+  // PIN is today's date as MMDD (e.g. 0527 for May 27). Rotates daily so
+  // the kid can't just memorize a static value — see getCurrentParentPin().
   monetized: false,
-  parentPin: "6969",
-  payoutConfig: {
-    // Per-test / per-MTD-segment rewards. All values are "for a full-length
-    // test"; half-mode tests automatically pay half the base + bonuses.
-    // perCorrect is unscaled — every right answer pays the same.
-    // Defaults are calibrated to ~$5 per 30 min of solid 85% work:
-    //   Full Middle verbal (40q / 20min) at 85% → ~$3.70 = ~$5.55/30min
-    //   Half Middle verbal (20q / 10min) at 85% → ~$1.85 = ~$5.55/30min
-    testBase:       1.00,        // $ for completing a full-length test
-    perCorrect:     0.05,        // $ per correct answer (unscaled)
-    testGoodBonus:  1.00,        // $ bonus if test ≥ 85% (full-test value)
-    testGreatBonus: 2.00,        // $ bonus if test ≥ 95% (full-test value)
-    // Extra reward layered on top of all section payouts when the kid
-    // finishes the whole MTD chain:
-    mtdCompletionBonus: 5.00,
-  },
+  payoutConfig: { ...DEFAULT_PAYOUT_CONFIG },
   section: null,
   // Practice
   practicePool: [],
@@ -2460,7 +2478,9 @@ function loadProgress() {
     const data = JSON.parse(raw);
     if (data.gradeLevel && GRADES[data.gradeLevel]) state.gradeLevel = data.gradeLevel;
     if (data.testVolume === "half" || data.testVolume === "full") state.testVolume = data.testVolume;
-    if (typeof data.parentPin === "string" && data.parentPin.length >= 4) state.parentPin = data.parentPin;
+    // parentPin used to be persisted as a static value (default 6969). It's
+    // now computed daily from the current date via getCurrentParentPin(), so
+    // we ignore any saved value from older versions.
     if (typeof data.monetized === "boolean") state.monetized = data.monetized;
     if (data.payoutConfig && typeof data.payoutConfig === "object") {
       const dp = data.payoutConfig;
@@ -2472,9 +2492,13 @@ function loadProgress() {
       if (dp.goodBonus !== undefined && dp.testGoodBonus === undefined)  state.payoutConfig.testGoodBonus  = Number(dp.goodBonus) || 0;
       if (dp.greatBonus !== undefined && dp.testGreatBonus === undefined) state.payoutConfig.testGreatBonus = Number(dp.greatBonus) || 0;
       // Then layer in any explicitly-set new fields
-      for (const k of ["testBase","perCorrect","testGoodBonus","testGreatBonus","mtdCompletionBonus"]) {
+      for (const k of ["testBase","perCorrect","testGoodBonus","testGreatBonus","mtdCompletionBonus","reviewMasteryBounty"]) {
         const v = Number(dp[k]);
         if (Number.isFinite(v) && v >= 0) state.payoutConfig[k] = v;
+      }
+      // Backfill: older saves predate reviewMasteryBounty; default it in.
+      if (state.payoutConfig.reviewMasteryBounty === undefined) {
+        state.payoutConfig.reviewMasteryBounty = DEFAULT_PAYOUT_CONFIG.reviewMasteryBounty;
       }
     }
     if (data.lifetimes) {
@@ -2503,7 +2527,6 @@ function saveProgress() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       gradeLevel: state.gradeLevel,
       testVolume: state.testVolume,
-      parentPin: state.parentPin,
       monetized: state.monetized,
       payoutConfig: state.payoutConfig,
       lifetimes: state.lifetimes,
@@ -2699,7 +2722,22 @@ function recordReviewCorrect(id) {
   m.timesRight += 1;
   m.correctStreak += 1;
   m.lastRight = Date.now();
+  // Natural mastery transition: question just crossed the 3-in-a-row
+  // threshold. Pay the configured bounty if Monetized Mode is on. Manual
+  // "Mark as mastered" (via reviewMarkMastered) deliberately doesn't pay —
+  // it's a UX shortcut, not a learning milestone, and paying it would be
+  // trivially gameable.
+  const justMastered = !m.mastered && m.correctStreak >= MASTERY_THRESHOLD;
   if (m.correctStreak >= MASTERY_THRESHOLD) m.mastered = true;
+  let bountyEarned = 0;
+  if (justMastered && state.monetized) {
+    bountyEarned = Math.max(0, Number(state.payoutConfig.reviewMasteryBounty) || 0);
+    if (bountyEarned > 0) {
+      L().rewardsBanked = (L().rewardsBanked || 0) + bountyEarned;
+    }
+  }
+  // Stash for the renderQuiz mastery banner so it can show the +$ tag.
+  state.lastMasteryBounty = bountyEarned;
   saveProgress();
   return m;
 }
@@ -3208,12 +3246,13 @@ function batteryShowStage(stage) {
   }
   if (stage === "config") {
     // Prefill from current state.payoutConfig
-    $("payoutBase").value        = state.payoutConfig.testBase.toFixed(2);
-    $("payoutPerCorrect").value  = state.payoutConfig.perCorrect.toFixed(2);
-    $("payoutGoodBonus").value   = state.payoutConfig.testGoodBonus.toFixed(2);
-    $("payoutGreatBonus").value  = state.payoutConfig.testGreatBonus.toFixed(2);
-    $("payoutMtdBonus").value    = state.payoutConfig.mtdCompletionBonus.toFixed(2);
-    $("bankedAmount").textContent = `$${(L().rewardsBanked || 0).toFixed(2)}`;
+    $("payoutBase").value          = state.payoutConfig.testBase.toFixed(2);
+    $("payoutPerCorrect").value    = state.payoutConfig.perCorrect.toFixed(2);
+    $("payoutGoodBonus").value     = state.payoutConfig.testGoodBonus.toFixed(2);
+    $("payoutGreatBonus").value    = state.payoutConfig.testGreatBonus.toFixed(2);
+    $("payoutMtdBonus").value      = state.payoutConfig.mtdCompletionBonus.toFixed(2);
+    $("payoutReviewBounty").value  = (state.payoutConfig.reviewMasteryBounty || 0).toFixed(2);
+    $("bankedAmount").textContent  = `$${(L().rewardsBanked || 0).toFixed(2)}`;
     updatePayoutPreview();
     // Submit button label depends on whether we're launching MTD after
     $("batteryConfigStart").textContent = state.monetizedFlowAfterEnable === "start-battery"
@@ -3224,7 +3263,7 @@ function batteryShowStage(stage) {
 
 function tryUnlockPin() {
   const entered = $("batteryPinInput").value.trim();
-  if (entered === state.parentPin) {
+  if (entered === getCurrentParentPin()) {
     batteryShowStage("config");
   } else {
     $("batteryPinError").classList.remove("hidden");
@@ -3235,11 +3274,12 @@ function tryUnlockPin() {
 
 function readPayoutConfigFromForm() {
   return {
-    testBase:           Math.max(0, Number($("payoutBase").value)        || 0),
-    perCorrect:         Math.max(0, Number($("payoutPerCorrect").value)  || 0),
-    testGoodBonus:      Math.max(0, Number($("payoutGoodBonus").value)   || 0),
-    testGreatBonus:     Math.max(0, Number($("payoutGreatBonus").value)  || 0),
-    mtdCompletionBonus: Math.max(0, Number($("payoutMtdBonus").value)    || 0),
+    testBase:            Math.max(0, Number($("payoutBase").value)          || 0),
+    perCorrect:          Math.max(0, Number($("payoutPerCorrect").value)    || 0),
+    testGoodBonus:       Math.max(0, Number($("payoutGoodBonus").value)     || 0),
+    testGreatBonus:      Math.max(0, Number($("payoutGreatBonus").value)    || 0),
+    mtdCompletionBonus:  Math.max(0, Number($("payoutMtdBonus").value)      || 0),
+    reviewMasteryBounty: Math.max(0, Number($("payoutReviewBounty").value)  || 0),
   };
 }
 
@@ -3291,7 +3331,8 @@ function updatePayoutPreview() {
   $("payoutPreview").innerHTML =
     `<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Sample payouts assuming kid is in <strong>${volLabel} mode</strong> (toggle on home view)</div>` +
     `<strong>Per test</strong> (${sampleQ}-q sample): 85% → <strong>$${oneAt85.toFixed(2)}</strong> · 100% → <strong>$${oneAt100.toFixed(2)}</strong><br>` +
-    `<strong>Full Mock Test Day</strong>: 85% → <strong>$${mtdAt(0.85).toFixed(2)}</strong> · 95% → <strong>$${mtdAt(0.95).toFixed(2)}</strong> · 100% → <strong>$${mtdAt(1).toFixed(2)}</strong>`;
+    `<strong>Full Mock Test Day</strong>: 85% → <strong>$${mtdAt(0.85).toFixed(2)}</strong> · 95% → <strong>$${mtdAt(0.95).toFixed(2)}</strong> · 100% → <strong>$${mtdAt(1).toFixed(2)}</strong><br>` +
+    `<strong>Review mastery</strong>: <strong>$${(cfg.reviewMasteryBounty || 0).toFixed(2)}</strong> per missed question mastered`;
 }
 
 function confirmStartBattery() {
@@ -4193,7 +4234,11 @@ function renderQuiz(picked = -1) {
         : `${remaining} more in a row to master`;
       html += `<div class="streak-line">${pips} <span>${shown} of ${MASTERY_THRESHOLD} correct — ${tail}</span></div>`;
       if (state.reviewJustMastered) {
-        html += `<div class="mastered-banner">Mastered! This question will leave the review pool.</div>`;
+        const bounty = state.lastMasteryBounty || 0;
+        const bountyTag = bounty > 0
+          ? ` <span style="color:#fbbf24;font-weight:800;">+$${bounty.toFixed(2)}</span>`
+          : '';
+        html += `<div class="mastered-banner">Mastered!${bountyTag} This question will leave the review pool.</div>`;
       }
     }
     fbEl.className = `feedback ${correct ? "good" : "bad"}`;
@@ -4807,9 +4852,20 @@ $("monetizedToggleBtn").addEventListener("click", async () => {
   }
 });
 // Live-update the preview as parent edits any payout value
-for (const id of ["payoutBase","payoutPerCorrect","payoutGoodBonus","payoutGreatBonus","payoutMtdBonus"]) {
+for (const id of ["payoutBase","payoutPerCorrect","payoutGoodBonus","payoutGreatBonus","payoutMtdBonus","payoutReviewBounty"]) {
   document.addEventListener("input", (e) => { if (e.target && e.target.id === id) updatePayoutPreview(); });
 }
+// Reset all payout fields to factory defaults — DEFAULT_PAYOUT_CONFIG.
+$("payoutResetBtn").addEventListener("click", () => {
+  const d = DEFAULT_PAYOUT_CONFIG;
+  $("payoutBase").value          = d.testBase.toFixed(2);
+  $("payoutPerCorrect").value    = d.perCorrect.toFixed(2);
+  $("payoutGoodBonus").value     = d.testGoodBonus.toFixed(2);
+  $("payoutGreatBonus").value    = d.testGreatBonus.toFixed(2);
+  $("payoutMtdBonus").value      = d.mtdCompletionBonus.toFixed(2);
+  $("payoutReviewBounty").value  = d.reviewMasteryBounty.toFixed(2);
+  updatePayoutPreview();
+});
 $("batteryModal").addEventListener("click", (e) => {
   // Dismiss when the user taps the backdrop (but not the card itself).
   if (e.target.id === "batteryModal") $("batteryModal").classList.add("hidden");
