@@ -1077,6 +1077,14 @@
     padding: 24px;
     max-width: 460px;
     width: 100%;
+    /* Clamp to viewport and scroll internally — payout config modal is
+       tall enough to overflow on phones, and the backdrop's flex centering
+       was leaving no way to reach the buttons at the bottom. */
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
     box-shadow: 0 24px 64px rgba(0,0,0,0.4);
     animation: modal-pop 0.22s cubic-bezier(.34,1.56,.64,1);
   }
