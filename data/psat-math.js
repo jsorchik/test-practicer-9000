@@ -21,6 +21,7 @@
 const PSAT_MATH = [
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If 3x + 7 = 22, what is the value of x?",
     correct: "5",
     wrong: ["3", "7", "15"],
@@ -28,6 +29,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "pythagorean",
     question: "A rectangle has length 12 and width 5. What is the length of its diagonal?",
     correct: "13",
     wrong: ["17", "7", "60"],
@@ -35,6 +37,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If f(x) = 2x² − 3x + 1, what is f(4)?",
     correct: "21",
     wrong: ["17", "25", "32"],
@@ -42,6 +45,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "probability",
     question: "A jar holds 15 marbles — 6 red, 4 blue, 5 green. If one marble is drawn at random, what is the probability it is NOT red?",
     correct: "3/5",
     wrong: ["2/5", "1/3", "9/10"],
@@ -49,6 +53,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "percent",
     question: "The price of a shirt is reduced by 20%, then reduced by an additional 25% off the sale price. What is the total percentage discount from the original price?",
     correct: "40%",
     wrong: ["45%", "50%", "35%"],
@@ -59,6 +64,7 @@ const PSAT_MATH = [
   // ─── Generated batch appended 2026-05-27 ──────────────────
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If 4x − 9 = 23, what is the value of x?",
     correct: "8",
     wrong: ["7", "9", "14"],
@@ -66,6 +72,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "Solve for n: 5(n − 3) = 2n + 6.",
     correct: "7",
     wrong: ["3", "5", "9"],
@@ -73,6 +80,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If 2(x + 4) − 3 = 11, what is x?",
     correct: "3",
     wrong: ["2", "4", "5"],
@@ -80,6 +88,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If x/3 + 5 = 11, what is the value of x?",
     correct: "18",
     wrong: ["12", "16", "21"],
@@ -87,6 +96,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "Solve for y: 7y − 4 = 3y + 16.",
     correct: "5",
     wrong: ["3", "4", "6"],
@@ -94,6 +104,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If 0.5x + 1.5 = 4, what is x?",
     correct: "5",
     wrong: ["2.5", "3", "8"],
@@ -101,6 +112,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If (2x − 1)/3 = 5, what is the value of x?",
     correct: "8",
     wrong: ["7", "9", "16"],
@@ -108,6 +120,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If 6 − 2x = 4x − 12, what is x?",
     correct: "3",
     wrong: ["−3", "2", "6"],
@@ -115,6 +128,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "Solve for x: 3x/4 = 9.",
     correct: "12",
     wrong: ["6", "9", "27"],
@@ -122,6 +136,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If 4(2x + 1) = 3(x + 8), what is x?",
     correct: "4",
     wrong: ["2", "3", "5"],
@@ -129,6 +144,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If (x + 2)/5 = (x − 1)/2, what is x?",
     correct: "3",
     wrong: ["−3", "1", "9"],
@@ -136,6 +152,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "Solve for t: 0.2t − 3 = 1.",
     correct: "20",
     wrong: ["10", "15", "25"],
@@ -143,6 +160,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If 3x + 11 = 5x − 7, what is x?",
     correct: "9",
     wrong: ["2", "4", "18"],
@@ -150,6 +168,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If −2(x − 5) = 14, what is x?",
     correct: "−2",
     wrong: ["−12", "2", "12"],
@@ -157,6 +176,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If x + 1/2 = 7/4, what is x?",
     correct: "5/4",
     wrong: ["1/2", "3/4", "9/4"],
@@ -164,6 +184,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "Solve for x: 8 − (x + 3) = 2x − 1.",
     correct: "2",
     wrong: ["1", "3", "4"],
@@ -171,6 +192,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If 5x − 3 = 2(x + 6), what is x?",
     correct: "5",
     wrong: ["3", "4", "6"],
@@ -178,6 +200,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If 2/3 x = 10, what is x?",
     correct: "15",
     wrong: ["20/3", "20", "30"],
@@ -185,6 +208,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "If 7 − 3x = −8, what is x?",
     correct: "5",
     wrong: ["−5", "1/3", "15"],
@@ -192,6 +216,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "Three more than twice a number equals 17. What is the number?",
     correct: "7",
     wrong: ["5", "8", "10"],
@@ -199,6 +224,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "If x + y = 10 and x − y = 4, what is x?",
     correct: "7",
     wrong: ["3", "5", "6"],
@@ -206,6 +232,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "If 2x + y = 11 and x − y = 1, what is x?",
     correct: "4",
     wrong: ["3", "5", "7"],
@@ -213,6 +240,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "If y = 2x − 1 and y = x + 4, what is the value of x?",
     correct: "5",
     wrong: ["3", "4", "9"],
@@ -220,6 +248,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "Solve the system: 3x + 2y = 16 and x = y + 2. What is y?",
     correct: "2",
     wrong: ["4", "5", "6"],
@@ -227,6 +256,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "If x + 2y = 9 and 3x − y = 13, what is x?",
     correct: "5",
     wrong: ["2", "3", "4"],
@@ -234,6 +264,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "If 4x + 3y = 26 and 2x − 3y = 4, what is x?",
     correct: "5",
     wrong: ["3", "4", "6"],
@@ -241,6 +272,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "If 2x + 5y = 20 and x = 3y − 1, what is y?",
     correct: "2",
     wrong: ["1", "3", "4"],
@@ -248,6 +280,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "If a + b = 12 and 2a − b = 9, what is a?",
     correct: "7",
     wrong: ["3", "5", "6"],
@@ -255,6 +288,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "If 5x − 2y = 16 and 3x + 2y = 16, what is x?",
     correct: "4",
     wrong: ["2", "3", "8"],
@@ -262,6 +296,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "If x + y = 7 and 2x + 3y = 17, what is the value of y?",
     correct: "3",
     wrong: ["2", "4", "5"],
@@ -269,6 +304,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "systems",
     question: "Solve the system: y = 3x + 1 and 2x + y = 11. What ordered pair (x, y) satisfies both?",
     correct: "(2, 7)",
     wrong: ["(1, 4)", "(3, 10)", "(2, 5)"],
@@ -276,6 +312,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "If x > 5, which of the following must also be true?",
     correct: "2x > 10",
     wrong: ["x > 10", "x − 1 > 5", "3x > 20"],
@@ -283,6 +320,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "Solve for x: 3x − 4 > 11.",
     correct: "x > 5",
     wrong: ["x > 7/3", "x > 15", "x < 5"],
@@ -290,6 +328,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "Solve for x: −2x + 5 ≥ 1.",
     correct: "x ≤ 2",
     wrong: ["x ≥ 2", "x ≤ −2", "x ≥ 3"],
@@ -297,6 +336,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "Solve for x: 4(x − 1) < 2x + 6.",
     correct: "x < 5",
     wrong: ["x > 5", "x < 2", "x < 10"],
@@ -304,6 +344,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "If −3x ≤ 12, what is the solution?",
     correct: "x ≥ −4",
     wrong: ["x ≤ −4", "x ≥ 4", "x ≤ 4"],
@@ -311,6 +352,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "Solve for n: 5n + 3 ≤ 2n + 18.",
     correct: "n ≤ 5",
     wrong: ["n ≥ 5", "n ≤ 7", "n ≤ 3"],
@@ -318,6 +360,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "Which value of x satisfies x − 7 > 2?",
     correct: "10",
     wrong: ["5", "7", "9"],
@@ -325,6 +368,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "Solve for x: (x + 3)/2 ≥ 5.",
     correct: "x ≥ 7",
     wrong: ["x ≥ 10", "x ≥ 4", "x ≤ 7"],
@@ -332,6 +376,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "If 2 < x < 7 and x is an integer, how many possible values of x are there?",
     correct: "4",
     wrong: ["3", "5", "6"],
@@ -339,6 +384,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "Solve for x: 6 − 2x < 14.",
     correct: "x > −4",
     wrong: ["x < −4", "x > 4", "x < 4"],
@@ -346,6 +392,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "inequalities",
     question: "If x ≥ 3 and x ≤ 8, which interval describes x?",
     correct: "3 ≤ x ≤ 8",
     wrong: ["3 < x < 8", "x ≥ 3", "x ≤ 8"],
@@ -353,6 +400,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "absolute_value",
     question: "If |x| = 7, what are all possible values of x?",
     correct: "7 and −7",
     wrong: ["7 only", "−7 only", "0 and 7"],
@@ -360,6 +408,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "absolute_value",
     question: "If |x − 3| = 5, what are the possible values of x?",
     correct: "8 and −2",
     wrong: ["8 and 2", "−8 and 2", "5 and −5"],
@@ -367,6 +416,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "absolute_value",
     question: "If |2x + 1| = 9, what is the positive value of x?",
     correct: "4",
     wrong: ["5", "8", "9/2"],
@@ -374,6 +424,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "absolute_value",
     question: "If |x + 4| = 0, what is x?",
     correct: "−4",
     wrong: ["0", "4", "no solution"],
@@ -381,6 +432,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "absolute_value",
     question: "How many solutions does |x − 2| = −3 have?",
     correct: "0",
     wrong: ["1", "2", "infinitely many"],
@@ -388,6 +440,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If f(x) = 3x − 5, what is f(4)?",
     correct: "7",
     wrong: ["2", "12", "17"],
@@ -395,6 +448,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If f(x) = x² + 2x, what is f(−3)?",
     correct: "3",
     wrong: ["−3", "9", "15"],
@@ -402,6 +456,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If g(x) = 2x + 1, what is g(g(2))?",
     correct: "11",
     wrong: ["5", "9", "13"],
@@ -409,6 +464,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If f(x) = x − 4 and g(x) = 2x, what is f(g(3))?",
     correct: "2",
     wrong: ["−2", "5", "6"],
@@ -416,6 +472,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If h(x) = 4 − x², what is h(−2)?",
     correct: "0",
     wrong: ["−4", "4", "8"],
@@ -423,6 +480,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If f(x) = 5 − 2x, for what value of x does f(x) = 1?",
     correct: "2",
     wrong: ["−2", "3", "7/2"],
@@ -430,6 +488,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If f(x) = (x + 1)/(x − 2), what value of x is NOT in the domain?",
     correct: "2",
     wrong: ["−1", "0", "1"],
@@ -437,6 +496,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If f(x) = x² and g(x) = x + 3, what is g(f(2))?",
     correct: "7",
     wrong: ["5", "11", "25"],
@@ -444,6 +504,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If f(x) = 2x + 1, what does the graph of f(x) + 3 look like compared to f(x)?",
     correct: "shifted up 3 units",
     wrong: ["shifted down 3 units", "shifted left 3 units", "shifted right 3 units"],
@@ -451,6 +512,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If f(x) = x², what does the graph of f(x − 2) look like compared to f(x)?",
     correct: "shifted right 2 units",
     wrong: ["shifted left 2 units", "shifted up 2 units", "shifted down 2 units"],
@@ -458,6 +520,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "function_notation",
     question: "If f(x) = 3x and g(x) = x − 4, what is f(g(5))?",
     correct: "3",
     wrong: ["1", "11", "15"],
@@ -465,6 +528,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "quadratics",
     question: "What are the solutions to x² − 5x + 6 = 0?",
     correct: "2 and 3",
     wrong: ["−2 and −3", "1 and 6", "−1 and 6"],
@@ -472,6 +536,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "quadratics",
     question: "What are the solutions to x² − 9 = 0?",
     correct: "3 and −3",
     wrong: ["3 only", "9 and −9", "0 and 9"],
@@ -479,6 +544,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "quadratics",
     question: "What is the vertex of the parabola y = (x − 4)² + 1?",
     correct: "(4, 1)",
     wrong: ["(−4, 1)", "(4, −1)", "(1, 4)"],
@@ -486,6 +552,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "quadratics",
     question: "What are the solutions to x² + 2x − 8 = 0?",
     correct: "2 and −4",
     wrong: ["−2 and 4", "−2 and −4", "2 and 4"],
@@ -493,6 +560,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "quadratics",
     question: "If x² = 49, what are the possible values of x?",
     correct: "7 and −7",
     wrong: ["49 and −49", "7 only", "±49"],
@@ -500,6 +568,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "exponentials",
     question: "A population of bacteria doubles every hour. If there are 50 bacteria at the start, how many are there after 3 hours?",
     correct: "400",
     wrong: ["150", "300", "800"],
@@ -507,6 +576,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "exponentials",
     question: "If y = 3 · 2ˣ, what is y when x = 4?",
     correct: "48",
     wrong: ["24", "32", "64"],
@@ -514,6 +584,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "exponentials",
     question: "A car's value drops by half every 4 years. If it is worth $20,000 today, what will it be worth in 8 years?",
     correct: "$5,000",
     wrong: ["$2,500", "$10,000", "$15,000"],
@@ -521,6 +592,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "exponentials",
     question: "If f(x) = 5 · 3ˣ, what is f(0)?",
     correct: "5",
     wrong: ["0", "1", "15"],
@@ -528,6 +600,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "exponentials",
     question: "An investment grows by 10% each year. Which expression gives the value after t years if it starts at $500?",
     correct: "500(1.10)ᵗ",
     wrong: ["500(0.10)ᵗ", "500 + 0.10t", "500(1.10)t"],
@@ -535,6 +608,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "pythagorean",
     question: "A right triangle has legs of length 9 and 12. What is the length of the hypotenuse?",
     correct: "15",
     wrong: ["21", "11", "108"],
@@ -542,6 +616,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "pythagorean",
     question: "A right triangle has legs 8 and 15. What is the length of the hypotenuse?",
     correct: "17",
     wrong: ["23", "13", "120"],
@@ -549,6 +624,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "coordinate_geom",
     question: "What is the distance between the points (1, 2) and (4, 6) in the coordinate plane?",
     correct: "5",
     wrong: ["7", "25", "√7"],
@@ -556,6 +632,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "area_perimeter",
     question: "A rectangle has length 14 cm and width 6 cm. What is its perimeter?",
     correct: "40 cm",
     wrong: ["84 cm", "20 cm", "42 cm"],
@@ -563,6 +640,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "area_perimeter",
     question: "A triangle has a base of 10 inches and a height of 7 inches. What is its area?",
     correct: "35 in²",
     wrong: ["70 in²", "17 in²", "140 in²"],
@@ -570,6 +648,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "circles",
     question: "A circle has a radius of 6. What is its area, in terms of π?",
     correct: "36π",
     wrong: ["12π", "6π", "72π"],
@@ -577,6 +656,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "circles",
     question: "A circle has a diameter of 10. What is its circumference, in terms of π?",
     correct: "10π",
     wrong: ["5π", "25π", "100π"],
@@ -584,6 +664,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "volume_surface",
     question: "A rectangular box has length 5, width 3, and height 4. What is its volume?",
     correct: "60",
     wrong: ["12", "47", "94"],
@@ -591,6 +672,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "volume_surface",
     question: "A cube has an edge length of 4. What is its surface area?",
     correct: "96",
     wrong: ["64", "16", "24"],
@@ -598,6 +680,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "volume_surface",
     question: "A cylinder has radius 3 and height 10. What is its volume, in terms of π?",
     correct: "90π",
     wrong: ["30π", "60π", "300π"],
@@ -605,6 +688,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "angles",
     question: "Two parallel lines are cut by a transversal. One of the angles formed measures 65°. What is the measure of its corresponding angle?",
     correct: "65°",
     wrong: ["115°", "25°", "180°"],
@@ -612,6 +696,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "angles",
     question: "In a triangle, two angles measure 47° and 68°. What is the measure of the third angle?",
     correct: "65°",
     wrong: ["75°", "115°", "55°"],
@@ -619,6 +704,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "angles",
     question: "Two angles are vertical angles. One measures (3x + 10)° and the other measures 70°. What is x?",
     correct: "20",
     wrong: ["10", "30", "60"],
@@ -626,6 +712,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "similarity",
     question: "Triangle ABC is similar to triangle DEF. AB = 6, DE = 9. If BC = 8, what is the length of EF?",
     correct: "12",
     wrong: ["10", "11", "16"],
@@ -633,6 +720,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "pythagorean",
     question: "In a 45-45-90 right triangle, each leg has length 7. What is the length of the hypotenuse?",
     correct: "7√2",
     wrong: ["14", "7", "49"],
@@ -640,6 +728,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "pythagorean",
     question: "In a 30-60-90 right triangle, the side opposite the 30° angle has length 5. What is the length of the hypotenuse?",
     correct: "10",
     wrong: ["5√3", "5√2", "15"],
@@ -647,6 +736,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "right_trig",
     question: "In a right triangle, the side opposite angle A has length 3, and the hypotenuse has length 5. What is sin A?",
     correct: "3/5",
     wrong: ["4/5", "3/4", "5/3"],
@@ -654,6 +744,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "right_trig",
     question: "In a right triangle, the side adjacent to angle B has length 8 and the hypotenuse has length 10. What is cos B?",
     correct: "4/5",
     wrong: ["3/5", "5/4", "3/4"],
@@ -661,6 +752,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "right_trig",
     question: "In a right triangle, the side opposite angle C has length 7 and the adjacent side has length 24. What is tan C?",
     correct: "7/24",
     wrong: ["24/7", "7/25", "24/25"],
@@ -668,6 +760,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "circles",
     question: "A circle has radius 9. What is its circumference, in terms of π?",
     correct: "18π",
     wrong: ["9π", "81π", "36π"],
@@ -675,6 +768,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "circles",
     question: "A circle has radius 12. An arc on the circle subtends a central angle of 90°. What is the length of this arc, in terms of π?",
     correct: "6π",
     wrong: ["3π", "12π", "24π"],
@@ -682,6 +776,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "area_perimeter",
     question: "A square has a perimeter of 36 cm. What is the area of the square?",
     correct: "81 cm²",
     wrong: ["36 cm²", "324 cm²", "144 cm²"],
@@ -689,6 +784,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "volume_surface",
     question: "A right triangular prism has a triangular base with area 15 and a height (length of prism) of 8. What is the volume of the prism?",
     correct: "120",
     wrong: ["23", "60", "240"],
@@ -696,6 +792,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "angles",
     question: "Two complementary angles have measures x° and (2x + 9)°. What is x?",
     correct: "27",
     wrong: ["57", "60", "33"],
@@ -703,6 +800,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "pythagorean",
     question: "A 12-foot ladder leans against a wall. Its base is 5 feet from the wall. How high up the wall does the ladder reach?",
     correct: "√119 ft",
     wrong: ["13 ft", "7 ft", "17 ft"],
@@ -710,6 +808,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "percent",
     question: "What is 35% of 80?",
     correct: "28",
     wrong: ["35", "45", "115"],
@@ -717,6 +816,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "percent",
     question: "A shirt originally costs $40. It is on sale for 25% off. What is the sale price?",
     correct: "$30",
     wrong: ["$15", "$35", "$25"],
@@ -724,6 +824,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "percent",
     question: "A population increased from 200 to 250. What is the percent increase?",
     correct: "25%",
     wrong: ["20%", "50%", "5%"],
@@ -731,6 +832,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "percent",
     question: "A laptop costs $600. Sales tax is 8%. What is the total cost including tax?",
     correct: "$648",
     wrong: ["$608", "$680", "$540"],
@@ -738,6 +840,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "percent",
     question: "A coat is marked down 20%, then an additional 10% off the sale price. What is the total percent discount from the original price?",
     correct: "28%",
     wrong: ["30%", "25%", "18%"],
@@ -745,6 +848,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "ratios_proportions",
     question: "The ratio of boys to girls in a class is 3:5. If there are 24 students total, how many girls are there?",
     correct: "15",
     wrong: ["9", "12", "8"],
@@ -752,6 +856,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "ratios_proportions",
     question: "A recipe uses 2 cups of flour for every 3 cups of milk. If you use 9 cups of milk, how many cups of flour do you need?",
     correct: "6",
     wrong: ["4", "5", "13.5"],
@@ -759,6 +864,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "probability",
     question: "A bag contains 4 red, 6 blue, and 10 green marbles. If one marble is drawn at random, what is the probability it is blue?",
     correct: "3/10",
     wrong: ["1/5", "1/3", "2/5"],
@@ -766,6 +872,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "probability",
     question: "A fair coin is flipped twice. What is the probability of getting heads both times?",
     correct: "1/4",
     wrong: ["1/2", "1/3", "1/8"],
@@ -773,6 +880,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "probability",
     question: "A spinner has 5 equal sections numbered 1 through 5. What is the probability of spinning an even number?",
     correct: "2/5",
     wrong: ["1/2", "3/5", "1/5"],
@@ -780,6 +888,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "probability",
     question: "The probability of an event is 3/8. What is the probability that the event does NOT occur?",
     correct: "5/8",
     wrong: ["3/8", "1/8", "8/3"],
@@ -787,6 +896,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "mean_median_mode",
     question: "A class's test scores are 72, 84, 76, 91, 88. What is the median?",
     correct: "84",
     wrong: ["82.2", "76", "88"],
@@ -794,6 +904,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "mean_median_mode",
     question: "Find the mean of 12, 15, 18, 20, and 25.",
     correct: "18",
     wrong: ["17", "20", "19"],
@@ -801,6 +912,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "mean_median_mode",
     question: "What is the mode of the data set 4, 7, 9, 7, 12, 7, 15?",
     correct: "7",
     wrong: ["9", "8.7", "11"],
@@ -808,6 +920,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "mean_median_mode",
     question: "What is the range of the data set 14, 22, 9, 31, 17, 25?",
     correct: "22",
     wrong: ["9", "31", "20"],
@@ -815,6 +928,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "rate_work",
     question: "A car travels 180 miles in 3 hours. What is its average speed in miles per hour?",
     correct: "60 mph",
     wrong: ["540 mph", "183 mph", "30 mph"],
@@ -822,6 +936,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "rate_work",
     question: "Maya earns $13.50 per hour. If she works 8 hours, how much does she earn?",
     correct: "$108",
     wrong: ["$104", "$118.50", "$21.50"],
@@ -829,6 +944,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "rate_work",
     question: "A printer prints 24 pages per minute. How many pages will it print in 15 minutes?",
     correct: "360",
     wrong: ["240", "39", "90"],
@@ -836,6 +952,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "unit_conversion",
     question: "Convert 250 centimeters to meters.",
     correct: "2.5 m",
     wrong: ["25 m", "0.25 m", "2500 m"],
@@ -843,6 +960,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "unit_conversion",
     question: "Convert 5 feet to inches.",
     correct: "60 in",
     wrong: ["12 in", "50 in", "72 in"],
@@ -850,6 +968,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "A phone plan costs $25 per month plus $0.10 per minute. Which equation gives the total monthly cost C in dollars for m minutes?",
     correct: "C = 25 + 0.10m",
     wrong: ["C = 25m + 0.10", "C = 25.10m", "C = 0.10 + 25m"],
@@ -857,6 +976,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "linear_eq",
     question: "A taxi charges a $4 flat fee plus $2 per mile. Sam paid $24 for a ride. How many miles was the ride?",
     correct: "10",
     wrong: ["12", "8", "14"],
@@ -864,6 +984,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "mean_median_mode",
     question: "Three numbers have a mean of 14. Two of the numbers are 11 and 16. What is the third number?",
     correct: "15",
     wrong: ["13", "14", "16"],
@@ -871,6 +992,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "pythagorean",
     question: "A right triangle has hypotenuse 25 and one leg of length 7. What is the length of the other leg?",
     correct: "24",
     wrong: ["18", "32", "576"],
@@ -878,6 +1000,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "probability",
     question: "A standard six-sided die is rolled once. What is the probability of rolling a number greater than 4?",
     correct: "1/3",
     wrong: ["1/2", "2/3", "1/6"],
@@ -885,6 +1008,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "circles",
     question: "A circle has area 49π. What is its radius?",
     correct: "7",
     wrong: ["14", "49", "24.5"],
@@ -892,6 +1016,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "angles",
     question: "An isosceles triangle has two equal angles, each measuring 55°. What is the measure of the third angle?",
     correct: "70°",
     wrong: ["55°", "125°", "90°"],
@@ -899,6 +1024,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "mean_median_mode",
     question: "The daily high temperatures (°F) for one week were 68, 72, 75, 70, 80, 78, 74. What is the mean, rounded to the nearest tenth?",
     correct: "73.9",
     wrong: ["74.0", "75.0", "72.5"],
@@ -906,6 +1032,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "probability",
     question: "A bag contains 3 red and 5 blue marbles. Two marbles are drawn one at a time WITH replacement. What is the probability both are red?",
     correct: "9/64",
     wrong: ["3/28", "6/16", "3/8"],
@@ -913,6 +1040,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "area_perimeter",
     question: "A rectangular garden is 8 m long and 6 m wide. A walkway 1 m wide surrounds it on all sides. What is the total area of the walkway?",
     correct: "32 m²",
     wrong: ["28 m²", "48 m²", "16 m²"],
@@ -922,6 +1050,7 @@ const PSAT_MATH = [
   // ─── Phase A: table-rendering samples (2026-05-27) ─────────────
   {
     type: "psatMath",
+    topic: "data_tables",
     question: "The table shows the heights (in cm) of plants in two greenhouses after one month.<table><tr><th></th><th>Plant 1</th><th>Plant 2</th><th>Plant 3</th><th>Plant 4</th></tr><tr><th>Greenhouse A</th><td>12</td><td>15</td><td>13</td><td>16</td></tr><tr><th>Greenhouse B</th><td>10</td><td>20</td><td>11</td><td>23</td></tr></table>Which statement comparing the two greenhouses is true?",
     correct: "Greenhouse B has a greater range than Greenhouse A",
     wrong: [
@@ -933,6 +1062,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_tables",
     question: "The table shows the number of books five students read over the summer.<table><tr><th>Student</th><th>Books read</th></tr><tr><td>Ada</td><td>4</td></tr><tr><td>Ben</td><td>9</td></tr><tr><td>Cara</td><td>6</td></tr><tr><td>Dan</td><td>5</td></tr><tr><td>Eve</td><td>11</td></tr></table>What is the median number of books read?",
     correct: "6",
     wrong: ["5", "7", "9"],
@@ -944,6 +1074,7 @@ const PSAT_MATH = [
   // lists other equivalent forms the kid might type.
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "If 5x − 8 = 27, what is the value of x?",
     correct: "7",
     accept: ["7", "7.0"],
@@ -951,6 +1082,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "fractions_decimals",
     question: "A recipe calls for 3/4 cup of sugar. If you double the recipe, how many cups of sugar do you need?",
     correct: "3/2",
     accept: ["3/2", "1.5", "1 1/2"],
@@ -958,6 +1090,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "percent",
     question: "A $25 shirt is on sale for 20% off. What is the sale price in dollars?",
     correct: "20",
     accept: ["20", "20.00", "$20"],
@@ -965,6 +1098,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "Solve for x: 2(x + 3) = 4x − 10. What is x?",
     correct: "8",
     accept: ["8"],
@@ -974,6 +1108,7 @@ const PSAT_MATH = [
   // ─── Phase C: chart samples — bar, line, scatter (2026-05-27) ───────────
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "Based on the bar chart, what is the difference between the day with the highest sales and the day with the lowest sales?",
     chart: {
       type: "bar",
@@ -989,6 +1124,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "The line graph shows a town's population over time. By approximately how many people did the population grow between 2010 and 2020?",
     chart: {
       type: "line",
@@ -1003,6 +1139,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_charts",
     question: "The scatter plot shows hours studied vs test score for 6 students. Looking at the trend, what test score would you predict for a student who studied 7 hours? (Round to the nearest 5.)",
     chart: {
       type: "scatter",
@@ -1021,6 +1158,7 @@ const PSAT_MATH = [
   // ===== ALGEBRA (10) =====
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "If 4x + 7 = 31, what is the value of x?",
     correct: "6",
     accept: ["6", "6.0"],
@@ -1028,6 +1166,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "If 3(x − 4) = 21, what is the value of x?",
     correct: "11",
     accept: ["11", "11.0"],
@@ -1035,6 +1174,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "If 2x + 3y = 18 and y = 4, what is the value of x?",
     correct: "3",
     accept: ["3", "3.0"],
@@ -1042,6 +1182,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "systems",
     question: "If x + y = 12 and x − y = 4, what is the value of x?",
     correct: "8",
     accept: ["8", "8.0"],
@@ -1049,6 +1190,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "Solve for x: (x/3) + 5 = 11.",
     correct: "18",
     accept: ["18", "18.0"],
@@ -1056,6 +1198,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "If 5(2x − 1) = 45, what is the value of x?",
     correct: "5",
     accept: ["5", "5.0"],
@@ -1063,6 +1206,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "A number is 3 more than twice another number. If the larger number is 17, what is the smaller number?",
     correct: "7",
     accept: ["7", "7.0"],
@@ -1070,6 +1214,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "If 7x − 2 = 4x + 16, what is the value of x?",
     correct: "6",
     accept: ["6", "6.0"],
@@ -1077,6 +1222,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "The sum of three consecutive integers is 54. What is the largest of the three integers?",
     correct: "19",
     accept: ["19", "19.0"],
@@ -1084,6 +1230,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "linear_eq",
     question: "If 2x + 5y = 23 and x = 4, what is the value of y?",
     correct: "3",
     accept: ["3", "3.0"],
@@ -1093,6 +1240,7 @@ const PSAT_MATH = [
   // ===== PERCENTAGES (5) =====
   {
     type: "psatMathGridIn",
+    topic: "percent",
     question: "A jacket originally costs $80. It is on sale for 25% off. What is the sale price in dollars?",
     correct: "60",
     accept: ["60", "60.0", "60.00", "$60", "$60.00"],
@@ -1100,6 +1248,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "percent",
     question: "What is 15% of 240?",
     correct: "36",
     accept: ["36", "36.0"],
@@ -1107,6 +1256,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "percent",
     question: "A town's population grew from 5,000 to 5,750 over one year. What was the percent increase?",
     correct: "15",
     accept: ["15", "15%", "15.0"],
@@ -1114,6 +1264,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "percent",
     question: "After a 20% discount, a book costs $24. What was the original price in dollars?",
     correct: "30",
     accept: ["30", "30.0", "30.00", "$30", "$30.00"],
@@ -1121,6 +1272,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "percent",
     question: "If 12 is 30% of a number, what is the number?",
     correct: "40",
     accept: ["40", "40.0"],
@@ -1130,6 +1282,7 @@ const PSAT_MATH = [
   // ===== PROBABILITY (5) =====
   {
     type: "psatMathGridIn",
+    topic: "probability",
     question: "A bag contains 4 red marbles, 6 blue marbles, and 10 green marbles. If one marble is drawn at random, what is the probability that it is blue? Express your answer as a decimal.",
     correct: "0.3",
     accept: ["0.3", ".3", "3/10"],
@@ -1137,6 +1290,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "probability",
     question: "A standard six-sided die is rolled once. What is the probability of rolling an even number? Express your answer as a fraction.",
     correct: "1/2",
     accept: ["1/2", "0.5", ".5", "3/6"],
@@ -1144,6 +1298,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "probability",
     question: "A jar holds 8 red candies and 12 yellow candies. One candy is drawn at random. What is the probability it is NOT red? Express your answer as a decimal.",
     correct: "0.6",
     accept: ["0.6", ".6", "3/5", "12/20"],
@@ -1151,6 +1306,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "probability",
     question: "Two fair coins are flipped. What is the probability that both land heads? Express your answer as a fraction.",
     correct: "1/4",
     accept: ["1/4", "0.25", ".25"],
@@ -1158,6 +1314,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "probability",
     question: "A spinner is divided into 5 equal sections numbered 1 through 5. What is the probability of spinning a number greater than 3? Express your answer as a decimal.",
     correct: "0.4",
     accept: ["0.4", ".4", "2/5"],
@@ -1167,6 +1324,7 @@ const PSAT_MATH = [
   // ===== FUNCTIONS / ADVANCED ALGEBRA (5) =====
   {
     type: "psatMathGridIn",
+    topic: "function_notation",
     question: "If f(x) = 2x² − 5, what is the value of f(3)?",
     correct: "13",
     accept: ["13", "13.0"],
@@ -1174,6 +1332,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "function_notation",
     question: "The function f is defined by f(x) = 3x + 7. For what value of x does f(x) = 25?",
     correct: "6",
     accept: ["6", "6.0"],
@@ -1181,6 +1340,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "coordinate_geom",
     question: "The line y = 2x − 8 crosses the x-axis at what value of x?",
     correct: "4",
     accept: ["4", "4.0"],
@@ -1188,6 +1348,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "function_notation",
     question: "If g(x) = x² + 4x, what is the value of g(5)?",
     correct: "45",
     accept: ["45", "45.0"],
@@ -1195,6 +1356,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "function_notation",
     question: "The function h is defined by h(x) = (x + 3)/2. What is the value of h(11)?",
     correct: "7",
     accept: ["7", "7.0"],
@@ -1204,6 +1366,7 @@ const PSAT_MATH = [
   // ===== GEOMETRY (5) =====
   {
     type: "psatMathGridIn",
+    topic: "pythagorean",
     question: "A right triangle has legs of length 6 and 8. What is the length of the hypotenuse?",
     correct: "10",
     accept: ["10", "10.0"],
@@ -1211,6 +1374,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "pythagorean",
     question: "A rectangle has a length of 12 cm and a width of 5 cm. What is the length of its diagonal in centimeters?",
     correct: "13",
     accept: ["13", "13.0", "13 cm"],
@@ -1218,6 +1382,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "area_perimeter",
     question: "The area of a rectangle is 84 square inches. If its width is 7 inches, what is its length in inches?",
     correct: "12",
     accept: ["12", "12.0", "12 in"],
@@ -1225,6 +1390,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "pythagorean",
     question: "In a right triangle, one leg is 9 and the hypotenuse is 15. What is the length of the other leg?",
     correct: "12",
     accept: ["12", "12.0"],
@@ -1232,6 +1398,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "area_perimeter",
     question: "A square has an area of 64 square meters. What is the perimeter of the square in meters?",
     correct: "32",
     accept: ["32", "32.0", "32 m"],
@@ -1239,6 +1406,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "Based on the bar chart, what is the difference between the month with the highest rainfall and the month with the lowest rainfall?",
     chart: {
       type: "bar",
@@ -1254,6 +1422,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_charts",
     question: "Based on the bar chart, what is the average (arithmetic mean) number of books read per club?",
     chart: {
       type: "bar",
@@ -1269,6 +1438,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "The line graph shows monthly subscribers (in thousands) to a streaming service. What was the average monthly subscriber growth from January to June?",
     chart: {
       type: "line",
@@ -1283,6 +1453,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "The scatter plot shows hours studied versus test score for ten students. Which best describes the relationship between hours studied and test score?",
     chart: {
       type: "scatter",
@@ -1297,6 +1468,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_charts",
     question: "Based on the bar chart of car colors in a parking lot, what is the ratio of white cars to red cars? Enter as a single number, fraction, or colon-form ratio.",
     chart: {
       type: "bar",
@@ -1312,6 +1484,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "The line graph shows daily high temperatures over a week. What is the average rate of change in temperature from Monday to Friday, in degrees per day?",
     chart: {
       type: "line",
@@ -1326,6 +1499,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "The scatter plot shows the relationship between a plant's age (in weeks) and its height (in cm). Which best describes the trend?",
     chart: {
       type: "scatter",
@@ -1340,6 +1514,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_charts",
     question: "Based on the bar chart, what percent of the total survey responses chose 'Pizza' as their favorite food? Enter the number without the percent sign.",
     chart: {
       type: "bar",
@@ -1355,6 +1530,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "The line graph shows a company's quarterly revenue (in thousands of dollars). What is the difference between the highest and lowest quarter shown?",
     chart: {
       type: "line",
@@ -1369,6 +1545,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_charts",
     question: "Based on the bar chart showing goals scored per game by a soccer team in 6 games, what is the total number of goals scored?",
     chart: {
       type: "bar",
@@ -1384,6 +1561,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "The line graph shows the number of website visitors (in thousands) each month from January to June. If the trend continues at the same monthly rate from May to June, how many visitors are predicted in July?",
     chart: {
       type: "line",
@@ -1398,6 +1576,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_charts",
     question: "The scatter plot shows the relationship between the weight (in pounds) and the price (in dollars) of various dumbbells. Based on the plot, what is the price of the 25-pound dumbbell?",
     chart: {
       type: "scatter",
@@ -1412,6 +1591,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "Based on the bar chart showing recyclables collected (in kg) by grade, by how many kilograms did Grade 8 exceed Grade 6?",
     chart: {
       type: "bar",
@@ -1427,6 +1607,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_charts",
     question: "The line graph shows a city's annual electricity usage (in GWh). What is the percent increase in usage from 2018 to 2022?",
     chart: {
       type: "line",
@@ -1441,6 +1622,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_charts",
     question: "The scatter plot shows the relationship between hours of sleep and reaction time (in milliseconds) for 8 participants. Based on the plot, what is the reaction time of the participant who slept 6 hours?",
     chart: {
       type: "scatter",
@@ -1455,6 +1637,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_tables",
     question: "The table shows the quarterly sales (in thousands of dollars) for a small bookstore.<table><caption>Bookstore Quarterly Sales</caption><tr><th>Quarter</th><th>Sales ($1000s)</th></tr><tr><td>Q1</td><td>45</td></tr><tr><td>Q2</td><td>62</td></tr><tr><td>Q3</td><td>38</td></tr><tr><td>Q4</td><td>71</td></tr></table>What were the total annual sales, in dollars?",
     correct: "$216,000",
     wrong: ["$54,000", "$216", "$21,600"],
@@ -1462,6 +1645,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_tables",
     question: "The two-way table shows the number of pets owned by customers at a pet store, broken down by type and sex.<table><tr><th></th><th>Male</th><th>Female</th></tr><tr><th>Dogs</th><td>14</td><td>11</td></tr><tr><th>Cats</th><td>9</td><td>16</td></tr></table>What percent of the dogs are male?",
     correct: "56%",
     wrong: ["44%", "28%", "61%",],
@@ -1469,6 +1653,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_tables",
     question: "The table shows the scores of 7 students on a recent math quiz.<table><tr><th>Student</th><th>Score</th></tr><tr><td>Alex</td><td>88</td></tr><tr><td>Bria</td><td>72</td></tr><tr><td>Cole</td><td>94</td></tr><tr><td>Dina</td><td>85</td></tr><tr><td>Eli</td><td>78</td></tr><tr><td>Fran</td><td>91</td></tr><tr><td>Gus</td><td>81</td></tr></table>What is the median score?",
     correct: "85",
     wrong: ["84", "88", "81"],
@@ -1476,6 +1661,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_tables",
     question: "The table shows the round-trip times (in minutes) of five different city bus routes.<table><tr><th>Route</th><th>Time (min)</th></tr><tr><td>Route 1</td><td>22</td></tr><tr><td>Route 2</td><td>35</td></tr><tr><td>Route 3</td><td>47</td></tr><tr><td>Route 4</td><td>29</td></tr><tr><td>Route 5</td><td>33</td></tr></table>What is the range of the round-trip times?",
     correct: "25 minutes",
     wrong: ["33 minutes", "47 minutes", "13 minutes"],
@@ -1483,6 +1669,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_tables",
     question: "The frequency table shows how 22 customers rated a new movie on a 1-to-5 scale.<table><tr><th>Rating</th><th>Frequency</th></tr><tr><td>1</td><td>2</td></tr><tr><td>2</td><td>3</td></tr><tr><td>3</td><td>5</td></tr><tr><td>4</td><td>8</td></tr><tr><td>5</td><td>4</td></tr></table>What is the mode of the ratings?",
     correct: "4",
     wrong: ["8", "3", "5"],
@@ -1490,6 +1677,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMath",
+    topic: "data_tables",
     question: "The table shows the daily high temperatures (in °F) recorded over five days in two cities.<table><tr><th>Day</th><th>City A</th><th>City B</th></tr><tr><td>Mon</td><td>68</td><td>72</td></tr><tr><td>Tue</td><td>71</td><td>74</td></tr><tr><td>Wed</td><td>74</td><td>70</td></tr><tr><td>Thu</td><td>69</td><td>78</td></tr><tr><td>Fri</td><td>73</td><td>76</td></tr></table>By how many degrees does the mean high temperature of City B exceed that of City A?",
     correct: "3 °F",
     wrong: ["2 °F", "4 °F", "5 °F"],
@@ -1497,6 +1685,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_tables",
     question: "The table shows the number of pounds of paper recycled by four classrooms in one week. The total amount recycled was 92 pounds.<table><tr><th>Classroom</th><th>Pounds</th></tr><tr><td>Room 101</td><td>21</td></tr><tr><td>Room 102</td><td>18</td></tr><tr><td>Room 103</td><td>?</td></tr><tr><td>Room 104</td><td>27</td></tr></table>How many pounds did Room 103 recycle?",
     correct: "26",
     accept: ["26.0"],
@@ -1504,6 +1693,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_tables",
     question: "The two-way table shows the favorite season chosen by students in two grades.<table><tr><th></th><th>Spring</th><th>Summer</th><th>Fall</th><th>Winter</th></tr><tr><th>Grade 8</th><td>6</td><td>14</td><td>5</td><td>3</td></tr><tr><th>Grade 9</th><td>4</td><td>10</td><td>9</td><td>9</td></tr></table>What fraction of all students surveyed chose Summer? Give the answer as a decimal.",
     correct: "0.4",
     accept: [".4", "0.40", "2/5"],
@@ -1511,6 +1701,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_tables",
     question: "The table shows the number of games won by five soccer teams in a local league.<table><tr><th>Team</th><th>Wins</th></tr><tr><td>Falcons</td><td>11</td></tr><tr><td>Hawks</td><td>8</td></tr><tr><td>Eagles</td><td>14</td></tr><tr><td>Owls</td><td>7</td></tr><tr><td>Ravens</td><td>10</td></tr></table>What is the mean number of wins per team?",
     correct: "10",
     accept: ["10.0"],
@@ -1518,6 +1709,7 @@ const PSAT_MATH = [
   },
   {
     type: "psatMathGridIn",
+    topic: "data_tables",
     question: "The table shows the number of coffees sold at a cafe on two consecutive Saturdays.<table><tr><th>Drink</th><th>Week 1</th><th>Week 2</th></tr><tr><td>Latte</td><td>40</td><td>52</td></tr><tr><td>Espresso</td><td>25</td><td>30</td></tr><tr><td>Mocha</td><td>35</td><td>38</td></tr></table>By what percent did total coffee sales increase from Week 1 to Week 2? (Enter the number only, without the percent sign.)",
     correct: "20",
     accept: ["20.0"],

@@ -652,6 +652,30 @@
   .grid-in-tag.good { background: rgba(34,197,94,.18); color: #86efac; }
   .grid-in-tag.bad  { background: rgba(239,68,68,.18); color: #fca5a5; }
 
+  /* Khan Academy "Brush up" remediation link inside review items. Only
+     surfaces on missed math/quant questions. The kid (or parent) taps it
+     to open a relevant lesson in a new tab. */
+  .brush-up-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: rgba(96,165,250,.10);
+    border: 1px solid rgba(96,165,250,.30);
+    border-radius: 8px;
+    color: #93c5fd;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background .15s, border-color .15s;
+  }
+  .brush-up-link:hover {
+    background: rgba(96,165,250,.18);
+    border-color: rgba(96,165,250,.55);
+    text-decoration: none;
+  }
+
   /* PSAT inline SVG charts (data-analysis questions) */
   .psat-chart-wrap {
     margin: 12px 0 16px;
@@ -2511,8 +2535,72 @@ const SECTION_EMOJI = {
 };
 function sectionEmoji(key) { return SECTION_EMOJI[key] || "•"; }
 
-// ════════════════════════════════════════════════════════════════════════════
-// REGISTRIES — global lookups built at boot for all grades
+// ─── Math topic taxonomy → Khan Academy lesson links ────────────────────────
+// Math + quant entries carry an optional `topic` field referencing one of
+// these keys. When the kid misses a question, the review screen surfaces a
+// "📚 Brush up" link to the matching Khan Academy search page. Search URLs
+// (rather than deep links to specific units) are deliberately used — Khan
+// reorganizes their URL paths every year or two; search results are stable.
+//
+// Coverage spans elementary arithmetic (ISEE Lower) through algebra 1 +
+// functions + basic trig (PSAT 8/9). Each entry includes:
+//   - label: human-readable name shown on the link
+//   - query: Khan Academy search query (URL-encoded at link-build time)
+const MATH_TOPICS = {
+  // Basic arithmetic (Lower level)
+  basic_arithmetic: { label: "Basic arithmetic",      query: "addition subtraction multiplication division" },
+  multidigit:       { label: "Multi-digit operations", query: "multi-digit multiplication long division" },
+  order_ops:        { label: "Order of operations",   query: "order of operations PEMDAS" },
+  time_money:       { label: "Time & money",          query: "time money word problems" },
+  // Number sense
+  fractions_decimals: { label: "Fractions & decimals", query: "fractions decimals operations comparing" },
+  percent:           { label: "Percentages",           query: "percent of increase decrease" },
+  ratios_proportions:{ label: "Ratios & proportions", query: "ratios proportions unit rate" },
+  integers:          { label: "Integers & signed numbers", query: "negative numbers integer operations" },
+  exponents_roots:   { label: "Exponents & roots",    query: "exponent rules square roots" },
+  // Pre-algebra / algebra 1
+  expressions:       { label: "Algebraic expressions", query: "simplifying algebraic expressions distributive" },
+  linear_eq:         { label: "Linear equations",     query: "solving linear equations" },
+  systems:           { label: "Systems of equations", query: "systems of equations substitution elimination" },
+  inequalities:      { label: "Inequalities",         query: "linear inequalities solving" },
+  absolute_value:    { label: "Absolute value",       query: "absolute value equations" },
+  // Functions / advanced algebra
+  function_notation: { label: "Function notation",    query: "function notation evaluation f(x)" },
+  quadratics:        { label: "Quadratics",           query: "solving quadratic equations factoring" },
+  exponentials:      { label: "Exponential growth",   query: "exponential growth decay" },
+  // Geometry
+  area_perimeter:    { label: "Area & perimeter",     query: "area perimeter rectangles triangles" },
+  volume_surface:    { label: "Volume & surface area",query: "volume surface area prisms cylinders" },
+  pythagorean:       { label: "Pythagorean theorem",  query: "pythagorean theorem right triangle" },
+  angles:            { label: "Angle relationships",  query: "angle relationships parallel lines transversal" },
+  similarity:        { label: "Similar triangles",    query: "similar triangles" },
+  circles:           { label: "Circles",              query: "circle area circumference radius" },
+  right_trig:        { label: "Right-triangle trig",  query: "SOH CAH TOA right triangle trigonometry" },
+  coordinate_geom:   { label: "Coordinate geometry",  query: "slope distance midpoint coordinate plane" },
+  // Data / stats
+  mean_median_mode:  { label: "Mean, median, mode",   query: "mean median mode range" },
+  probability:       { label: "Probability",          query: "basic probability" },
+  data_tables:       { label: "Reading tables",       query: "interpreting data tables" },
+  data_charts:       { label: "Reading charts",       query: "interpreting bar charts line graphs scatter plots" },
+  // Word problems / misc
+  rate_work:         { label: "Rates",                query: "rate word problems unit rate distance time" },
+  unit_conversion:   { label: "Unit conversion",      query: "unit conversion measurement" },
+  word_problems:     { label: "Word problems",        query: "algebra word problems" },
+};
+function khanUrlForTopic(key) {
+  const t = MATH_TOPICS[key];
+  if (!t) return null;
+  return `https://www.khanacademy.org/search?page_search_query=${encodeURIComponent(t.query)}`;
+}
+function brushUpLinkFor(entry) {
+  // entry is the raw bank entry (has .topic if tagged). Verbal/essay entries
+  // never get this link — only math + quant. Untagged entries return "".
+  if (!entry || !entry.topic) return "";
+  const t = MATH_TOPICS[entry.topic];
+  if (!t) return "";
+  const url = khanUrlForTopic(entry.topic);
+  return `<a class="brush-up-link" href="${url}" target="_blank" rel="noopener noreferrer">📚 Brush up: ${escapeHtml(t.label)} ↗</a>`;
+}
 // ════════════════════════════════════════════════════════════════════════════
 const QUESTION_REGISTRY = {};   // id (with grade prefix) → { entry, sectionKey, gradeLevel }
 const PASSAGE_LOOKUP = {};      // passage id (e.g. "p1", "lp1") → passage object
@@ -5492,11 +5580,18 @@ function renderReviewItem(a, i, cls, label) {
       }
     }
 
+    // Brush-up link to a Khan Academy lesson covering the question's topic.
+    // Only surfaced on missed questions (cls === "wrong" or "skipped"); a
+    // correct answer doesn't need a remediation link. Topic comes from the
+    // entry's `topic` field, which exists for tagged math + quant entries.
+    const brushUp = (cls !== "good") ? brushUpLinkFor(entry) : "";
+
     return nvHead + `
       <div class="detail">
         ${questionBlock}
         ${nvBlocks}
         <div class="explain">${a.feedbackHtml || ""}</div>
+        ${brushUp}
       </div>`;
   }
 
