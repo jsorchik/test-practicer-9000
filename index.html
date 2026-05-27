@@ -4237,6 +4237,10 @@ function applyTestTypeToHome() {
   // Header chips
   $("monetizedHeaderBadge").classList.toggle("hidden", isPsat || !state.monetized);
   $("bankedHeaderBadge").classList.toggle("hidden", isPsat);
+  // Hide the Essays button when the current testType has no essay section.
+  // PSAT (post-2021 redesign) dropped the essay; ISEE still has it.
+  const hasEssay = currentSections().some(s => s.isEssay);
+  $("viewEssaysBtn").classList.toggle("hidden", !hasEssay);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
