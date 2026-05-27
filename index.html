@@ -3041,9 +3041,12 @@ const PSAT_RW_PROMPTS = {
 function normalizePsatAnswer(raw) {
   if (raw == null) return "";
   let s = String(raw).trim();
-  // Strip currency / percent / commas / common unit suffixes
+  // Strip currency / commas / common unit suffixes
   s = s.replace(/[$,]/g, "");
   s = s.replace(/\s*(?:%|m²|m³|m|cm²|cm|in|ft|km|kg|sec|s|°)$/i, "");
+  // Colon-form ratios ("3:1", "3 : 1") → fraction form ("3/1") so they
+  // compare interchangeably with "/" notation and with numeric forms.
+  s = s.replace(/^\s*(-?\d+)\s*:\s*(-?\d+)\s*$/, "$1/$2");
   return s.trim();
 }
 function parseNumericAnswer(s) {
