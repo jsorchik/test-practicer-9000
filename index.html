@@ -1754,6 +1754,10 @@
     line-height: 1.5;
   }
   .review-item .reveal-answer strong { color: var(--good); }
+  /* Override .review-item .explain's muted color when it appears inside
+     the reveal block — the green-tinted background needs brighter text
+     for readability. */
+  .review-item .reveal-answer .explain { color: var(--text); font-size: 14px; margin-top: 8px; }
   .review-item .mistakes-meta { font-size: 13px; }
   .review-item .section-tag {
     font-size: 12px;
@@ -5760,20 +5764,20 @@ function renderMistakesList() {
         // Quant comparison — show which column or "equal"/"can't be determined".
         const map = { a: "Column A is greater", b: "Column B is greater", equal: "The two quantities are equal", cant: "The relationship cannot be determined" };
         revealBody = `<div><strong>${escapeHtml(map[entry.answer] || entry.answer)}</strong></div>`;
-        if (entry.explanation) revealBody += `<div class="explain" style="margin-top:6px;">${fmtFractions(escapeHtml(entry.explanation))}</div>`;
+        // Explanations already contain HTML entities (&gt; &lt;) — pass through
+        // raw (only fmtFractions for fraction stacking) to avoid double-escape.
+        if (entry.explanation) revealBody += `<div class="explain">${fmtFractions(entry.explanation)}</div>`;
       } else if (entry.type === "psatMathGridIn") {
-        // Grid-in — show the canonical answer + explanation.
         revealBody = `<div><strong>${escapeHtml(String(entry.correct))}</strong></div>`;
-        if (entry.explanation) revealBody += `<div class="explain" style="margin-top:6px;">${fmtFractions(escapeHtml(entry.explanation))}</div>`;
+        if (entry.explanation) revealBody += `<div class="explain">${fmtFractions(entry.explanation)}</div>`;
       } else if (entry.type === "psatRW") {
-        // Reading & Writing MCQ — choices[correct] is the right answer.
         const correct = entry.choices && entry.choices[entry.correct];
         revealBody = `<div><strong>${escapeHtml(String(correct || ""))}</strong></div>`;
-        if (entry.explanation) revealBody += `<div class="explain" style="margin-top:6px;">${escapeHtml(entry.explanation)}</div>`;
+        if (entry.explanation) revealBody += `<div class="explain">${entry.explanation}</div>`;
       } else if (entry.correct !== undefined) {
         // Generic MCQ (math, reading, psatMath) — correct is the right answer string.
         revealBody = `<div><strong>${fmtFractions(escapeHtml(String(entry.correct)))}</strong></div>`;
-        if (entry.explanation) revealBody += `<div class="explain" style="margin-top:6px;">${fmtFractions(escapeHtml(entry.explanation))}</div>`;
+        if (entry.explanation) revealBody += `<div class="explain">${fmtFractions(entry.explanation)}</div>`;
       }
       // Khan brush-up link for any tagged entry (math/quant only — verbal
       // entries don't carry topics, so brushUpLinkFor returns "").
