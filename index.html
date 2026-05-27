@@ -3001,7 +3001,10 @@ function renderReviewModePanel(stats) {
   $("reviewModePanel").classList.toggle("lite-sparkle", showSparkle);
   const chip = $("reviewBountyChip");
   if (showSparkle) {
-    chip.textContent = `💰 $${bounty.toFixed(2)} per mastered`;
+    // Show the ceiling — what the kid could earn by mastering every active
+    // mistake. Compelling target, and updates as items leave the queue.
+    const maxPossible = bounty * stats.active;
+    chip.textContent = `💰 up to $${maxPossible.toFixed(2)} ($${bounty.toFixed(2)} per mastered)`;
     chip.classList.remove("hidden");
   } else {
     chip.classList.add("hidden");
