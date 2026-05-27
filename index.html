@@ -2634,6 +2634,17 @@ const EMPTY_LIFETIME = Object.freeze({
 // undefined-safe access via currentGrades().
 function currentTest() { return TESTS[state.testType] || TESTS.isee; }
 function currentGrades() { return currentTest().grades || {}; }
+function currentSections() { return currentTest().sections || []; }
+// Find a section by its key across every testType's section list. Used by
+// views that render results / mistakes whose entries may carry any testType's
+// sectionKey (e.g. mistakes list, results review).
+function findSectionByKey(key) {
+  for (const t of Object.values(TESTS)) {
+    const found = (t.sections || []).find(s => s.key === key);
+    if (found) return found;
+  }
+  return null;
+}
 function L() {
   const t = state.lifetimes[state.testType];
   if (!t) return EMPTY_LIFETIME;
@@ -3445,7 +3456,7 @@ function renderReviewModePanel(stats) {
     counts[m.sectionKey] = (counts[m.sectionKey] || 0) + 1;
   }
   const breakdownRows = [];
-  for (const section of SECTIONS) {
+  for (const section of currentSections()) {
     if (section.isCombined) continue;
     const n = counts[section.key] || 0;
     if (n === 0) continue;
@@ -3494,9 +3505,9 @@ function renderStats() {
     </div>
   `).join("");
 
-  // Best score per section
+  // Best score per section (current testType's sections only)
   const bestRows = [];
-  for (const section of SECTIONS) {
+  for (const section of currentSections()) {
     if (section.isEssay) continue; // essays aren't scored
     const best = (lt.bestByTest && lt.bestByTest[section.key]) || 0;
     const cls = best === 100 ? "pct" : best >= 80 ? "pct" : best > 0 ? "pct" : "pct dim";
@@ -3512,11 +3523,14 @@ function renderStats() {
 
   // Pool sizes — what's available to draw from. Skip combined sections from
   // this inventory (their pool is just the union of the listed sub-sections,
-  // so showing it would double-count).
+  // so showing it would double-count). Safe pool-lookup for sections whose
+  // grade doesn't have the expected pool key (e.g. PSAT has no "essays").
   const poolRows = [];
-  for (const section of SECTIONS) {
+  for (const section of currentSections()) {
     if (section.isCombined) continue;
-    const count = section.isEssay ? g.pools.essays.length : poolFor(section).length;
+    let count;
+    if (section.isEssay) count = (g.pools.essays || []).length;
+    else                 count = poolFor(section).length;
     const noun = section.isEssay ? "prompts"
                : section.isReading ? "questions across passages"
                : "questions";
@@ -3529,11 +3543,19 @@ function renderStats() {
   }
   $("statsPoolRows").innerHTML = poolRows.join("");
 
-  // All grade levels at a glance
+  // All grade levels at a glance — iterate the current testType's grades
+  // from its own lifetimes subtree. Header label adapts. The whole block
+  // hides when there's only one grade (e.g. PSAT).
+  const grades = currentGrades();
+  const gradeKeys = Object.keys(grades);
+  const allGradesSection = document.querySelector("#viewStats .stats-section:last-child");
+  if (allGradesSection) {
+    allGradesSection.style.display = gradeKeys.length > 1 ? "" : "none";
+  }
   const allRows = [];
-  for (const key of ["lower", "bridge", "middle"]) {
-    const gg = GRADES[key];
-    const llt = state.lifetimes[key];
+  for (const key of gradeKeys) {
+    const gg = grades[key];
+    const llt = (state.lifetimes[state.testType] || {})[key] || EMPTY_LIFETIME;
     const acc = llt.total > 0 ? Math.round((llt.score / llt.total) * 100) : 0;
     const isCur = key === state.gradeLevel;
     const accStr = llt.total > 0 ? ` · ${acc}% accuracy` : "";
@@ -4546,9 +4568,13 @@ function reviewNext() {
     const reg = QUESTION_REGISTRY[id];
     const meta = L().mistakes[id];
     if (reg && meta && !meta.mastered) {
-      const g = GRADES[reg.gradeLevel];
-      const section = SECTIONS.find(s => s.key === reg.sectionKey);
-      const pool = section.isReading ? g.pools.reading.questions : g.pools[section.poolKey];
+      // Use the registry's testType so a PSAT mistake re-renders out of
+      // PSAT grades (instead of the ISEE-only GRADES global).
+      const tt = TESTS[reg.testType] || TESTS.isee;
+      const g = (tt.grades || {})[reg.gradeLevel];
+      const section = findSectionByKey(reg.sectionKey);
+      if (!section || !g) { state.reviewIdx += 1; continue; }
+      const pool = section.isReading ? (g.pools.reading?.questions || []) : (g.pools[section.poolKey] || []);
       const idx = pool.indexOf(reg.entry);
       state.reviewCurrent = makeQuestion(reg.entry, reg.sectionKey, idx, reg.gradeLevel);
       state.reviewAnswered = false;
@@ -5205,7 +5231,9 @@ function renderMistakesList() {
     return;
   }
   for (const [id, m] of entries) {
-    const section = SECTIONS.find(s => s.key === m.sectionKey);
+    // Look up section across all testTypes so mistakes from any test type
+    // (e.g. PSAT entries when in PSAT mode) resolve correctly.
+    const section = findSectionByKey(m.sectionKey);
     const cls = m.mastered ? "mastered" : "wrong";
     const label = m.mastered ? "Mastered" : `${m.correctStreak} / ${MASTERY_THRESHOLD} to master`;
     const item = document.createElement("div");
@@ -5461,7 +5489,15 @@ $("resetProgress").addEventListener("click", async () => {
     cancelLabel: "Keep my progress",
   });
   if (!ok) return;
-  state.lifetimes[state.gradeLevel] = { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {} };
+  // Lifetimes nest under testType now — reset the current testType's
+  // current grade. (The old flat write here was silently corrupting
+  // state.lifetimes by creating a sibling key alongside "isee" / "psat",
+  // and the visible "reset" didn't actually reset anything.)
+  state.lifetimes[state.testType][state.gradeLevel] = {
+    score: 0, total: 0, streak: 0, best: 0, mistakes: {},
+    perfectTests: 0, totalTests: 0, longestTestStreak: 0,
+    bestByTest: {}, essays: [], tests: [], rewardsBanked: 0,
+  };
   saveProgress();
   renderHome();
 });
