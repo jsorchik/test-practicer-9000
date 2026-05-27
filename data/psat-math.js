@@ -938,4 +938,36 @@ const PSAT_MATH = [
     wrong: ["5", "7", "9"],
     explanation: "Sort the values: 4, 5, 6, 9, 11. The middle value (3rd of 5) is 6.",
   },
+
+  // ─── Phase B: grid-in (student-produced response) samples (2026-05-27) ───
+  // No `wrong` array. `correct` is the canonical answer; `accept` (optional)
+  // lists other equivalent forms the kid might type.
+  {
+    type: "psatMathGridIn",
+    question: "If 5x − 8 = 27, what is the value of x?",
+    correct: "7",
+    accept: ["7", "7.0"],
+    explanation: "Add 8 to both sides: 5x = 35. Divide by 5: x = 7.",
+  },
+  {
+    type: "psatMathGridIn",
+    question: "A recipe calls for 3/4 cup of sugar. If you double the recipe, how many cups of sugar do you need?",
+    correct: "3/2",
+    accept: ["3/2", "1.5", "1 1/2"],
+    explanation: "Double 3/4 to get 6/4 = 3/2 cups (or 1.5 cups, or 1½).",
+  },
+  {
+    type: "psatMathGridIn",
+    question: "A $25 shirt is on sale for 20% off. What is the sale price in dollars?",
+    correct: "20",
+    accept: ["20", "20.00", "$20"],
+    explanation: "20% of $25 = $5 discount. Sale price = $25 − $5 = $20.",
+  },
+  {
+    type: "psatMathGridIn",
+    question: "Solve for x: 2(x + 3) = 4x − 10. What is x?",
+    correct: "8",
+    accept: ["8"],
+    explanation: "Distribute: 2x + 6 = 4x − 10. Subtract 2x: 6 = 2x − 10. Add 10: 16 = 2x. So x = 8.",
+  },
 ];

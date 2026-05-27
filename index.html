@@ -607,6 +607,50 @@
     caption-side: top;
     text-align: left;
   }
+  /* Grid-in (numeric input) question area — replaces the A-D button grid
+     for PSAT psatMathGridIn entries. Single big input, autofocus, numeric
+     keypad on mobile. */
+  .grid-in-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 18px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+  }
+  .grid-in-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .grid-in-input {
+    width: min(280px, 100%);
+    padding: 14px 18px;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.05);
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .grid-in-input:focus { outline: none; border-color: var(--accent); }
+  .grid-in-input:disabled { opacity: .9; }
+  .grid-in-tag {
+    margin-top: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .grid-in-tag.good { background: rgba(34,197,94,.18); color: #86efac; }
+  .grid-in-tag.bad  { background: rgba(239,68,68,.18); color: #fca5a5; }
   .qc-cols {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2523,6 +2567,10 @@ const state = {
   timerInterval: null,
   // Two-step submit: which option is currently selected (-1 = none)
   selectedIdx: -1,
+  // For PSAT grid-in (numeric input) entries in practice/review mode,
+  // holds the typed string between keystrokes and the Submit click.
+  // Test mode writes directly into testAnswers[testIndex].picked instead.
+  gridInDraft: "",
   // Review
   reviewQueue: [],
   reviewIdx: 0,
@@ -2921,6 +2969,85 @@ const PSAT_RW_PROMPTS = {
   writingEdit:   "Read the passage. Then choose the best version of the underlined text.",
 };
 
+// ─── Grid-in (student-produced response) answer normalization ────────────────
+// PSAT 8/9 grid-in questions accept the numeric answer in any equivalent form:
+//   "5" = "5.0" = "5.00"
+//   "1/2" = "0.5" = ".5"
+//   "5%" / "5 cm" / "5,000" → strip suffixes and commas before parsing
+// We compare both as strings (after stripping decoration) and numerically
+// (after attempting to parse). Content entries can also supply an explicit
+// `accept: [...]` array of additional canonical forms for cases where the
+// kid might write the answer in a non-obvious way.
+function normalizePsatAnswer(raw) {
+  if (raw == null) return "";
+  let s = String(raw).trim();
+  // Strip currency / percent / commas / common unit suffixes
+  s = s.replace(/[$,]/g, "");
+  s = s.replace(/\s*(?:%|m²|m³|m|cm²|cm|in|ft|km|kg|sec|s|°)$/i, "");
+  return s.trim();
+}
+function parseNumericAnswer(s) {
+  const v = normalizePsatAnswer(s);
+  if (v === "") return null;
+  // Plain decimal (including leading "." like ".5" or "-.25")
+  if (/^-?(\d+\.?\d*|\.\d+)$/.test(v)) {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : null;
+  }
+  // Simple fraction "A/B" (possibly negative)
+  const frac = v.match(/^(-?\d+)\s*\/\s*(-?\d+)$/);
+  if (frac) {
+    const num = parseInt(frac[1], 10);
+    const den = parseInt(frac[2], 10);
+    if (den !== 0 && Number.isFinite(num) && Number.isFinite(den)) return num / den;
+  }
+  // Mixed number "A B/C" (e.g. "1 1/2")
+  const mixed = v.match(/^(-?\d+)\s+(\d+)\s*\/\s*(\d+)$/);
+  if (mixed) {
+    const whole = parseInt(mixed[1], 10);
+    const num = parseInt(mixed[2], 10);
+    const den = parseInt(mixed[3], 10);
+    if (den !== 0) {
+      const frac = num / den;
+      return whole >= 0 ? whole + frac : whole - frac;
+    }
+  }
+  return null;
+}
+// Compare a typed answer against a list of accepted canonical forms.
+// Returns true if any accepted form matches under either string-equality
+// (after normalization) or numeric-equality (after parsing).
+function psatAnswersMatch(typed, accepted) {
+  if (typed == null) return false;
+  const t = normalizePsatAnswer(typed);
+  if (t === "") return false;
+  const tn = parseNumericAnswer(t);
+  for (const a of accepted) {
+    const an = normalizePsatAnswer(a);
+    if (t === an) return true;
+    if (t.toLowerCase() === an.toLowerCase()) return true;
+    const aNum = parseNumericAnswer(an);
+    if (tn != null && aNum != null && Math.abs(tn - aNum) < 1e-9) return true;
+  }
+  return false;
+}
+// Single source of truth for "did the kid get this question right?"
+// MCQ entries compare picked-index === correctIdx as before. Grid-in
+// entries delegate to psatAnswersMatch.
+function isAnswerCorrect(a) {
+  if (a == null || a.picked == null) return false;
+  if (a.isGridIn) return psatAnswersMatch(a.picked, a.acceptedAnswers || [a.correctAnswer]);
+  return a.picked === a.correctIdx;
+}
+
+// Small inline block shown beneath the grid-in input in feedback state
+// (practice/review only — test mode never shows per-question feedback).
+function renderGridInFeedback(q, pickedValue) {
+  const ok = psatAnswersMatch(pickedValue, q.acceptedAnswers || [q.correctAnswer]);
+  if (ok) return `<div class="grid-in-tag good">✓ Correct</div>`;
+  return `<div class="grid-in-tag bad">Correct answer: <strong>${escapeHtml(String(q.correctAnswer))}</strong></div>`;
+}
+
 function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   const id = entryId(gradeLevel, sectionKey, idx);
 
@@ -2933,6 +3060,26 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
       promptHtml: `<div class="prompt">Multiple-choice math. Calculator allowed.</div><div class="math-q">${fmtFractions(entry.question)}</div>`,
       choices,
       answerIdx: choices.indexOf(entry.correct),
+      feedbackHtml: `<b>Explanation:</b> ${fmtFractions(entry.explanation)}`,
+      displayLabel: entry.question,
+    };
+  }
+
+  // PSAT Math Grid-In — student-produced response. No choices array; the kid
+  // types their answer into a text input. answerIdx is null and unused; the
+  // comparison goes through isAnswerCorrect() → psatAnswersMatch().
+  if (entry.type === "psatMathGridIn") {
+    const accepted = Array.isArray(entry.accept) && entry.accept.length
+      ? entry.accept.slice()
+      : [entry.correct];
+    return {
+      id, sectionKey, entry,
+      promptHtml: `<div class="prompt">Grid-in: type your numerical answer. Calculator allowed.</div><div class="math-q">${fmtFractions(entry.question)}</div>`,
+      choices: [],
+      answerIdx: null,
+      isGridIn: true,
+      correctAnswer: entry.correct,
+      acceptedAnswers: accepted,
       feedbackHtml: `<b>Explanation:</b> ${fmtFractions(entry.explanation)}`,
       displayLabel: entry.question,
     };
@@ -3047,11 +3194,20 @@ function selectOption(i) {
   renderQuiz();
 }
 function submitSelected() {
-  if (state.selectedIdx < 0) return;
   if (isAnswered()) return;
-  const i = state.selectedIdx;
-  if (state.mode === "review")      reviewAnswer(i);
-  else                              practiceAnswer(i);
+  const q = currentQuestion();
+  if (!q) return;
+  // Grid-in: pull the staged typed answer from gridInDraft. MCQ: use selectedIdx.
+  let answerVal;
+  if (q.isGridIn) {
+    answerVal = (state.gridInDraft || "").trim();
+    if (!answerVal) return;
+  } else {
+    if (state.selectedIdx < 0) return;
+    answerVal = state.selectedIdx;
+  }
+  if (state.mode === "review")      reviewAnswer(answerVal);
+  else                              practiceAnswer(answerVal);
 }
 function nextOrSubmit() {
   // Enter/Space and the right-hand button both call this.
@@ -3593,8 +3749,8 @@ function renderTestsHistory() {
     // visual language is identical between "just finished" and "look at
     // an old one."
     const reviewRows = (t.answers || []).map((a, i) => {
-      const isUnans = a.picked === null || a.picked === undefined;
-      const isCorrect = !isUnans && a.picked === a.correctIdx;
+      const isUnans = a.picked === null || a.picked === undefined || a.picked === "";
+      const isCorrect = !isUnans && isAnswerCorrect(a);
       const cls = isUnans ? "skipped" : (isCorrect ? "good" : "wrong");
       const label = isUnans ? "Unanswered" : (isCorrect ? "Correct" : "Wrong");
       return `<div class="review-item ${cls === "good" ? "" : cls}">${renderReviewItem(a, i, cls, label)}</div>`;
@@ -4227,6 +4383,7 @@ function practiceNext() {
   state.practiceCurrent = makeQuestion(ce.entry, ce.sectionKey, ce.idx);
   state.practiceAnswered = false;
   state.selectedIdx = -1;
+  state.gridInDraft = "";  // reset grid-in input between questions
   renderQuiz();
 }
 
@@ -4235,7 +4392,10 @@ function practiceAnswer(i) {
   state.practiceAnswered = true;
   L().total += 1;
   const q = state.practiceCurrent;
-  const correct = i === q.answerIdx;
+  // Grid-in entries: i is the typed string. MCQ: i is the choice index.
+  const correct = q.isGridIn
+    ? psatAnswersMatch(i, q.acceptedAnswers || [q.correctAnswer])
+    : i === q.answerIdx;
   if (correct) {
     L().score += 1;
     L().streak += 1;
@@ -4310,6 +4470,11 @@ function startTest() {
     id: q.id, sectionKey: q.sectionKey, displayLabel: q.displayLabel,
     choices: q.choices, correctIdx: q.answerIdx, feedbackHtml: q.feedbackHtml,
     picked: null, flagged: false,
+    // Grid-in fields — only populated for psatMathGridIn entries. picked
+    // stores the typed string for grid-in; index for MCQ.
+    isGridIn: !!q.isGridIn,
+    correctAnswer: q.correctAnswer || null,
+    acceptedAnswers: q.acceptedAnswers || null,
   }));
   state.testIndex = 0;
   state.testCurrent = state.testQueue[0];
@@ -4393,7 +4558,7 @@ function finishTest() {
   $("flagBtn").classList.add("hidden");
   $("prevBtn").classList.add("hidden");
   for (const a of state.testAnswers) {
-    if (a.picked === null || a.picked !== a.correctIdx) {
+    if (!isAnswerCorrect(a)) {
       recordMistake(a.id, a.sectionKey, a.displayLabel);
     }
   }
@@ -4402,14 +4567,14 @@ function finishTest() {
   // matches what kids see on the results screen (review list is in order).
   let run = 0, longest = 0;
   for (const a of state.testAnswers) {
-    if (a.picked !== null && a.picked === a.correctIdx) { run += 1; if (run > longest) longest = run; }
+    if (isAnswerCorrect(a)) { run += 1; if (run > longest) longest = run; }
     else { run = 0; }
   }
   state.testLongestStreak = longest;
   // Compute % score, then update lifetime aggregates.
   const lt = L();
   let correct = 0, total = state.testAnswers.length;
-  for (const a of state.testAnswers) if (a.picked === a.correctIdx) correct += 1;
+  for (const a of state.testAnswers) if (isAnswerCorrect(a)) correct += 1;
   const pct = total ? Math.round((correct / total) * 100) : 0;
   lt.totalTests = (lt.totalTests || 0) + 1;
   if (pct === 100) lt.perfectTests = (lt.perfectTests || 0) + 1;
@@ -4475,6 +4640,10 @@ function finishTest() {
       correctIdx: a.correctIdx,
       feedbackHtml: a.feedbackHtml,
       picked: a.picked,
+      // Grid-in fields — only populated for psatMathGridIn entries.
+      isGridIn: a.isGridIn || false,
+      correctAnswer: a.correctAnswer || null,
+      acceptedAnswers: a.acceptedAnswers || null,
     })),
   });
   if (lt.tests.length > 50) lt.tests = lt.tests.slice(-50);
@@ -4533,6 +4702,7 @@ function reviewNext() {
       state.reviewAnswered = false;
       state.reviewJustMastered = false;
       state.selectedIdx = -1;
+      state.gridInDraft = "";  // reset grid-in input between questions
       renderQuiz();
       return;
     }
@@ -4545,7 +4715,10 @@ function reviewAnswer(i) {
   if (state.reviewAnswered) return;
   state.reviewAnswered = true;
   const q = state.reviewCurrent;
-  const correct = i === q.answerIdx;
+  // Grid-in entries: i is the typed string. MCQ: i is the choice index.
+  const correct = q.isGridIn
+    ? psatAnswersMatch(i, q.acceptedAnswers || [q.correctAnswer])
+    : i === q.answerIdx;
   state.reviewSession.seen += 1;
   if (correct) {
     const m = recordReviewCorrect(q.id);
@@ -4657,33 +4830,81 @@ function renderQuiz(picked = -1) {
 
   const optsEl = $("options");
   optsEl.innerHTML = "";
-  const isVerbalQ = q.sectionKey === "verbal_synonyms" || q.sectionKey === "verbal_completion";
-  q.choices.forEach((choice, i) => {
-    const btn = document.createElement("button");
-    btn.className = "option";
-    btn.disabled = showFeedback;
-    // After submission on verbal questions, surface each choice's
-    // dictionary definition inline on its own button so the kid learns all
-    // four words at once.
-    let inlineDef = "";
-    if (showFeedback && isVerbalQ) {
-      const word = String(choice || "");
-      let def = defLookup(word);
-      if (!def && q.sectionKey === "verbal_synonyms" && i === q.answerIdx) {
-        def = q.entry?.meaning || null;
+
+  // Grid-in entries (PSAT psatMathGridIn) replace the A-D button grid with
+  // a single text input. picked is a string for grid-in (the typed answer)
+  // rather than a choice index. We render a different layout entirely so
+  // the kid sees a clear "type your answer" prompt.
+  if (q.isGridIn) {
+    const ans = (mode === "test") ? state.testAnswers[state.testIndex] : null;
+    const stored = (mode === "test") ? (ans?.picked ?? "") : (state.gridInDraft ?? "");
+    optsEl.innerHTML = `
+      <div class="grid-in-wrap">
+        <label class="grid-in-label" for="gridInInput">Type your answer</label>
+        <input type="text" id="gridInInput" class="grid-in-input"
+          inputmode="decimal" autocomplete="off" autocapitalize="off" spellcheck="false"
+          placeholder="e.g. 5, 1/2, 0.75" value="${escapeHtml(String(stored))}"
+          ${showFeedback ? "disabled" : ""} />
+        ${showFeedback ? renderGridInFeedback(q, picked) : ""}
+      </div>`;
+    const input = $("gridInInput");
+    if (input && !showFeedback) {
+      input.addEventListener("input", e => {
+        const v = e.target.value;
+        if (mode === "test") {
+          // Record live so the kid can navigate away and come back without losing
+          // their work. Also updates the nav strip's "answered" indicator.
+          if (ans) ans.picked = v;
+          const strip = $("testNavStrip");
+          if (strip && strip.children[state.testIndex]) {
+            strip.children[state.testIndex].classList.toggle("answered", v.trim() !== "");
+          }
+        } else {
+          // Practice/review: stage in draft + live-enable the Submit button.
+          state.gridInDraft = v;
+          const nb = $("nextBtn");
+          if (nb) nb.disabled = !v.trim();
+        }
+      });
+      // Press Enter inside the input to submit (practice/review only).
+      input.addEventListener("keydown", e => {
+        if (e.key === "Enter" && mode !== "test" && !showFeedback) {
+          e.preventDefault();
+          nextOrSubmit();
+        }
+      });
+      // Autofocus so the kid can start typing immediately.
+      setTimeout(() => input.focus(), 30);
+    }
+  } else {
+    const isVerbalQ = q.sectionKey === "verbal_synonyms" || q.sectionKey === "verbal_completion";
+    q.choices.forEach((choice, i) => {
+      const btn = document.createElement("button");
+      btn.className = "option";
+      btn.disabled = showFeedback;
+      // After submission on verbal questions, surface each choice's
+      // dictionary definition inline on its own button so the kid learns all
+      // four words at once.
+      let inlineDef = "";
+      if (showFeedback && isVerbalQ) {
+        const word = String(choice || "");
+        let def = defLookup(word);
+        if (!def && q.sectionKey === "verbal_synonyms" && i === q.answerIdx) {
+          def = q.entry?.meaning || null;
+        }
+        if (def) inlineDef = `<span class="option-def">${escapeHtml(def)}</span>`;
       }
-      if (def) inlineDef = `<span class="option-def">${escapeHtml(def)}</span>`;
-    }
-    btn.innerHTML = `<span class="key">${"ABCD"[i]}</span><span class="option-text"><span class="option-word">${renderChoiceText(choice)}</span>${inlineDef}</span>`;
-    if (showFeedback) {
-      if (i === q.answerIdx) btn.classList.add("correct");
-      else if (i === picked) btn.classList.add("wrong");
-    } else if (i === state.selectedIdx) {
-      btn.classList.add("selected");
-    }
-    btn.addEventListener("click", () => selectOption(i));
-    optsEl.appendChild(btn);
-  });
+      btn.innerHTML = `<span class="key">${"ABCD"[i]}</span><span class="option-text"><span class="option-word">${renderChoiceText(choice)}</span>${inlineDef}</span>`;
+      if (showFeedback) {
+        if (i === q.answerIdx) btn.classList.add("correct");
+        else if (i === picked) btn.classList.add("wrong");
+      } else if (i === state.selectedIdx) {
+        btn.classList.add("selected");
+      }
+      btn.addEventListener("click", () => selectOption(i));
+      optsEl.appendChild(btn);
+    });
+  }
 
   const fbEl = $("feedback");
   const nextBtn = $("nextBtn");
@@ -4726,7 +4947,9 @@ function renderQuiz(picked = -1) {
   }
 
   if (showFeedback) {
-    const correct = picked === q.answerIdx;
+    const correct = q.isGridIn
+      ? psatAnswersMatch(picked, q.acceptedAnswers || [q.correctAnswer])
+      : picked === q.answerIdx;
     let html = `<div class="verdict">${correct ? "Correct!" : "Not quite."}</div>
                 <div class="explanation">${q.feedbackHtml}</div>`;
     if (mode === "review") {
@@ -4763,7 +4986,11 @@ function renderQuiz(picked = -1) {
     fbEl.innerHTML = "";
     nextBtn.classList.remove("hidden");
     nextBtn.textContent = "Submit";
-    nextBtn.disabled = state.selectedIdx < 0;
+    // Submit enabled iff there's an answer to submit. For MCQ that means a
+    // choice is selected; for grid-in that means the input has non-empty text.
+    nextBtn.disabled = q.isGridIn
+      ? !(state.gridInDraft || "").trim()
+      : state.selectedIdx < 0;
     masterBtn.classList.add("hidden");
   }
 }
@@ -4895,8 +5122,8 @@ function renderTestResults() {
   const answers = state.testAnswers;
   let correct = 0, wrong = 0, unanswered = 0;
   for (const a of answers) {
-    if (a.picked === null) unanswered += 1;
-    else if (a.picked === a.correctIdx) correct += 1;
+    if (a.picked === null || a.picked === "") unanswered += 1;
+    else if (isAnswerCorrect(a)) correct += 1;
     else wrong += 1;
   }
   const total = answers.length;
@@ -4968,8 +5195,8 @@ function renderTestResults() {
   answers.forEach((a, i) => {
     const item = document.createElement("div");
     let cls = "good", label = "Correct";
-    if (a.picked === null) { cls = "skipped"; label = "Unanswered"; }
-    else if (a.picked !== a.correctIdx) { cls = "wrong"; label = "Wrong"; }
+    if (a.picked === null || a.picked === "") { cls = "skipped"; label = "Unanswered"; }
+    else if (!isAnswerCorrect(a)) { cls = "wrong"; label = "Wrong"; }
     item.className = `review-item ${cls === "good" ? "" : cls}`;
     item.innerHTML = renderReviewItem(a, i, cls, label);
     list.appendChild(item);
@@ -5015,32 +5242,58 @@ function renderReviewItem(a, i, cls, label) {
         </div>`;
     }
 
-    // Your-answer / Correct-answer blocks, same shape as verbal so the
-    // results screen has consistent visual language for right/wrong.
-    const correctText = renderChoiceText(a.choices[a.correctIdx]);
-    const correctLetter = "ABCD"[a.correctIdx];
+    // Your-answer / Correct-answer blocks. Grid-in entries show the typed
+    // string vs the canonical correct answer; MCQ shows letter + choice text.
     let nvBlocks = "";
-    if (cls === "wrong" && a.picked !== null) {
-      const yourText = renderChoiceText(a.choices[a.picked]);
-      const yourLetter = "ABCD"[a.picked];
-      nvBlocks += `<div class="ans-block your-wrong">
-        <div class="ans-label">Your answer</div>
-        <div class="ans-word"><strong>${yourLetter}. ${yourText}</strong></div>
-      </div>`;
-      nvBlocks += `<div class="ans-block correct">
-        <div class="ans-label">Correct answer</div>
-        <div class="ans-word"><strong>${correctLetter}. ${correctText}</strong></div>
-      </div>`;
-    } else if (cls === "skipped") {
-      nvBlocks += `<div class="ans-block correct">
-        <div class="ans-label">Correct answer (you didn't answer)</div>
-        <div class="ans-word"><strong>${correctLetter}. ${correctText}</strong></div>
-      </div>`;
+    if (a.isGridIn) {
+      const correctStr = String(a.correctAnswer || "");
+      if (cls === "wrong" && a.picked != null && a.picked !== "") {
+        nvBlocks += `<div class="ans-block your-wrong">
+          <div class="ans-label">Your answer</div>
+          <div class="ans-word"><strong>${escapeHtml(String(a.picked))}</strong></div>
+        </div>`;
+        nvBlocks += `<div class="ans-block correct">
+          <div class="ans-label">Correct answer</div>
+          <div class="ans-word"><strong>${escapeHtml(correctStr)}</strong></div>
+        </div>`;
+      } else if (cls === "skipped") {
+        nvBlocks += `<div class="ans-block correct">
+          <div class="ans-label">Correct answer (you didn't answer)</div>
+          <div class="ans-word"><strong>${escapeHtml(correctStr)}</strong></div>
+        </div>`;
+      } else {
+        nvBlocks += `<div class="ans-block correct">
+          <div class="ans-label">Correct answer</div>
+          <div class="ans-word"><strong>${escapeHtml(correctStr)}</strong></div>
+        </div>`;
+      }
     } else {
-      nvBlocks += `<div class="ans-block correct">
-        <div class="ans-label">Correct answer</div>
-        <div class="ans-word"><strong>${correctLetter}. ${correctText}</strong></div>
-      </div>`;
+      // MCQ — same shape as verbal so the results screen has consistent
+      // visual language for right/wrong.
+      const correctText = renderChoiceText(a.choices[a.correctIdx]);
+      const correctLetter = "ABCD"[a.correctIdx];
+      if (cls === "wrong" && a.picked !== null) {
+        const yourText = renderChoiceText(a.choices[a.picked]);
+        const yourLetter = "ABCD"[a.picked];
+        nvBlocks += `<div class="ans-block your-wrong">
+          <div class="ans-label">Your answer</div>
+          <div class="ans-word"><strong>${yourLetter}. ${yourText}</strong></div>
+        </div>`;
+        nvBlocks += `<div class="ans-block correct">
+          <div class="ans-label">Correct answer</div>
+          <div class="ans-word"><strong>${correctLetter}. ${correctText}</strong></div>
+        </div>`;
+      } else if (cls === "skipped") {
+        nvBlocks += `<div class="ans-block correct">
+          <div class="ans-label">Correct answer (you didn't answer)</div>
+          <div class="ans-word"><strong>${correctLetter}. ${correctText}</strong></div>
+        </div>`;
+      } else {
+        nvBlocks += `<div class="ans-block correct">
+          <div class="ans-label">Correct answer</div>
+          <div class="ans-word"><strong>${correctLetter}. ${correctText}</strong></div>
+        </div>`;
+      }
     }
 
     return nvHead + `
@@ -5477,7 +5730,12 @@ $("essayNewPromptBtn").addEventListener("click", async () => {
 
 // Keyboard shortcuts
 document.addEventListener("keydown", (e) => {
-  if (document.activeElement && document.activeElement.tagName === "TEXTAREA") return;
+  // Skip when focused inside any text input/textarea — typing "1" into the
+  // grid-in box should produce "1", not trigger the "select option A" shortcut.
+  if (document.activeElement) {
+    const t = document.activeElement.tagName;
+    if (t === "TEXTAREA" || t === "INPUT") return;
+  }
   if (state.view !== "quiz") return;
   let pickIdx = -1;
   if (e.key >= "1" && e.key <= "4") pickIdx = parseInt(e.key, 10) - 1;
