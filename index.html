@@ -1457,33 +1457,13 @@
     overflow-y: auto;
     padding-right: 4px;
   }
-  /* ─── Monetized Mode toggle button + state styles ─── */
+  /* ─── Monetized Settings button (parent-only — kept visually muted) ─── */
+  /* Earlier this button was gold + shimmer to grab attention as a toggle.
+     Now it's just a deep link into a parent settings panel, so it should
+     look like any other secondary action — no shimmer, no gold tint. */
   #monetizedToggleBtn {
-    position: relative;
-    overflow: hidden;
-    transition: all 0.15s;
-    background: linear-gradient(135deg, rgba(251,191,36,0.18), rgba(249,115,22,0.18));
-    border: 1px solid rgba(251,191,36,0.35);
-    color: #fbbf24;
-    font-weight: 700;
-  }
-  #monetizedToggleBtn::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.20) 50%, transparent 65%);
-    transform: translateX(-100%);
-    animation: lite-shimmer 4s linear infinite;
-    pointer-events: none;
-  }
-  #monetizedToggleBtn:hover {
-    background: linear-gradient(135deg, rgba(251,191,36,0.28), rgba(249,115,22,0.28));
-  }
-  #monetizedToggleBtn.on {
-    background: linear-gradient(135deg, rgba(251,191,36,0.35), rgba(249,115,22,0.35));
-    border-color: rgba(251,191,36,0.7);
-    color: #fcd34d;
-    box-shadow: 0 0 12px rgba(251,191,36,0.25);
+    transition: background 0.15s;
+    font-weight: 600;
   }
   /* ─── Header callout when Monetized Mode is ON ─── */
   #monetizedHeaderBadge {
@@ -2253,7 +2233,7 @@
       &nbsp;·&nbsp; Best streak: <strong id="lifetimeBest">0</strong>
     </div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;">
-      <button id="monetizedToggleBtn">💰 Monetized: OFF</button>
+      <button id="monetizedToggleBtn">💰 Monetized Settings</button>
       <button id="viewStatsBtn">📊 Stats</button>
       <button id="viewTestsBtn">📋 Past tests</button>
       <button id="viewEssaysBtn">📝 Essays</button>
@@ -2856,7 +2836,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.10";
+const APP_VERSION = "3.11";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3109,10 +3089,6 @@ const state = {
     psat: false,
     tiny: false,
   },
-  // Set true after the parent enters the PIN this session. Lets the parent
-  // edit Settings without re-entering the PIN every time the modal opens.
-  // Resets on page reload — kid can't blast the modal open without PIN.
-  monetizedSessionUnlocked: false,
   // Per-test-type payout config. Each test type maintains its own values
   // so a kid finishing a 5-question Unicorn Quest doesn't out-earn a
   // 12-year-old finishing a full Mock Test Day. Read via activePayoutConfig()
@@ -3122,6 +3098,12 @@ const state = {
     psat: { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.psat },
     tiny: { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.tiny },
   },
+  // Single global rewards bank — shared across all test types and grades.
+  // Earlier the bank was per-(test type × grade), which meant a parent had
+  // to mark-paid multiple separate piles. Now everything accumulates here
+  // and the parent pays out once. loadProgress sums any legacy per-grade
+  // balances on first load after the migration and zeroes them out.
+  rewardsBanked: 0,
   section: null,
   // Practice
   practicePool: [],
@@ -3559,6 +3541,23 @@ function loadProgress() {
         if (!L.mistakes)                      L.mistakes = {};
       }
     }
+    // Single-bank migration. Pre-3.11 the bank was per-(test type × grade).
+    // Sum any legacy balances into the global state.rewardsBanked then zero
+    // the per-grade fields so the next save persists only the global. If
+    // the save already carries a top-level rewardsBanked, prefer it (means
+    // we already migrated — don't double-count by re-summing).
+    if (typeof data.rewardsBanked === "number") {
+      state.rewardsBanked = data.rewardsBanked;
+    } else {
+      let sum = 0;
+      for (const testType of Object.keys(state.lifetimes)) {
+        for (const g of Object.keys(state.lifetimes[testType])) {
+          sum += state.lifetimes[testType][g].rewardsBanked || 0;
+          state.lifetimes[testType][g].rewardsBanked = 0;
+        }
+      }
+      state.rewardsBanked = sum;
+    }
   } catch (_) {}
   // After everything is loaded, ensure state.gradeLevel is valid for the
   // current testType. If a save has testType=psat with gradeLevel=middle
@@ -3586,6 +3585,7 @@ function saveProgress() {
       testVolume: state.testVolume,
       monetizedByType: state.monetizedByType,
       payoutConfigByType: state.payoutConfigByType,
+      rewardsBanked: state.rewardsBanked,
       lifetimes: state.lifetimes,
     }));
   } catch (_) {}
@@ -4104,7 +4104,7 @@ function recordReviewCorrect(id) {
   if (justMastered && isMonetizedActive()) {
     bountyEarned = Math.max(0, Number(activePayoutConfig().reviewMasteryBounty) || 0);
     if (bountyEarned > 0) {
-      L().rewardsBanked = (L().rewardsBanked || 0) + bountyEarned;
+      state.rewardsBanked = (state.rewardsBanked || 0) + bountyEarned;
     }
   }
   // Stash for the renderQuiz mastery banner so it can show the +$ tag.
@@ -4166,12 +4166,14 @@ function showView(name) {
   const hideBack = name === "home" || state.battery.active;
   $("backBtn").classList.toggle("hidden", hideBack);
   // Banked-balance badge in header: only on the home view (during tests
-  // it would leak right/wrong feedback as the value would change).
+  // it would leak right/wrong feedback as the value would change). Shown
+  // whenever the bank has anything in it — even if all Monetized switches
+  // are currently off, the parent still owes whatever's already accrued.
   const bankedBadge = $("bankedHeaderBadge");
   if (bankedBadge) {
-    const showBanked = name === "home" && isMonetizedActive() && (L().rewardsBanked || 0) > 0;
+    const showBanked = name === "home" && (state.rewardsBanked || 0) > 0;
     bankedBadge.classList.toggle("hidden", !showBanked);
-    if (showBanked) bankedBadge.textContent = `💰 $${L().rewardsBanked.toFixed(2)} banked`;
+    if (showBanked) bankedBadge.textContent = `💰 $${state.rewardsBanked.toFixed(2)} banked`;
   }
   // Tiny mascot lives only inside the quiz view in tiny mode.
   if (name !== "quiz") tinyMascotHide();
@@ -4230,18 +4232,14 @@ function renderHome() {
 
 function renderMonetizedToggle() {
   // Home-page "Monetized Settings" button. Always opens the Settings modal
-  // (PIN-gated if not unlocked this session). Per-test-type toggles + payout
-  // editing all happen in the modal — this button never directly flips a
-  // toggle on its own, since making it a single switch was confusing (you
-  // had to disable then re-enable to change a value).
+  // (PIN-gated every open). Per-test-type toggles + payout editing all
+  // happen in the modal — this button never directly flips a toggle on
+  // its own. The button is parent-only so it stays visually muted; the
+  // header chip is what tells the kid Monetized is currently on.
   const btn = $("monetizedToggleBtn");
-  if (!btn) return;
-  // "on" highlight when the *currently-selected* test type is monetized,
-  // matching the home-view affordances (sparkle cards, payout chips).
-  btn.textContent = "💰 Monetized Settings";
-  btn.classList.toggle("on", isMonetizedActive());
-  // Header chip mirrors the active test type's status — switching test
-  // type on home changes whether the chip shows.
+  if (btn) btn.textContent = "💰 Monetized Settings";
+  // Header chip mirrors the active test type's monetized status — switching
+  // test type on home changes whether the chip shows.
   const badge = $("monetizedHeaderBadge");
   if (badge) badge.classList.toggle("hidden", !isMonetizedActive());
 }
@@ -4648,19 +4646,16 @@ function startBattery() {
   $("batteryModal").classList.remove("hidden");
 }
 
-// Open the Settings modal. PIN-gated on first open per session; subsequent
-// opens skip straight to the Settings panel (until page reload). Callers
-// that need to launch something after the parent finishes (e.g. MTD) should
-// set state.monetizedFlowAfterEnable beforehand.
+// Open the Settings modal. PIN-gated on EVERY open (deliberate — the modal
+// can change real-money payout amounts, so an unsupervised kid shouldn't be
+// able to jack the per-correct value up to $5 while a parent's in the other
+// room). Callers that need to launch something after the parent finishes
+// (e.g. MTD) should set state.monetizedFlowAfterEnable beforehand.
 function openMonetizedSettings() {
   if (state.monetizedFlowAfterEnable !== "start-battery") {
     state.monetizedFlowAfterEnable = "close";
   }
-  if (state.monetizedSessionUnlocked) {
-    batteryShowStage("config");
-  } else {
-    batteryShowStage("pin");
-  }
+  batteryShowStage("pin");
   $("batteryModal").classList.remove("hidden");
 }
 
@@ -4682,10 +4677,8 @@ function batteryShowStage(stage) {
 function tryUnlockPin() {
   const entered = $("batteryPinInput").value.trim();
   if (entered === getCurrentParentPin()) {
-    // Remember the unlock for the rest of this session so the parent can
-    // pop the Settings modal repeatedly without re-typing the PIN (cuts
-    // friction when adjusting payouts mid-session). Resets on page reload.
-    state.monetizedSessionUnlocked = true;
+    // PIN is required on every modal open (no session unlock). Keeps the
+    // modal locked away from kids changing values when a parent isn't looking.
     batteryShowStage("config");
   } else {
     $("batteryPinError").classList.remove("hidden");
@@ -4703,9 +4696,48 @@ const SETTINGS_CARD_TYPES = ["isee", "psat", "tiny"];
 function renderSettingsCards() {
   const container = $("settingsCardsContainer");
   if (!container) return;
-  container.innerHTML = SETTINGS_CARD_TYPES.map(settingsCardHTML).join("");
+  container.innerHTML = settingsGlobalBankedHTML() + SETTINGS_CARD_TYPES.map(settingsCardHTML).join("");
   // Wire up listeners after innerHTML overwrites them on each re-render.
+  wireGlobalBanked();
   for (const tt of SETTINGS_CARD_TYPES) wireSettingsCard(tt);
+}
+
+// Single global banked row at the top of the Settings modal. Shown whenever
+// the bank has anything in it, regardless of whether any test type's switch
+// is currently on — the parent still owes whatever's already accrued.
+function settingsGlobalBankedHTML() {
+  const amt = state.rewardsBanked || 0;
+  if (amt <= 0) return "";
+  return `
+    <div class="settings-banked-row" id="settingsGlobalBanked" style="margin-top:14px;">
+      <div>
+        <span class="banked-grade">Banked:</span>
+        <span class="banked-amt-text" id="settingsGlobalBankedAmt">$${amt.toFixed(2)}</span>
+      </div>
+      <button type="button" id="settingsGlobalMarkPaid">Mark paid</button>
+    </div>
+  `;
+}
+
+function wireGlobalBanked() {
+  const btn = document.getElementById("settingsGlobalMarkPaid");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    const cur = state.rewardsBanked || 0;
+    if (cur <= 0) return;
+    const ok = await appConfirm({
+      title: `Mark $${cur.toFixed(2)} as paid?`,
+      body: `Resets the banked balance to $0.00. Do this after you've paid the kid the cash.`,
+      okLabel: "Yes, paid",
+      cancelLabel: "Cancel",
+    });
+    if (!ok) return;
+    state.rewardsBanked = 0;
+    saveProgress();
+    // Re-render so the row disappears (amt is now 0) and the home chip clears.
+    renderSettingsCards();
+    renderHome();
+  });
 }
 
 function settingsCardHTML(testType) {
@@ -4713,28 +4745,11 @@ function settingsCardHTML(testType) {
   if (!t) return "";
   const on = isMonetizedFor(testType);
   const pc = state.payoutConfigByType[testType] || DEFAULT_PAYOUT_CONFIG_BY_TYPE[testType] || DEFAULT_PAYOUT_CONFIG;
-  // Banked balance: per (testType x grade), since each grade tracks its own
-  // L().rewardsBanked. Show one row per grade so the parent can mark-paid
-  // each grade independently. Most test types only have one grade (PSAT,
-  // Tiny); ISEE has three (Lower / Bridge / Middle).
-  const grades = t.grades || {};
-  const bankedRows = Object.keys(grades).map(gradeKey => {
-    const lt = ((state.lifetimes[testType] || {})[gradeKey]) || {};
-    const amt = lt.rewardsBanked || 0;
-    const gradeLabel = grades[gradeKey].label || gradeKey;
-    const showLabel = Object.keys(grades).length > 1;  // hide grade label if only one
-    return `
-      <div class="settings-banked-row">
-        <div>
-          ${showLabel ? `<span class="banked-grade">${escapeHtml(gradeLabel)}:</span>` : `<span class="banked-grade">Banked:</span>`}
-          <span class="banked-amt-text" data-banked-amt="${testType}|${gradeKey}">$${amt.toFixed(2)}</span>
-        </div>
-        <button type="button" data-mark-paid="${testType}|${gradeKey}" ${amt <= 0 ? `disabled style="opacity:.4;cursor:not-allowed;"` : ""}>Mark paid</button>
-      </div>
-    `;
-  }).join("");
   // For Tiny, MTD doesn't exist — hide the MTD bonus field.
   const showMtd = testType !== "tiny";
+  // When the switch is off, hide the entire payout body — keeps the modal
+  // skimmable (parents who don't care about Unicorn Quest payouts shouldn't
+  // have to scroll past the inputs). Toggling on re-renders to expose them.
   return `
     <div class="settings-card ${on ? "on" : "off"}" data-settings-card="${testType}">
       <div class="settings-card-header">
@@ -4747,6 +4762,7 @@ function settingsCardHTML(testType) {
           <span class="slider"></span>
         </label>
       </div>
+      ${on ? `
       <div class="settings-card-body">
         <div class="payout-group-label">Per test (also each MTD section)</div>
         <p style="margin:0 0 6px; font-size:11px; color:var(--muted);">Half-length tests automatically pay half base + bonuses. Per-correct is unaffected.</p>
@@ -4778,12 +4794,11 @@ function settingsCardHTML(testType) {
             <div class="dollar-wrap"><span>$</span><input type="number" step="0.05" min="0" data-payout="${testType}|reviewMasteryBounty" value="${(pc.reviewMasteryBounty || 0).toFixed(2)}" /></div>
           </label>
         </div>
-        <div class="payout-group-label" style="margin-top:14px;">Banked balance</div>
-        ${bankedRows}
         <div class="settings-card-reset">
           <button type="button" data-reset-payouts="${testType}">↻ Reset payouts to defaults</button>
         </div>
       </div>
+      ` : ""}
     </div>
   `;
 }
@@ -4791,16 +4806,14 @@ function settingsCardHTML(testType) {
 function wireSettingsCard(testType) {
   const card = document.querySelector(`[data-settings-card="${testType}"]`);
   if (!card) return;
-  // Toggle switch
+  // Toggle switch — flipping it re-renders the whole modal so the payout
+  // body appears or collapses to match.
   const toggleEl = card.querySelector(`[data-monetized-toggle="${testType}"]`);
   if (toggleEl) {
     toggleEl.addEventListener("change", () => {
       state.monetizedByType[testType] = !!toggleEl.checked;
       saveProgress();
-      card.classList.toggle("on", toggleEl.checked);
-      card.classList.toggle("off", !toggleEl.checked);
-      // Active-testtype switch flipped → refresh home so chip/sparkle update
-      // even if the parent hasn't closed the modal yet.
+      renderSettingsCards();
       renderHome();
     });
   }
@@ -4816,34 +4829,6 @@ function wireSettingsCard(testType) {
       saveProgress();
     });
   });
-  // Mark paid buttons (per testType x grade)
-  card.querySelectorAll("[data-mark-paid]").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const [tt, gradeKey] = btn.dataset.markPaid.split("|");
-      const lt = ((state.lifetimes[tt] || {})[gradeKey]) || null;
-      if (!lt) return;
-      const cur = lt.rewardsBanked || 0;
-      if (cur <= 0) return;
-      const gradeLabel = (TESTS[tt]?.grades?.[gradeKey]?.label) || gradeKey;
-      const ttLabel = TESTS[tt]?.label || tt;
-      const ok = await appConfirm({
-        title: `Mark $${cur.toFixed(2)} as paid?`,
-        body: `Resets the ${ttLabel} (${gradeLabel}) banked balance to $0.00. Do this after you've paid the kid the cash.`,
-        okLabel: "Yes, paid",
-        cancelLabel: "Cancel",
-      });
-      if (!ok) return;
-      lt.rewardsBanked = 0;
-      saveProgress();
-      // Update just this row + home (no full re-render — preserves field focus)
-      const amtEl = card.querySelector(`[data-banked-amt="${tt}|${gradeKey}"]`);
-      if (amtEl) amtEl.textContent = "$0.00";
-      btn.disabled = true;
-      btn.style.opacity = ".4";
-      btn.style.cursor = "not-allowed";
-      renderHome();
-    });
-  });
   // Reset payouts to defaults
   const resetBtn = card.querySelector(`[data-reset-payouts="${testType}"]`);
   if (resetBtn) {
@@ -4851,8 +4836,7 @@ function wireSettingsCard(testType) {
       const d = DEFAULT_PAYOUT_CONFIG_BY_TYPE[testType] || DEFAULT_PAYOUT_CONFIG;
       state.payoutConfigByType[testType] = { ...d };
       saveProgress();
-      // Re-render just this card so the input values reflect the reset.
-      // Cheap full re-render of all cards is fine — modal is small.
+      // Re-render the whole modal so input values reflect the reset.
       renderSettingsCards();
     });
   }
@@ -5143,7 +5127,7 @@ function renderBatteryFinal() {
   const pct = r.total > 0 ? Math.round(r.accuracy * 100) : 0;
   // Bank the Mock Test Day reward into the same rewards bank as individual
   // tests so parent has a single running total to pay out.
-  L().rewardsBanked = (L().rewardsBanked || 0) + r.total$;
+  state.rewardsBanked = (state.rewardsBanked || 0) + r.total$;
   saveProgress();
 
   // Headline + banner
@@ -5272,11 +5256,11 @@ function applyTestTypeToHome() {
     return !grade || (grade.pools[s.poolKey] || []).length === 0;
   });
   $("psatInfoBanner").classList.toggle("hidden", !psatPoolsEmpty);
-  // Header chips. Monetized is a single global toggle, so the chip shows
-  // whenever it's on regardless of which test type is active. The banked
-  // chip's visibility lives in showView (it reads L().rewardsBanked, which
-  // is per-testType + per-grade), so each test type naturally shows its
-  // own bank balance.
+  // Header chips. Monetized chip tracks the currently-active test type's
+  // switch. Banked chip (handled in showView) reads the single global
+  // state.rewardsBanked and shows whenever the bank > 0, regardless of
+  // any toggle — the bank is owed money even if the parent has turned all
+  // the switches back off.
   $("monetizedHeaderBadge").classList.toggle("hidden", !isMonetizedActive());
   // Hide the Essays button when the current testType has no essay section.
   // PSAT + tiny have none; ISEE has it.
@@ -5717,7 +5701,7 @@ function finishTest() {
   const perTestEarned = (isMonetizedActive() && !rushed) ? calculateTestEarnings(correct, total) : 0;
   state.lastTestRushed = rushed;
   if (perTestEarned > 0) {
-    lt.rewardsBanked = (lt.rewardsBanked || 0) + perTestEarned;
+    state.rewardsBanked = (state.rewardsBanked || 0) + perTestEarned;
     state.lastTestEarned = perTestEarned;
   } else {
     state.lastTestEarned = 0;
@@ -6246,7 +6230,7 @@ function finishEssay() {
     ? calculateEssayEarnings(words)
     : 0;
   if (essayEarned > 0) {
-    L().rewardsBanked = (L().rewardsBanked || 0) + essayEarned;
+    state.rewardsBanked = (state.rewardsBanked || 0) + essayEarned;
     saveProgress();
   }
   state.lastTestEarned = essayEarned;
@@ -6268,8 +6252,8 @@ function finishEssay() {
     : essayRushed
       ? `<div><strong style="color:#ef4444">⚠️ Too fast</strong>no payout (write for at least 5 min)</div>`
       : '';
-  const essayBankCell = (L().rewardsBanked || 0) > 0
-    ? `<div><strong style="color:#fbbf24">$${L().rewardsBanked.toFixed(2)}</strong>banked total</div>`
+  const essayBankCell = (state.rewardsBanked || 0) > 0
+    ? `<div><strong style="color:#fbbf24">$${state.rewardsBanked.toFixed(2)}</strong>banked total</div>`
     : '';
   $("resultRow").innerHTML = `
     <div><strong>${words}</strong>words</div>
@@ -6344,8 +6328,8 @@ function renderTestResults() {
     : state.lastTestRushed && isMonetizedActive()
       ? `<div><strong style="color:#ef4444">⚠️ Too fast</strong>no payout (give it a real try)</div>`
       : '';
-  const bankCell = (lt.rewardsBanked || 0) > 0
-    ? `<div><strong style="color:#fbbf24">$${lt.rewardsBanked.toFixed(2)}</strong>banked total</div>`
+  const bankCell = (state.rewardsBanked || 0) > 0
+    ? `<div><strong style="color:#fbbf24">$${state.rewardsBanked.toFixed(2)}</strong>banked total</div>`
     : '';
   $("resultRow").innerHTML = `
     <div><strong>${correct}</strong>correct</div>
@@ -6811,9 +6795,9 @@ $("batteryModalCancel2").addEventListener("click", () => $("batteryModal").class
 $("batteryStageIntroStart").addEventListener("click", actuallyLaunchBattery);
 $("batteryNeedsMonetizedNext").addEventListener("click", () => {
   state.monetizedFlowAfterEnable = "start-battery";
-  // Skip PIN if the parent already unlocked it this session — they've
-  // proven they're the parent; making them re-type is just friction.
-  batteryShowStage(state.monetizedSessionUnlocked ? "config" : "pin");
+  // Always require PIN — the kid clicking "Mock Test Day" then clicking
+  // "Parent: open Settings" shouldn't auto-unlock the settings panel.
+  batteryShowStage("pin");
 });
 $("batteryPinBack").addEventListener("click", () => {
   // From PIN entry, "Back" returns to whichever screen launched this flow:
