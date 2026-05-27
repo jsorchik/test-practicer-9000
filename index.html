@@ -5790,11 +5790,26 @@ function renderMistakesList() {
                       </div>`;
       }
     }
+    // For quant-comparison entries, render the actual two-column display
+    // instead of the cramped "Column A: ... vs Column B: ..." displayLabel
+    // (matches the past-tests review). The head shows a short label;
+    // the columns sit above the .detail block.
+    const isQuantComp = entry && entry.type === "quantComparison";
+    const headLabel = isQuantComp
+      ? "Quantitative comparison"
+      : `${escapeHtml(m.displayLabel).slice(0, 140)}${m.displayLabel.length > 140 ? "…" : ""}`;
+    const qcBlock = isQuantComp
+      ? `<div class="qc-cols qc-cols-review">
+           <div class="qc-col"><div class="qc-label">Column A</div><div class="qc-val">${fmtFractions(escapeHtml(entry.columnA))}</div></div>
+           <div class="qc-col"><div class="qc-label">Column B</div><div class="qc-val">${fmtFractions(escapeHtml(entry.columnB))}</div></div>
+         </div>`
+      : "";
     item.innerHTML = `
       <div class="head">
-        <div class="qword"><span class="section-tag">${section ? section.parent : ""}</span>${escapeHtml(m.displayLabel).slice(0, 140)}${m.displayLabel.length > 140 ? "…" : ""}</div>
+        <div class="qword"><span class="section-tag">${section ? section.parent : ""}</span>${headLabel}</div>
         <div class="mark ${m.mastered ? "good" : "bad"}">${label}</div>
       </div>
+      ${qcBlock}
       <div class="detail">
         ${answerHtml}
         <div class="mistakes-meta">
