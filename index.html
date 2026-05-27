@@ -5160,7 +5160,17 @@ function renderQuiz(picked = -1) {
     nextBtn.disabled = false;
     nextBtn.classList.remove("hidden");
     nextBtn.textContent = "Next →";
+    // Show "Mark as mastered" only in review mode. When monetized, append
+    // a "no payout" hint so the kid knows the shortcut forfeits the bounty —
+    // the natural 3-in-a-row mastery path is the one that pays.
     masterBtn.classList.toggle("hidden", mode !== "review");
+    if (mode === "review") {
+      const bounty = Number(state.payoutConfig.reviewMasteryBounty) || 0;
+      const showHint = state.monetized && bounty > 0;
+      masterBtn.textContent = showHint
+        ? "Mark as mastered (no payout)"
+        : "Mark as mastered";
+    }
     nextBtn.focus();
   } else {
     // Pre-submit state — button reads "Submit" and is enabled only when a
