@@ -559,10 +559,9 @@
     font-style: normal;
   }
 
-  /* Shown above the question card in test mode when the kid is seeing a
-     question for the second time (they skipped it once already and it has
-     cycled back). One more skip and it's counted as a final skip. */
-  .skip-flag {
+  /* Shown above the question text in test mode when the current question is
+     flagged for review. Hidden on unflagged questions and outside test mode. */
+  .flag-indicator {
     background: rgba(245,158,11,.12);
     border: 1px solid var(--warn);
     border-radius: 10px;
@@ -573,6 +572,69 @@
     font-weight: 700;
     text-align: center;
     letter-spacing: .3px;
+  }
+
+  /* Real-ISEE-style question navigator: row of numbered boxes above the
+     test card. Click to jump; visual state shows answered / flagged / current
+     without revealing correctness. Wraps to multiple rows on small screens. */
+  .test-nav-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+  }
+  .q-box {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1.5px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.04);
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform .08s ease, background .12s ease, border-color .12s ease;
+  }
+  .q-box:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.35); }
+  .q-box.answered {
+    background: rgba(96,165,250,.22);
+    border-color: rgba(96,165,250,.55);
+    color: var(--text);
+  }
+  .q-box.current {
+    border-color: var(--accent);
+    border-width: 2px;
+    box-shadow: 0 0 0 3px rgba(96,165,250,.18);
+    color: var(--text);
+  }
+  /* Flag corner mark — small triangle in the top-right of the box. Combines
+     with .answered when both apply. */
+  .q-box.flagged::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 10px 10px 0;
+    border-color: transparent var(--warn) transparent transparent;
+    border-radius: 0 8px 0 0;
+  }
+  /* "Flag" button gets a warm tint when the current question is flagged. */
+  #flagBtn.flagged-on {
+    background: rgba(245,158,11,.18);
+    border-color: var(--warn);
+    color: var(--warn);
   }
 
   .feedback {
@@ -1229,6 +1291,11 @@
   }
   @media (max-width: 480px) {
     .payout-grid { grid-template-columns: 1fr; }
+    /* Shrink question-navigator boxes so a 40-q full test doesn't take half
+       the screen vertically. Still tap-friendly (28px ≈ Apple's 28pt minimum). */
+    .test-nav-strip { gap: 4px; padding: 10px; }
+    .q-box { width: 30px; height: 30px; font-size: 13px; }
+    .q-box.flagged::after { border-width: 0 8px 8px 0; }
   }
   /* ─── Banked-so-far chip on battery transition screens ─── */
   .banked-chip {
@@ -1529,15 +1596,18 @@
     <div id="passageText"></div>
   </div>
 
+  <div class="test-nav-strip hidden" id="testNavStrip"></div>
+
   <div class="card">
-    <div class="skip-flag hidden" id="skipFlag">↻ Previously skipped — last chance to answer</div>
+    <div class="flag-indicator hidden" id="flagIndicator">⚑ Flagged for review</div>
     <div id="promptBlock"></div>
     <div class="options" id="options"></div>
     <div class="feedback" id="feedback"></div>
     <div class="actions">
       <div class="left">
-        <button class="ghost hidden" id="skipBtn">Skip →</button>
-        <button class="ghost hidden" id="finishBtn">Finish test</button>
+        <button class="ghost hidden" id="prevBtn">← Prev</button>
+        <button class="ghost hidden" id="flagBtn">⚑ Flag</button>
+        <button class="primary hidden" id="finishBtn">Submit Section</button>
         <button class="success hidden" id="masterBtn">Mark as mastered</button>
       </div>
       <div class="right">
@@ -1547,7 +1617,7 @@
   </div>
 
   <div class="footer-hint">
-    <span class="kbd">A</span>–<span class="kbd">D</span> or <span class="kbd">1</span>–<span class="kbd">4</span> select · <span class="kbd">space</span>/<span class="kbd">enter</span> submit/next · <span class="kbd">s</span> skip · <span class="kbd">m</span> master
+    <span class="kbd">A</span>–<span class="kbd">D</span> or <span class="kbd">1</span>–<span class="kbd">4</span> select · <span class="kbd">←</span>/<span class="kbd">→</span> navigate · <span class="kbd">F</span> flag · <span class="kbd">enter</span> next/submit · <span class="kbd">m</span> master
   </div>
 </div>
 
@@ -2084,16 +2154,16 @@ const state = {
   practicePool: [],
   practiceCurrent: null,
   practiceAnswered: false,
-  // Test
+  // Test — real-ISEE-style flow with arbitrary navigation. Each question has
+  // a fixed index 0..N-1; the kid can jump freely, change answers, and flag
+  // questions for review. There's no skip-cycling.
   testQueue: [],            // ordered list of questions (immutable after start)
-  testAnswers: [],          // parallel to testQueue; each entry tracks picked/skipped/skipCount
-  testOrder: [],            // indices into testQueue, mutable (skipped Qs get pushed to end)
-  testOrderPos: 0,          // current position in testOrder
-  testCurrent: null,
+  testAnswers: [],          // parallel to testQueue; each entry: { picked, flagged, correctIdx, ... }
+  testIndex: 0,             // index of the question currently being viewed
+  testCurrent: null,        // pointer to testQueue[testIndex] (kept for currentQuestion())
   testStartMs: 0,
   testEndMs: 0,
-  testStreak: 0,            // consecutive correct in current test
-  testLongestStreak: 0,     // longest streak achieved in current test
+  testLongestStreak: 0,     // computed in finishTest from in-order correct-runs
 
   // Battery mode — full mock test day, all sections chained back-to-back.
   // While battery.active, the back/home button is suppressed and section
@@ -2478,27 +2548,73 @@ function selectOption(i) {
   const q = currentQuestion();
   if (!q) return;
   if (i < 0 || i >= q.choices.length) return;
-  if (isAnswered()) return;          // can't change after feedback shown
+  if (isAnswered()) return;          // can't change after feedback shown (practice/review)
   state.selectedIdx = i;
+  // Test mode: tap-to-select is the answer (real-ISEE bubble behavior).
+  // Record immediately; the kid stays on the question and can change later.
+  if (state.mode === "test") { testAnswer(i); return; }
   renderQuiz();
 }
 function submitSelected() {
   if (state.selectedIdx < 0) return;
   if (isAnswered()) return;
   const i = state.selectedIdx;
-  if (state.mode === "test")        testAnswer(i);
-  else if (state.mode === "review") reviewAnswer(i);
+  if (state.mode === "review")      reviewAnswer(i);
   else                              practiceAnswer(i);
 }
 function nextOrSubmit() {
-  // Enter/Space and the right-hand button both call this — they "submit" if
-  // a selection is pending, or "advance to next" if feedback is already shown.
+  // Enter/Space and the right-hand button both call this.
+  if (state.mode === "test") {
+    // Test mode: tap-to-record removes the "submit" step. Enter advances to
+    // the next question, or on the last question triggers Submit Section.
+    if (state.testIndex < state.testQueue.length - 1) testNext();
+    else triggerFinishTest();
+    return;
+  }
   if (isAnswered()) {
     if (state.mode === "practice") practiceNext();
     else if (state.mode === "review") reviewAdvance();
   } else {
     submitSelected();
   }
+}
+
+// Show the Submit Section confirmation modal, then finish the test if the
+// kid confirms. Used by the Submit Section button, the keyboard Enter shortcut
+// on the last question, and the "are you sure?" path.
+async function triggerFinishTest() {
+  if (state.mode !== "test") return;
+  const total = state.testAnswers.length;
+  const answered = state.testAnswers.filter(a => a.picked !== null).length;
+  const flagged = state.testAnswers.filter(a => a.flagged).length;
+  const unanswered = total - answered;
+  const lines = [`${answered} of ${total} answered`];
+  if (flagged > 0) lines.push(`${flagged} flagged for review`);
+  if (unanswered > 0) lines.push(`${unanswered} unanswered — will be counted as wrong`);
+  const body = lines.join("<br>");
+  const ok = await appConfirm({ title: "Lock in your answers?", body, okLabel: "Submit Section" });
+  if (ok) finishTestEarly();
+}
+
+// Renders the row of numbered boxes at the top of the test card. Each box
+// shows state: current (ring), answered (filled), flagged (corner mark).
+// Clicking a box jumps to that question.
+function renderTestNavStrip() {
+  const strip = $("testNavStrip");
+  if (!strip) return;
+  strip.innerHTML = "";
+  state.testQueue.forEach((_, i) => {
+    const ans = state.testAnswers[i];
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "q-box";
+    if (i === state.testIndex) btn.classList.add("current");
+    if (ans?.picked !== null && ans?.picked !== undefined) btn.classList.add("answered");
+    if (ans?.flagged) btn.classList.add("flagged");
+    btn.textContent = String(i + 1);
+    btn.addEventListener("click", () => testGoto(i));
+    strip.appendChild(btn);
+  });
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -3430,8 +3546,10 @@ function startPractice() {
   state.selectedIdx = -1;
   $("timer").classList.add("hidden");
   $("streakStat").classList.remove("hidden");
-  $("skipBtn").classList.add("hidden");
   $("finishBtn").classList.add("hidden");
+  $("flagBtn").classList.add("hidden");
+  $("prevBtn").classList.add("hidden");
+  $("testNavStrip").classList.add("hidden");
   $("masterBtn").classList.add("hidden");
   showView("quiz");
   practiceNext();
@@ -3527,24 +3645,24 @@ function startTest() {
   state.testAnswers = state.testQueue.map(q => ({
     id: q.id, sectionKey: q.sectionKey, displayLabel: q.displayLabel,
     choices: q.choices, correctIdx: q.answerIdx, feedbackHtml: q.feedbackHtml,
-    picked: null, skipped: false, skipCount: 0,
+    picked: null, flagged: false,
   }));
-  state.testOrder = state.testQueue.map((_, i) => i);
-  state.testOrderPos = 0;
+  state.testIndex = 0;
   state.testCurrent = state.testQueue[0];
   state.selectedIdx = -1;
   state.testStartMs = Date.now();
   state.testEndMs = state.testStartMs + t.durationSec * 1000;
-  state.testStreak = 0;
   state.testLongestStreak = 0;
   $("timer").classList.remove("hidden");
-  // Streak is intentionally hidden in test mode — a visible counter that
-  // resets would tip off the test-taker that they got a question wrong
-  // (you don't see per-question feedback during a real test).
+  // Streak is intentionally hidden in test mode — no per-question feedback
+  // during a real test, and free navigation means there's no natural
+  // "streak in a row" until we compute it post-test.
   $("streakStat").classList.add("hidden");
-  $("skipBtn").classList.remove("hidden");
   $("finishBtn").classList.remove("hidden");
+  $("flagBtn").classList.remove("hidden");
+  $("prevBtn").classList.remove("hidden");
   $("masterBtn").classList.add("hidden");
+  $("testNavStrip").classList.remove("hidden");
   startTimer();
   showView("quiz");
   renderQuiz();
@@ -3569,59 +3687,61 @@ function tickTimer() {
   if (remainingMs <= 0) finishTest();
 }
 
+// Record the kid's answer at the current index. Unlike practice/review, this
+// does NOT advance — they can stay, change it, or navigate elsewhere. Selection
+// just bubbles into state; the rendered "selected" state is read from
+// testAnswers[testIndex].picked, not from state.selectedIdx.
 function testAnswer(i) {
-  const qIdx = state.testOrder[state.testOrderPos];
-  const ans = state.testAnswers[qIdx];
+  const ans = state.testAnswers[state.testIndex];
+  if (!ans) return;
   ans.picked = i;
-  ans.skipped = false;
-  // Track streak silently — no UI update during the test (visible feedback
-  // would tip the kid off about whether the answer was right). The longest
-  // streak gets revealed on the results screen.
-  if (i === ans.correctIdx) {
-    state.testStreak += 1;
-    if (state.testStreak > state.testLongestStreak) state.testLongestStreak = state.testStreak;
-  } else {
-    state.testStreak = 0;
-  }
-  advanceTest();
-}
-function testSkip() {
-  // First skip: push the question to the end of the queue for another chance.
-  // Second skip on the same question: counts as a final skip (no recycle).
-  const qIdx = state.testOrder[state.testOrderPos];
-  const ans = state.testAnswers[qIdx];
-  ans.skipCount = (ans.skipCount || 0) + 1;
-  if (ans.skipCount < 2) {
-    state.testOrder.push(qIdx);
-    ans.skipped = false;       // not final yet — will revisit
-  } else {
-    ans.skipped = true;        // final skip
-  }
-  // Skipping breaks the streak (tracked silently — no DOM update)
-  state.testStreak = 0;
-  advanceTest();
-}
-function advanceTest() {
-  state.selectedIdx = -1;
-  state.testOrderPos += 1;
-  if (state.testOrderPos >= state.testOrder.length) { finishTest(); return; }
-  state.testCurrent = state.testQueue[state.testOrder[state.testOrderPos]];
+  state.selectedIdx = i;
   renderQuiz();
 }
+function testToggleFlag() {
+  const ans = state.testAnswers[state.testIndex];
+  if (!ans) return;
+  ans.flagged = !ans.flagged;
+  renderQuiz();
+}
+function testGoto(idx) {
+  if (idx < 0 || idx >= state.testQueue.length) return;
+  state.testIndex = idx;
+  state.testCurrent = state.testQueue[idx];
+  // selectedIdx mirrors what's currently picked (if anything) for the
+  // option-render code path that reads it.
+  state.selectedIdx = state.testAnswers[idx].picked ?? -1;
+  renderQuiz();
+}
+function testPrev() { if (state.testIndex > 0) testGoto(state.testIndex - 1); }
+function testNext() {
+  if (state.testIndex < state.testQueue.length - 1) testGoto(state.testIndex + 1);
+}
 function finishTestEarly() {
-  // Mark any unanswered questions as final skips, then finish.
-  for (const ans of state.testAnswers) {
-    if (ans.picked === null) ans.skipped = true;
-  }
+  // No conversion needed — unanswered just means picked === null.
   finishTest();
 }
 function finishTest() {
   stopTimer();
+  // Hide the test-mode chrome so it doesn't leak into the results / battery
+  // transition views (battery skips renderTestResults).
+  $("testNavStrip").classList.add("hidden");
+  $("flagBtn").classList.add("hidden");
+  $("prevBtn").classList.add("hidden");
   for (const a of state.testAnswers) {
     if (a.picked === null || a.picked !== a.correctIdx) {
       recordMistake(a.id, a.sectionKey, a.displayLabel);
     }
   }
+  // Compute longest correct-run in question order. With free navigation
+  // there's no meaningful answer-order streak; the in-order interpretation
+  // matches what kids see on the results screen (review list is in order).
+  let run = 0, longest = 0;
+  for (const a of state.testAnswers) {
+    if (a.picked !== null && a.picked === a.correctIdx) { run += 1; if (run > longest) longest = run; }
+    else { run = 0; }
+  }
+  state.testLongestStreak = longest;
   // Compute % score, then update lifetime aggregates.
   const lt = L();
   let correct = 0, total = state.testAnswers.length;
@@ -3686,8 +3806,10 @@ function startReview() {
   state.selectedIdx = -1;
   $("timer").classList.add("hidden");
   $("streakStat").classList.add("hidden");
-  $("skipBtn").classList.add("hidden");
   $("finishBtn").classList.add("hidden");
+  $("flagBtn").classList.add("hidden");
+  $("prevBtn").classList.add("hidden");
+  $("testNavStrip").classList.add("hidden");
   $("masterBtn").classList.remove("hidden");
   showView("quiz");
   reviewNext();
@@ -3771,10 +3893,12 @@ function renderQuiz(picked = -1) {
   if (mode === "test") {
     const total = state.testQueue.length;
     const answered = state.testAnswers.filter(a => a.picked !== null).length;
-    const skippedFinal = state.testAnswers.filter(a => a.picked === null && a.skipped).length;
-    const skippedHint = skippedFinal > 0 ? ` · ${skippedFinal} skipped` : "";
-    $("progressLabel").textContent = `${answered} of ${total} answered${skippedHint}`;
+    const flagged = state.testAnswers.filter(a => a.flagged).length;
+    const flaggedHint = flagged > 0 ? ` · ${flagged} flagged` : "";
+    $("progressLabel").textContent =
+      `Question ${state.testIndex + 1} of ${total} · ${answered} answered${flaggedHint}`;
     $("progressFill").style.width = `${(answered / total) * 100}%`;
+    renderTestNavStrip();
   } else if (mode === "review") {
     const total = state.reviewQueue.length;
     const n = Math.min(state.reviewIdx + 1, total);
@@ -3798,16 +3922,14 @@ function renderQuiz(picked = -1) {
     $("passagePanel").classList.add("hidden");
   }
 
-  // Show the "previously skipped" banner when a test question is on its
-  // second pass (skipCount >= 1 means it was skipped once already and has
-  // cycled back — next skip will be final).
-  const skipFlag = $("skipFlag");
+  // "Flagged for review" indicator on the current test question. Hidden
+  // outside test mode and on unflagged questions.
+  const flagIndicator = $("flagIndicator");
   if (mode === "test") {
-    const qIdx = state.testOrder[state.testOrderPos];
-    const ans = state.testAnswers[qIdx];
-    skipFlag.classList.toggle("hidden", !(ans && ans.skipCount > 0));
+    const ans = state.testAnswers[state.testIndex];
+    flagIndicator.classList.toggle("hidden", !(ans && ans.flagged));
   } else {
-    skipFlag.classList.add("hidden");
+    flagIndicator.classList.add("hidden");
   }
 
   $("promptBlock").innerHTML = q.promptHtml;
@@ -3862,6 +3984,38 @@ function renderQuiz(picked = -1) {
   const fbEl = $("feedback");
   const nextBtn = $("nextBtn");
   const masterBtn = $("masterBtn");
+  const prevBtn = $("prevBtn");
+  const flagBtn = $("flagBtn");
+  const finishBtn = $("finishBtn");
+
+  if (mode === "test") {
+    // Test mode never shows per-question feedback. The action bar is:
+    //   ← Prev   ⚑ Flag   [Submit Section]  ⋯  Next →
+    // On the last question, Next disappears and Submit Section becomes the
+    // primary action (Enter triggers it).
+    fbEl.className = "feedback";
+    fbEl.innerHTML = "";
+    const total = state.testQueue.length;
+    const onFirst = state.testIndex === 0;
+    const onLast  = state.testIndex === total - 1;
+    const ans = state.testAnswers[state.testIndex];
+    prevBtn.classList.remove("hidden");
+    prevBtn.disabled = onFirst;
+    flagBtn.classList.remove("hidden");
+    flagBtn.textContent = ans?.flagged ? "⚑ Unflag" : "⚑ Flag";
+    flagBtn.classList.toggle("flagged-on", !!ans?.flagged);
+    finishBtn.classList.remove("hidden");
+    finishBtn.textContent = "Submit Section";
+    if (onLast) {
+      nextBtn.classList.add("hidden");
+    } else {
+      nextBtn.classList.remove("hidden");
+      nextBtn.textContent = "Next →";
+      nextBtn.disabled = false;
+    }
+    masterBtn.classList.add("hidden");
+    return;
+  }
 
   if (showFeedback) {
     const correct = picked === q.answerIdx;
@@ -4027,9 +4181,9 @@ function finishEssay() {
 // ════════════════════════════════════════════════════════════════════════════
 function renderTestResults() {
   const answers = state.testAnswers;
-  let correct = 0, wrong = 0, skipped = 0;
+  let correct = 0, wrong = 0, unanswered = 0;
   for (const a of answers) {
-    if (a.picked === null) skipped += 1;
+    if (a.picked === null) unanswered += 1;
     else if (a.picked === a.correctIdx) correct += 1;
     else wrong += 1;
   }
@@ -4087,7 +4241,7 @@ function renderTestResults() {
   $("resultRow").innerHTML = `
     <div><strong>${correct}</strong>correct</div>
     <div><strong>${wrong}</strong>wrong</div>
-    <div><strong>${skipped}</strong>skipped</div>
+    <div><strong>${unanswered}</strong>unanswered</div>
     <div><strong>${fmtTime(elapsed)}</strong>time used</div>
     ${streakCell}
     ${bestCell}
@@ -4102,7 +4256,7 @@ function renderTestResults() {
   answers.forEach((a, i) => {
     const item = document.createElement("div");
     let cls = "good", label = "Correct";
-    if (a.picked === null) { cls = "skipped"; label = "Skipped"; }
+    if (a.picked === null) { cls = "skipped"; label = "Unanswered"; }
     else if (a.picked !== a.correctIdx) { cls = "wrong"; label = "Wrong"; }
     item.className = `review-item ${cls === "good" ? "" : cls}`;
     item.innerHTML = renderReviewItem(a, i, cls, label);
@@ -4152,7 +4306,7 @@ function renderReviewItem(a, i, cls, label) {
     </div>`;
   } else if (cls === "skipped") {
     blocks += `<div class="ans-block correct">
-      <div class="ans-label">Correct answer (you skipped)</div>
+      <div class="ans-label">Correct answer (you didn't answer)</div>
       <div class="ans-word"><strong>${escapeHtml(correctWord)}</strong>${correctDef ? ` — ${escapeHtml(correctDef)}` : ""}</div>
     </div>`;
   } else {
@@ -4370,16 +4524,9 @@ document.addEventListener("click", (e) => {
 });
 
 $("nextBtn").addEventListener("click", nextOrSubmit);
-$("skipBtn").addEventListener("click", () => { if (state.mode === "test") testSkip(); });
-$("finishBtn").addEventListener("click", async () => {
-  if (state.mode !== "test") return;
-  const unanswered = state.testAnswers.filter(a => a.picked === null).length;
-  const body = unanswered > 0
-    ? `${unanswered} unanswered question${unanswered === 1 ? "" : "s"} will be counted as skipped.`
-    : "You'll see your score next.";
-  const ok = await appConfirm({ title: "Finish the test now?", body, okLabel: "Finish →" });
-  if (ok) finishTestEarly();
-});
+$("prevBtn").addEventListener("click", () => { if (state.mode === "test") testPrev(); });
+$("flagBtn").addEventListener("click", () => { if (state.mode === "test") testToggleFlag(); });
+$("finishBtn").addEventListener("click", () => { triggerFinishTest(); });
 $("masterBtn").addEventListener("click", () => { if (state.mode === "review") reviewMarkMastered(); });
 
 $("startReviewBtn").addEventListener("click", startReview);
@@ -4540,12 +4687,18 @@ document.addEventListener("keydown", (e) => {
   if (e.key >= "1" && e.key <= "4") pickIdx = parseInt(e.key, 10) - 1;
   else if (/^[a-dA-D]$/.test(e.key)) pickIdx = e.key.toUpperCase().charCodeAt(0) - 65;
   if (pickIdx >= 0) {
-    selectOption(pickIdx);          // select-only; does NOT submit
+    // Practice/review: select-only (kid still has to press Submit).
+    // Test mode: tap-to-record fires inside selectOption.
+    selectOption(pickIdx);
   } else if (e.key === " " || e.key === "Enter") {
     e.preventDefault();
-    nextOrSubmit();                  // submit if pending, otherwise advance
-  } else if (e.key === "s" || e.key === "S") {
-    if (state.mode === "test") testSkip();
+    nextOrSubmit();
+  } else if (e.key === "ArrowLeft") {
+    if (state.mode === "test") { e.preventDefault(); testPrev(); }
+  } else if (e.key === "ArrowRight") {
+    if (state.mode === "test") { e.preventDefault(); testNext(); }
+  } else if (e.key === "f" || e.key === "F") {
+    if (state.mode === "test") testToggleFlag();
   } else if (e.key === "m" || e.key === "M") {
     if (state.mode === "review" && state.reviewAnswered) reviewMarkMastered();
   }
