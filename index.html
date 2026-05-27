@@ -108,58 +108,24 @@
   }
   .test-type-pill.active .tt-label { color: var(--accent); }
 
-  /* "Coming soon" placeholder shown when testType === "psat". Replaces
-     everything except the test-type toggle itself. */
-  .psat-stub {
-    background: var(--panel);
-    border: 1px dashed rgba(255,255,255,.18);
-    border-radius: 16px;
-    padding: 40px 28px;
-    text-align: center;
-    margin-bottom: 16px;
-  }
-  .psat-stub-emoji { font-size: 56px; margin-bottom: 10px; }
-  .psat-stub-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 10px; }
-  .psat-stub-body  { font-size: 15px; color: var(--muted); line-height: 1.55; max-width: 500px; margin: 0 auto; }
-  /* Per-section preview rows inside the PSAT stub. Each shows a planned
-     section, its full-test target, and how many questions are currently
-     in the bank — clear "what's coming" signal for the kid + parent. */
-  .psat-preview-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-width: 520px;
-    margin: 22px auto 0;
-    text-align: left;
-  }
-  .psat-preview-row {
-    background: var(--panel-2);
-    border: 1px solid rgba(255,255,255,.08);
-    border-radius: 12px;
-    padding: 14px 18px;
+  /* Compact info banner shown above the section grid when PSAT mode is
+     active and every PSAT section pool is still empty. Disappears the
+     moment any pool fills — the section cards themselves carry the
+     readiness signal from then on. */
+  .psat-info-banner {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
+    background: rgba(251,191,36,0.10);
+    border: 1px dashed rgba(251,191,36,0.35);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
   }
-  .psat-preview-row .pv-emoji { font-size: 28px; }
-  .psat-preview-row .pv-main  { flex: 1; }
-  .psat-preview-row .pv-name  { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
-  .psat-preview-row .pv-desc  { font-size: 13px; color: var(--muted); }
-  .psat-preview-row .pv-count {
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: rgba(148,163,184,.12);
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .psat-preview-row .pv-count.ready {
-    background: rgba(34,197,94,.18);
-    color: #86efac;
-  }
+  .psat-info-banner .pib-emoji { font-size: 22px; flex-shrink: 0; }
 
   .grade-toggle {
     display: grid;
@@ -583,6 +549,31 @@
     margin-bottom: 22px;
     color: var(--text);
     font-weight: 500;
+  }
+  /* PSAT Reading & Writing passage shown inline above the question. The
+     PSAT format keeps passages short (1-2 paragraphs typically) so no
+     separate scrollable panel like ISEE reading needs. */
+  .psat-passage {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin: 14px 0 18px;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+  /* Underlined-portion marker inside writing-edit passages — content
+     authors wrap the variable text in <u>…</u>. */
+  .psat-passage u {
+    background: rgba(96,165,250,.18);
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 2px;
+    padding: 0 2px;
+    border-radius: 2px;
   }
   .qc-cols {
     display: grid;
@@ -1695,25 +1686,19 @@
     </button>
   </div>
 
-  <!-- PSAT stub panel — shown when testType === "psat". Previews the
-       planned sections with live "X questions ready" counts so the
-       structure is visible even before content lands. -->
-  <div class="psat-stub hidden" id="psatStubPanel">
-    <div class="psat-stub-emoji">🛠️</div>
-    <div class="psat-stub-title">PSAT 8/9 — content in progress</div>
-    <div class="psat-stub-body">
-      Two sections planned, matching the real digital PSAT format.
-      Each will unlock here as its question bank fills up.
-    </div>
-    <div class="psat-preview-list" id="psatPreviewList"></div>
-    <div class="psat-stub-body" style="font-size:13px;color:var(--muted);margin-top:18px;">
-      Toggle back to ISEE above to keep practicing.
-    </div>
+  <!-- PSAT "content in progress" banner — shown only when testType is
+       psat AND every PSAT section pool is still empty. Disappears the
+       moment the first question bank fills, since the section grid then
+       carries the same "X questions" signal on the cards themselves. -->
+  <div class="psat-info-banner hidden" id="psatInfoBanner">
+    <span class="pib-emoji">🛠️</span>
+    <span>PSAT 8/9 content is still being built. Section cards unlock as their banks fill.</span>
   </div>
 
-  <!-- Everything below is ISEE-specific UI. Hidden when PSAT is active. -->
-  <div id="iseeHomeSection">
-  <div class="grade-toggle">
+  <!-- Grade toggle: visible only when the current testType has more than one
+       grade (ISEE: lower/bridge/middle). PSAT has a single grade so this
+       container hides; the rest of the home stays shared between types. -->
+  <div class="grade-toggle" id="gradeToggle">
     <button class="grade-pill" id="gradeLower">
       <div class="label">Lower Level</div>
       <div class="sub">Grades 4 → 5</div>
@@ -1775,7 +1760,6 @@
       <button id="resetProgress">Reset this level</button>
     </div>
   </div>
-  </div><!-- end #iseeHomeSection -->
 </div>
 
 <!-- ─── QUIZ VIEW ─── -->
@@ -2286,11 +2270,112 @@ const SECTIONS = [
 // ════════════════════════════════════════════════════════════════════════════
 // PSAT DATA — structure ready, content pending
 // ════════════════════════════════════════════════════════════════════════════
-// Empty question pools that PSAT content files will populate when they ship.
-// Declared up here (rather than in a /data/psat-*.js file) so the structural
-// stub is fully self-contained for now — once content lands they move out.
-const PSAT_READING_WRITING = [];   // mixed: passages, vocab-in-context, writing edits
-const PSAT_MATH = [];              // mixed: algebra MC, eventually grid-in + charts
+// PSAT question pools. Inline for now (small smoke-test batch); will move
+// to data/psat-*.js files once a real content pass starts. Each section
+// needs at least 1 entry for its home-grid card to become clickable.
+
+// type: "psatRW" entries — passage + question + 4 choices. Subtype hints at
+// the question style (comprehension / vocab / writingEdit). choices are NOT
+// shuffled (writing-edit questions traditionally put "NO CHANGE" first;
+// preserving order avoids breaking that convention).
+const PSAT_READING_WRITING = [
+  {
+    type: "psatRW", subtype: "comprehension",
+    passage: "Lichens are slow-growing organisms formed by a partnership between a fungus and an alga. The fungus provides structure and traps moisture; the alga produces sugar through photosynthesis. Neither could survive alone in the harsh climates where lichens often thrive — bare rock, arctic tundra, tree bark — but together they endure for decades.",
+    question: "The passage suggests that lichens are notable primarily because they:",
+    choices: [
+      "grow more quickly than other organisms",
+      "consist of two organisms that depend on each other",
+      "produce food without sunlight",
+      "are found exclusively in arctic regions",
+    ],
+    correct: 1,
+    explanation: "The passage emphasizes the fungus-alga partnership ('neither could survive alone… but together they endure'). Choice B captures this mutualism.",
+  },
+  {
+    type: "psatRW", subtype: "vocab",
+    passage: "The novelist's prose was unfailingly austere — short sentences, plain words, almost no adjectives. Critics admired its discipline; some readers found it cold.",
+    question: "As used in the passage, 'austere' most nearly means:",
+    choices: ["lavish", "spare", "confusing", "joyful"],
+    correct: 1,
+    explanation: "The passage describes the prose as having 'short sentences, plain words, almost no adjectives' — i.e. stripped down. 'Spare' captures that meaning. 'Lavish' is the opposite; 'confusing' and 'joyful' don't fit.",
+  },
+  {
+    type: "psatRW", subtype: "writingEdit",
+    passage: "The committee, <u>which they had only just been formed</u>, decided to delay any votes until its members had time to read the proposal.",
+    question: "Which choice provides the most grammatically correct and concise version of the underlined text?",
+    choices: [
+      "NO CHANGE",
+      "which had only just been formed",
+      "which they were forming only now",
+      "having been formed only just now",
+    ],
+    correct: 1,
+    explanation: "The original mixes a relative pronoun ('which') with a redundant subject ('they'). 'Which had only just been formed' is the cleanest fix — relative clause with no double subject.",
+  },
+  {
+    type: "psatRW", subtype: "comprehension",
+    passage: "Early radio broadcasting in the 1920s relied heavily on improvisation. Performers often had no script; engineers tinkered with new equipment during broadcasts; even the music was sometimes chosen minutes before airing. What seems chaotic in hindsight was, at the time, a feature — listeners tuned in not knowing what would happen, and that uncertainty was part of the appeal.",
+    question: "The author's main point is that early radio broadcasting:",
+    choices: [
+      "was technically inferior to modern broadcasting",
+      "was disorganized in ways that audiences found exciting",
+      "depended on a small number of skilled performers",
+      "was eventually replaced by scripted television",
+    ],
+    correct: 1,
+    explanation: "The passage frames the chaos positively — 'a feature… uncertainty was part of the appeal'. Choice B captures the author's actual claim. The other choices are not supported by the text.",
+  },
+  {
+    type: "psatRW", subtype: "vocab",
+    passage: "After weeks of debate, the city council passed a tepid resolution that neither raised funds for the project nor blocked it outright.",
+    question: "As used in the passage, 'tepid' most nearly means:",
+    choices: ["enthusiastic", "lukewarm", "secret", "controversial"],
+    correct: 1,
+    explanation: "Tepid literally means slightly warm — figuratively, lacking enthusiasm or commitment. The resolution 'neither raised funds nor blocked' the project, so it was half-hearted. 'Lukewarm' captures that.",
+  },
+];
+
+// type: "psatMath" entries — same shape as ISEE math (correct + wrong[]).
+// Multiple choice only for V1; grid-in support lands when we add a numeric
+// answer renderer.
+const PSAT_MATH = [
+  {
+    type: "psatMath",
+    question: "If 3x + 7 = 22, what is the value of x?",
+    correct: "5",
+    wrong: ["3", "7", "15"],
+    explanation: "Subtract 7 from both sides: 3x = 15. Then x = 5.",
+  },
+  {
+    type: "psatMath",
+    question: "A rectangle has length 12 and width 5. What is the length of its diagonal?",
+    correct: "13",
+    wrong: ["17", "7", "60"],
+    explanation: "By the Pythagorean theorem, diagonal² = 12² + 5² = 144 + 25 = 169. So diagonal = 13.",
+  },
+  {
+    type: "psatMath",
+    question: "If f(x) = 2x² − 3x + 1, what is f(4)?",
+    correct: "21",
+    wrong: ["17", "25", "32"],
+    explanation: "f(4) = 2(16) − 3(4) + 1 = 32 − 12 + 1 = 21.",
+  },
+  {
+    type: "psatMath",
+    question: "A jar holds 15 marbles — 6 red, 4 blue, 5 green. If one marble is drawn at random, what is the probability it is NOT red?",
+    correct: "3/5",
+    wrong: ["2/5", "1/3", "9/10"],
+    explanation: "Non-red marbles: 4 blue + 5 green = 9. Total = 15. P(not red) = 9/15 = 3/5.",
+  },
+  {
+    type: "psatMath",
+    question: "The price of a shirt is reduced by 20%, then reduced by an additional 25% off the sale price. What is the total percentage discount from the original price?",
+    correct: "40%",
+    wrong: ["45%", "50%", "35%"],
+    explanation: "After 20% off, you pay 80% of original. After 25% off that, you pay 75% of 80% = 60% of original. So 40% off total.",
+  },
+];
 
 // PSAT section list. Modeled flat — Reading & Writing is a single combined
 // section like the real digital PSAT, and Math is its own. No essay, no
@@ -2407,24 +2492,42 @@ function entryId(gradeLevel, sectionKey, idx) {
 }
 
 function buildRegistries() {
-  for (const gradeKey of Object.keys(GRADES)) {
-    const g = GRADES[gradeKey];
-    for (const section of SECTIONS) {
-      if (section.isEssay) continue;
-      // Combined sections share their underlying sections' entries; those
-      // are already in the registry under verbal_synonyms / verbal_completion.
-      if (section.isCombined) continue;
-      const pool = section.isReading ? g.pools.reading.questions : g.pools[section.poolKey];
-      pool.forEach((entry, idx) => {
-        const id = entryId(gradeKey, section.key, idx);
-        QUESTION_REGISTRY[id] = { entry, sectionKey: section.key, gradeLevel: gradeKey };
-      });
-    }
-    g.pools.reading.passages.forEach(p => { PASSAGE_LOOKUP[p.id] = p; });
-    // Build the dictionary: every synonym headword and its meaning go in.
-    for (const w of g.pools.words) {
-      if (w.word && w.meaning && !DICTIONARY[w.word.toLowerCase()]) {
-        DICTIONARY[w.word.toLowerCase()] = w.meaning;
+  // Walk every testType so PSAT entries also register. Registry keys are
+  // `${gradeKey}-${sectionKey}-${idx}` which are naturally unique across
+  // testTypes since grade names don't collide (ISEE uses lower/bridge/middle;
+  // PSAT uses psat89 etc.). We also stash testType on each entry so reverse
+  // lookups (e.g. routing a mistakes-pool key to its origin) can find it.
+  for (const testType of Object.keys(TESTS)) {
+    const test = TESTS[testType];
+    const grades = test.grades || {};
+    const sections = test.sections || [];
+    for (const gradeKey of Object.keys(grades)) {
+      const g = grades[gradeKey];
+      for (const section of sections) {
+        if (section.isEssay) continue;
+        // Combined sections share their underlying entries; those are
+        // already in the registry under their primary sectionKey.
+        if (section.isCombined) continue;
+        const pool = section.isReading
+          ? (g.pools.reading?.questions || [])
+          : (g.pools[section.poolKey] || []);
+        pool.forEach((entry, idx) => {
+          const id = entryId(gradeKey, section.key, idx);
+          QUESTION_REGISTRY[id] = { entry, sectionKey: section.key, gradeLevel: gradeKey, testType };
+        });
+      }
+      // ISEE-specific extras: reading passages + synonym dictionary. PSAT
+      // doesn't have separate passage objects (passages are inline on the
+      // entry) or a synonym dictionary (no isolated synonym questions).
+      if (g.pools.reading?.passages) {
+        g.pools.reading.passages.forEach(p => { PASSAGE_LOOKUP[p.id] = p; });
+      }
+      if (g.pools.words) {
+        for (const w of g.pools.words) {
+          if (w.word && w.meaning && !DICTIONARY[w.word.toLowerCase()]) {
+            DICTIONARY[w.word.toLowerCase()] = w.meaning;
+          }
+        }
       }
     }
   }
@@ -2502,6 +2605,9 @@ const state = {
   // Top-level test type — wraps grade levels + lifetimes. "isee" is the
   // original; "psat" is stubbed (no content). Toggled from the home view.
   testType: "isee",
+  // Remembers the last-selected grade for each testType so toggling
+  // between ISEE and PSAT restores the kid's spot within each.
+  lastGradeByType: {},
   // Persistent — separate per testType + grade level. Old saves had a flat
   // {lower, bridge, middle} shape; loadProgress migrates them under isee.
   lifetimes: {
@@ -2762,6 +2868,9 @@ function loadProgress() {
     }
     // testType is new — accept saved value if it matches a known test type.
     if (data.testType && TESTS[data.testType]) state.testType = data.testType;
+    if (data.lastGradeByType && typeof data.lastGradeByType === "object") {
+      state.lastGradeByType = data.lastGradeByType;
+    }
     if (data.lifetimes) {
       // Migration: pre-testType saves had a flat {lower, bridge, middle}
       // shape with grades at the top level. New shape nests under testType.
@@ -2811,12 +2920,21 @@ function saveProgress() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       gradeLevel: state.gradeLevel,
       testType: state.testType,
+      lastGradeByType: state.lastGradeByType,
       testVolume: state.testVolume,
       monetized: state.monetized,
       payoutConfig: state.payoutConfig,
       lifetimes: state.lifetimes,
     }));
   } catch (_) {}
+  // After everything is loaded, ensure state.gradeLevel is valid for the
+  // current testType. If a save has testType=psat with gradeLevel=middle
+  // (cross-type leftover), normalize to the testType's defaultGrade so
+  // currentGrade() / L() / testConfigFor() don't return undefined.
+  const grades = currentGrades();
+  if (!grades[state.gradeLevel]) {
+    state.gradeLevel = TESTS[state.testType].defaultGrade || Object.keys(grades)[0];
+  }
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -2830,8 +2948,51 @@ const QC_CHOICES = [
 ];
 const QC_ANSWER_MAP = { a: 0, b: 1, equal: 2, cant: 3 };
 
+// Prompt-text helpers for PSAT Reading & Writing subtypes — keeps the
+// makeQuestion factory readable while letting each subtype show its own
+// instruction line.
+const PSAT_RW_PROMPTS = {
+  comprehension: "Read the passage. Then choose the answer that best fits.",
+  vocab:         "Read the passage. Then choose the meaning closest to the underlined word.",
+  writingEdit:   "Read the passage. Then choose the best version of the underlined text.",
+};
+
 function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   const id = entryId(gradeLevel, sectionKey, idx);
+
+  // PSAT Math — same shape as ISEE math (multiple choice with correct + wrong).
+  // Different prompt header. No separate grid-in support yet.
+  if (entry.type === "psatMath") {
+    const choices = shuffle([entry.correct, ...entry.wrong]);
+    return {
+      id, sectionKey, entry,
+      promptHtml: `<div class="prompt">Multiple-choice math. Calculator allowed.</div><div class="math-q">${fmtFractions(entry.question)}</div>`,
+      choices,
+      answerIdx: choices.indexOf(entry.correct),
+      feedbackHtml: `<b>Explanation:</b> ${fmtFractions(entry.explanation)}`,
+      displayLabel: entry.question,
+    };
+  }
+
+  // PSAT Reading & Writing — passage inline above the question. Subtype
+  // changes only the prompt-line instruction. choices is the literal
+  // ordered array straight from the entry (we don't shuffle since some
+  // writing-edit questions have meaningful order, e.g. "NO CHANGE" first).
+  if (entry.type === "psatRW") {
+    const sub = entry.subtype || "comprehension";
+    const promptLine = PSAT_RW_PROMPTS[sub] || PSAT_RW_PROMPTS.comprehension;
+    return {
+      id, sectionKey, entry,
+      promptHtml: `
+        <div class="prompt">${promptLine}</div>
+        <div class="psat-passage">${escapeHtml(entry.passage)}</div>
+        <div class="question-text">${escapeHtml(entry.question)}</div>`,
+      choices: entry.choices.slice(),
+      answerIdx: entry.correct,
+      feedbackHtml: `<b>Explanation:</b> ${fmtFractions(entry.explanation)}`,
+      displayLabel: entry.question,
+    };
+  }
 
   if (entry.type === "quantComparison") {
     return {
@@ -3098,9 +3259,9 @@ function showView(name) {
 // HOME VIEW
 // ════════════════════════════════════════════════════════════════════════════
 function renderHome() {
-  // Test type pills + show/hide ISEE vs PSAT sub-views. In PSAT mode the
-  // rest of this function still runs (cheap, harmless) but its outputs
-  // sit in #iseeHomeSection which is hidden.
+  // Test type pills + grade-toggle visibility + PSAT info banner. Most of
+  // the home UI below is shared between ISEE and PSAT now; this just toggles
+  // the testType-specific bits.
   applyTestTypeToHome();
 
   // Grade pills
@@ -3161,6 +3322,10 @@ function renderMonetizedToggle() {
 function renderSectionsGrid() {
   const grid = $("sectionsGrid");
   grid.innerHTML = "";
+  // Pull the section list from the current testType so PSAT mode shows
+  // PSAT sections (R&W + Math) rather than ISEE sections. Combined-section
+  // hiding logic only applies to ISEE — PSAT has no combined sections.
+  const sectionsForType = (TESTS[state.testType]?.sections) || SECTIONS;
   // In test mode we only show the combined Verbal Reasoning card (matches
   // the real ISEE format — synonyms + sentence completion mixed in one
   // timed block). In practice mode we show all three so the kid can drill
@@ -3168,7 +3333,7 @@ function renderSectionsGrid() {
   const HIDDEN_FROM_GRID = state.mode === "test"
     ? new Set(["verbal_synonyms", "verbal_completion"])
     : new Set(["verbal_combined"]);
-  for (const section of SECTIONS) {
+  for (const section of sectionsForType) {
     if (HIDDEN_FROM_GRID.has(section.key)) continue;
     const card = document.createElement("button");
     card.className = "section-card";
@@ -3201,8 +3366,10 @@ function renderSectionsGrid() {
     if (available) card.addEventListener("click", () => startSection(section));
     grid.appendChild(card);
   }
-  // Mock Test Day — sparkly card appended at the end of the grid in Test mode
-  if (state.mode === "test") {
+  // Mock Test Day — sparkly card appended at the end of the grid in Test
+  // mode. ISEE-only for now; PSAT MTD support lands later (different chain,
+  // different timing, different reward formula).
+  if (state.mode === "test" && state.testType === "isee") {
     const mins = batteryTotalMinutes();
     const totalQ = BATTERY_SECTION_ORDER
       .filter(k => k !== "break" && k !== "essay")
@@ -3993,68 +4160,58 @@ function startSection(section) {
 }
 
 function setGrade(grade) {
-  if (!GRADES[grade] || grade === state.gradeLevel) return;
+  // Validate against the current testType's grades (not the ISEE-only
+  // global GRADES). PSAT's setGrade calls will route through here too
+  // once it has more than one grade.
+  if (!currentGrades()[grade] || grade === state.gradeLevel) return;
   state.gradeLevel = grade;
   saveProgress();
   renderHome();
 }
 
-// Top-level test type toggle (ISEE vs PSAT). When switching to PSAT we leave
-// state.gradeLevel pointing to whatever ISEE grade was last selected — that
-// way toggling back to ISEE restores the kid's spot. PSAT is content-empty
-// for now, so the home view renders a placeholder panel.
+// Top-level test type toggle (ISEE vs PSAT). Each testType keeps its own
+// last-selected grade tracked in lastGradeByType so toggling back restores
+// the kid's spot inside that test's grade structure. On switch, we point
+// state.gradeLevel at the right entry for the new test type.
 function setTestType(type) {
   if (!TESTS[type] || type === state.testType) return;
+  // Remember the current testType's grade before switching away.
+  state.lastGradeByType = state.lastGradeByType || {};
+  state.lastGradeByType[state.testType] = state.gradeLevel;
   state.testType = type;
+  // Restore the new testType's last grade, or fall back to its defaultGrade.
+  const remembered = state.lastGradeByType[type];
+  const grades = currentGrades();
+  if (remembered && grades[remembered]) state.gradeLevel = remembered;
+  else state.gradeLevel = TESTS[type].defaultGrade || Object.keys(grades)[0];
   saveProgress();
   renderHome();
 }
 
-// Reflects state.testType into the home view: pills' .active class + show /
-// hide the PSAT stub vs the ISEE section. Plus header chips that don't make
-// sense in PSAT mode (banked + monetized indicate ISEE payouts).
+// Reflects state.testType into the home view. Most of the home UI is now
+// shared between ISEE and PSAT — only the grade toggle (ISEE has 3 grades,
+// PSAT has 1) and the "content in progress" info banner are testType-aware.
+// Header chips (Monetized, Banked) hide in PSAT mode since they reflect
+// ISEE-scoped accounting; PSAT has its own future accounting.
 function applyTestTypeToHome() {
   const isPsat = state.testType === "psat";
   $("testTypeIsee").classList.toggle("active", !isPsat);
   $("testTypePsat").classList.toggle("active",  isPsat);
-  $("psatStubPanel").classList.toggle("hidden", !isPsat);
-  $("iseeHomeSection").classList.toggle("hidden", isPsat);
-  // Header chips: hide the banked + monetized badges in PSAT mode since
-  // they reflect ISEE state and would be misleading.
+  // Grade toggle: hide when current testType has only one grade. Lets the
+  // toggle auto-hide if we ever add or remove grades from a test type.
+  const gradeKeys = Object.keys(currentGrades());
+  $("gradeToggle").classList.toggle("hidden", gradeKeys.length <= 1);
+  // PSAT info banner: only when PSAT is active AND every PSAT section pool
+  // is still empty. Once content lands the cards themselves carry the
+  // readiness signal.
+  const psatPoolsEmpty = isPsat && TESTS.psat.sections.every(s => {
+    const grade = TESTS.psat.grades[state.gradeLevel];
+    return !grade || (grade.pools[s.poolKey] || []).length === 0;
+  });
+  $("psatInfoBanner").classList.toggle("hidden", !psatPoolsEmpty);
+  // Header chips
   $("monetizedHeaderBadge").classList.toggle("hidden", isPsat || !state.monetized);
   $("bankedHeaderBadge").classList.toggle("hidden", isPsat);
-  // Populate PSAT preview rows when PSAT is active. Reads live from the
-  // configured grade's pools so the counts update automatically as content
-  // banks fill up — no UI changes needed when entries are appended.
-  if (isPsat) renderPsatPreviewList();
-}
-
-// Renders the planned-sections list inside the PSAT stub. Each row shows
-// the section, its full-test target, and a live "X ready / Y planned" pill.
-// Once a section's pool reaches its full-test target, the pill turns green.
-function renderPsatPreviewList() {
-  const host = $("psatPreviewList");
-  if (!host) return;
-  const grade = TESTS.psat.grades[TESTS.psat.defaultGrade];
-  if (!grade) { host.innerHTML = ""; return; }
-  host.innerHTML = TESTS.psat.sections.map(section => {
-    const pool = grade.pools[section.poolKey] || [];
-    const fullCount = (grade.testsFull[section.key] || {}).questionCount || 0;
-    const ready = pool.length;
-    const target = fullCount;
-    const isReady = ready >= target && target > 0;
-    const countText = target > 0 ? `${ready} / ${target} ready` : `${ready} ready`;
-    return `
-      <div class="psat-preview-row">
-        <div class="pv-emoji">${sectionEmoji(section.key)}</div>
-        <div class="pv-main">
-          <div class="pv-name">${escapeHtml(section.name)}</div>
-          <div class="pv-desc">${escapeHtml(section.description)}</div>
-        </div>
-        <div class="pv-count ${isReady ? "ready" : ""}">${countText}</div>
-      </div>
-    `;
-  }).join("");
 }
 
 // ════════════════════════════════════════════════════════════════════════════
