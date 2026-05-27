@@ -5982,11 +5982,16 @@ function renderMistakesList() {
       } else if (entry.type === "psatMathGridIn") {
         answerWord = `<strong>${escapeHtml(String(entry.correct))}</strong>`;
         if (entry.explanation) explanationHtml = fmtFractions(entry.explanation);
-      } else if (entry.type === "psatRW") {
-        const correct = entry.choices && entry.choices[entry.correct];
-        answerWord = `<strong>${escapeHtml(String(correct || ""))}</strong>`;
+      } else if (Array.isArray(entry.choices) && typeof entry.correct === "number") {
+        // MCQ-by-INDEX entries — psatRW, ISEE reading, and any future type
+        // where `correct` is an int into `choices[]`. The mistake here used
+        // to be falling through to the string-correct fallback below, which
+        // rendered "Correct answer: 3" (the index) instead of the answer.
+        const correctChoice = entry.choices[entry.correct];
+        answerWord = `<strong>${escapeHtml(String(correctChoice || ""))}</strong>`;
         if (entry.explanation) explanationHtml = entry.explanation;
       } else if (entry.correct !== undefined) {
+        // String-correct entries (math, psatMath, sentence completion, synonym).
         answerWord = `<strong>${fmtFractions(escapeHtml(String(entry.correct)))}</strong>`;
         if (entry.explanation) explanationHtml = fmtFractions(entry.explanation);
       }
