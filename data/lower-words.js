@@ -106,7 +106,7 @@ const LOWER_WORDS = [
   { word: "dart",     correct: "dash",      wrong: ["crawl", "plod", "linger"],         meaning: "to move suddenly and quickly" },
   { word: "drench",   correct: "soak",      wrong: ["dry", "dust", "warm"],             meaning: "to make something completely wet" },
   { word: "feeble",   correct: "weak",      wrong: ["robust", "tough", "solid"],        meaning: "lacking strength or energy" },
-  { word: "glare",    correct: "scowl",     wrong: ["wink", "beam", "blink"],           meaning: "to stare in an angry way" },
+  { word: "glare",    correct: "scowl",     wrong: ["wink", "grin", "blink"],           meaning: "to stare in an angry way" },
   { word: "glum",     correct: "sad",       wrong: ["merry", "perky", "giddy"],         meaning: "looking unhappy and down" },
   { word: "gobble",   correct: "devour",    wrong: ["nibble", "sip", "taste"],          meaning: "to eat very quickly and greedily" },
   { word: "grumble",  correct: "complain",  wrong: ["cheer", "thank", "praise"],        meaning: "to mutter in an unhappy way" },
