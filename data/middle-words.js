@@ -480,7 +480,7 @@ const WORDS = [
   { word: "wily", correct: "cunning", wrong: ["honest","naive","simple"], meaning: "skilled at tricking others" },
   { word: "winsome", correct: "charming", wrong: ["repulsive","grim","cold"], meaning: "pleasing and attractive" },
   { word: "zest", correct: "enthusiasm", wrong: ["apathy","gloom","boredom"], meaning: "lively eagerness for something" },
-  { word: "capital", correct: "city", wrong: ["building","money","crime"], meaning: "the main city of a country or state" },
+  { word: "capital", correct: "city", wrong: ["building","village","crime"], meaning: "the main city of a country or state" },
   { word: "capitol", correct: "statehouse", wrong: ["city","funds","crown"], meaning: "the building where lawmakers meet" },
   { word: "council", correct: "assembly", wrong: ["advice","lawyer","guidance"], meaning: "a group of people who meet to make decisions" },
   { word: "counsel", correct: "advice", wrong: ["assembly","group","meeting"], meaning: "guidance given by someone wiser" },
