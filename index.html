@@ -1682,6 +1682,57 @@
   .stats-row .right .pct { color: var(--good); font-weight: 700; }
   .stats-row .right .pct.dim { color: var(--muted); }
   .stats-row.muted { opacity: 0.55; }
+  /* ─── Update-available banner ─── */
+  .update-banner {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 11000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, rgba(96,165,250,0.95), rgba(168,85,247,0.95));
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.10) inset;
+    font-size: 14px;
+    max-width: calc(100vw - 24px);
+    animation: update-banner-pop 0.28s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes update-banner-pop {
+    0%   { transform: translateY(-12px); opacity: 0; }
+    100% { transform: translateY(0);     opacity: 1; }
+  }
+  .update-banner-emoji { font-size: 20px; line-height: 1; }
+  .update-banner-text { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+  .update-banner-text strong { font-weight: 800; }
+  .update-banner-sub { font-size: 11px; opacity: 0.85; font-variant-numeric: tabular-nums; }
+  .update-banner button {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 0;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  #updateBannerReload {
+    background: rgba(255,255,255,0.95);
+    color: #1e293b;
+  }
+  #updateBannerReload:hover { background: white; }
+  #updateBannerDismiss {
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    padding: 4px 8px;
+    font-size: 18px;
+    line-height: 1;
+  }
+  #updateBannerDismiss:hover { color: white; }
+  @media (max-width: 480px) {
+    .update-banner { top: 8px; right: 8px; left: 8px; }
+  }
   /* ─── Modal (battery confirm) ─── */
   .modal-backdrop {
     position: fixed;
@@ -2164,6 +2215,20 @@
 </style>
 </head>
 <body>
+
+<!-- Update-available banner — shown when checkForUpdates detects that the
+     live index.html has a different APP_VERSION than the one bootstrapped.
+     Floating top-right; dismissible per session so a kid mid-test isn't
+     nagged after they've already seen it once. -->
+<div class="update-banner hidden" id="updateBanner" role="status" aria-live="polite">
+  <span class="update-banner-emoji">✨</span>
+  <div class="update-banner-text">
+    <strong>New version available</strong>
+    <span class="update-banner-sub" id="updateBannerSub">v— → v—</span>
+  </div>
+  <button id="updateBannerReload" class="primary">Reload</button>
+  <button id="updateBannerDismiss" aria-label="Dismiss">×</button>
+</div>
 
 <header class="app">
   <h1>Custom Test Practicer 9000<span id="monetizedHeaderBadge" class="hidden">💰 Monetized</span><span id="bankedHeaderBadge" class="hidden">💰 $0.00 banked</span></h1>
@@ -2863,7 +2928,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.14.1";
+const APP_VERSION = "3.15";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -7155,6 +7220,52 @@ loadProgress();
 // Build-stamp footer — populated once at boot from the version constants.
 const _fEl = document.getElementById("appFooter");
 if (_fEl) _fEl.textContent = `Custom Test Practicer 9000 · v${APP_VERSION} · ${APP_VERSION_DATE}`;
+
+// ─── Update-available detection ─────────────────────────────────────────────
+// Polls index.html periodically + on tab visibility change. If the live
+// APP_VERSION differs from the one this page bootstrapped with, show a
+// banner letting the user reload. Avoids a build step: re-uses the
+// APP_VERSION constant the file already carries.
+//
+// Cache-busted via query string + cache: "no-store" so GitHub Pages /
+// CDN doesn't serve a stale copy. Network failures are silently ignored
+// (will try again on next interval).
+const UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000;  // 5 min
+let _updateBannerDismissed = false;
+let _updateBannerShown = false;
+async function checkForUpdates() {
+  if (_updateBannerDismissed || _updateBannerShown) return;
+  try {
+    const res = await fetch(`index.html?v=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) return;
+    const text = await res.text();
+    const m = text.match(/const APP_VERSION = "([^"]+)"/);
+    if (!m) return;
+    const liveVersion = m[1];
+    if (liveVersion !== APP_VERSION) {
+      const sub = document.getElementById("updateBannerSub");
+      if (sub) sub.textContent = `v${APP_VERSION} → v${liveVersion}`;
+      const banner = document.getElementById("updateBanner");
+      if (banner) banner.classList.remove("hidden");
+      _updateBannerShown = true;
+    }
+  } catch (_) { /* network error — no-op */ }
+}
+setInterval(checkForUpdates, UPDATE_CHECK_INTERVAL_MS);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") checkForUpdates();
+});
+// pageshow fires on back/forward cache restore too — catches the case
+// where the user navigates back to this tab after hours.
+window.addEventListener("pageshow", checkForUpdates);
+const _updReload = document.getElementById("updateBannerReload");
+if (_updReload) _updReload.addEventListener("click", () => window.location.reload());
+const _updDismiss = document.getElementById("updateBannerDismiss");
+if (_updDismiss) _updDismiss.addEventListener("click", () => {
+  _updateBannerDismissed = true;
+  const banner = document.getElementById("updateBanner");
+  if (banner) banner.classList.add("hidden");
+});
 // Honor an initial deep-link in the URL hash (e.g. someone bookmarked /stats).
 const initialPath = window.location.hash.replace(/^#/, "") || "/";
 const initialView = PATH_TO_VIEW[initialPath] || "home";
