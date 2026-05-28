@@ -350,6 +350,34 @@
     box-shadow: 0 2px 6px rgba(0,0,0,.2);
   }
   .mode-toggle .mode-label { line-height: 1; }
+  /* Test sub-tabs (Half / Full) — small "Half"/"Full" sublabel below the
+     "Test" word so the two buttons share the visual "Test" cue but each
+     is independently tappable. The two test buttons sit flush against
+     each other (no gap from the inter-button spacing) so they read as a
+     single segmented control. */
+  .mode-toggle .mode-test-half { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .mode-toggle .mode-test-full { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+  .mode-toggle .mode-test-half + .mode-test-full {
+    border-left: 1px solid rgba(255,255,255,.08);
+    margin-left: -1px;
+  }
+  .mode-toggle .mode-sublabel {
+    font-size: 11px;
+    font-weight: 600;
+    opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    margin-left: 2px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,.05);
+  }
+  .mode-toggle button.active .mode-sublabel {
+    opacity: 1;
+    background: rgba(96,165,250,.18);
+    color: var(--accent);
+  }
   .mode-toggle .info-icon {
     background: transparent;
     border: 0;
@@ -456,44 +484,8 @@
   }
   .review-breakdown { display: flex; flex-direction: column; gap: 8px; }
   /* ─── Volume toggle (Half / Full test length) ─── */
-  .volume-toggle {
-    display: flex;
-    background: var(--panel);
-    border-radius: 12px;
-    padding: 4px;
-    margin-top: -10px;     /* tuck right under mode-toggle */
-    margin-bottom: 22px;
-    border: 1px solid rgba(255,255,255,.06);
-    gap: 0;
-  }
-  .volume-toggle button {
-    flex: 1;
-    background: transparent;
-    color: var(--muted);
-    border: none;
-    padding: 10px 12px;
-    border-radius: 9px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background .15s, color .15s;
-    font-family: inherit;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    line-height: 1.2;
-  }
-  .volume-toggle button .sub {
-    font-size: 11px;
-    font-weight: 500;
-    opacity: 0.7;
-  }
-  .volume-toggle button.active {
-    background: var(--panel-2);
-    color: var(--text);
-    box-shadow: 0 2px 6px rgba(0,0,0,.2);
-  }
+  /* .volume-toggle removed — its Half/Full choice now lives inside the
+     Test sub-tabs of .mode-toggle above. */
   .sections {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -2225,27 +2217,31 @@
     </button>
   </div>
 
+  <!-- Mode row. Test mode splits into two sub-tabs (Half / Full) so the
+       volume choice happens inline rather than as a separate toggle row
+       below. Mode is in-memory only (not persisted) but state.testVolume
+       IS persisted, so the test sub-buttons call saveProgress on click. -->
   <div class="mode-toggle" role="tablist">
-    <button id="modePractice" class="active" role="tab">
+    <button id="modePractice" class="active mode-btn" role="tab">
       <span class="mode-label">Practice</span>
       <span class="info-icon" role="button" tabindex="0" data-mode="practice" aria-label="What's Practice mode?">ⓘ</span>
     </button>
-    <button id="modeTest" role="tab">
+    <button id="modeTestHalf" class="mode-btn mode-test-half" role="tab" title="Timed test, half length (~10 min sections)">
       <span class="mode-label">Test</span>
+      <span class="mode-sublabel">Half</span>
+    </button>
+    <button id="modeTestFull" class="mode-btn mode-test-full" role="tab" title="Timed test, full real-ISEE length">
+      <span class="mode-label">Test</span>
+      <span class="mode-sublabel">Full</span>
       <span class="info-icon" role="button" tabindex="0" data-mode="test" aria-label="What's Test mode?">ⓘ</span>
     </button>
-    <button id="modeReview" role="tab">
+    <button id="modeReview" class="mode-btn" role="tab">
       <span class="mode-label">Review</span>
       <span class="mode-badge hidden" id="reviewBadge">0</span>
       <span class="info-icon" role="button" tabindex="0" data-mode="review" aria-label="What's Review mode?">ⓘ</span>
     </button>
   </div>
   <div class="mode-popover hidden" id="modePopover"></div>
-
-  <div class="volume-toggle hidden" id="volumeToggle" role="tablist">
-    <button id="volumeHalf" class="active" role="tab">Half length<span class="sub">~10 min sections</span></button>
-    <button id="volumeFull" role="tab">Full length<span class="sub">real ISEE timing</span></button>
-  </div>
 
   <!-- Review-mode panel: replaces the section grid when Review is active -->
   <div class="review-mode-panel hidden" id="reviewModePanel">
@@ -4233,15 +4229,13 @@ function renderHome() {
   $("gradeBridge").classList.toggle("active", state.gradeLevel === "bridge");
   $("gradeMiddle").classList.toggle("active", state.gradeLevel === "middle");
 
-  // Mode tabs — three modes now: practice, test, review
+  // Mode tabs. Test mode is split into two sub-tabs (Half / Full) — each
+  // is highlighted when its (mode + volume) combo matches state. Practice
+  // and Review have no volume variants.
   $("modePractice").classList.toggle("active", state.mode === "practice");
-  $("modeTest").classList.toggle("active", state.mode === "test");
+  $("modeTestHalf").classList.toggle("active", state.mode === "test" && state.testVolume !== "full");
+  $("modeTestFull").classList.toggle("active", state.mode === "test" && state.testVolume === "full");
   $("modeReview").classList.toggle("active", state.mode === "review");
-
-  // Volume toggle — only meaningful in Test Mode
-  $("volumeToggle").classList.toggle("hidden", state.mode !== "test");
-  $("volumeHalf").classList.toggle("active", state.testVolume !== "full");
-  $("volumeFull").classList.toggle("active", state.testVolume === "full");
 
   // Mistakes count → badge on the Review tab
   const stats = mistakeStats();
@@ -6893,16 +6887,21 @@ $("modePractice").addEventListener("click", (e) => {
   if (e.target.classList.contains("info-icon")) return;  // info icon handled separately
   state.mode = "practice"; renderHome();
 });
-$("modeTest").addEventListener("click", (e) => {
+// Test sub-tabs — each sets BOTH mode and volume so a single tap moves
+// the kid into the right (mode, volume) combo. saveProgress persists the
+// volume choice (state.mode is in-memory only, but state.testVolume isn't).
+$("modeTestHalf").addEventListener("click", (e) => {
   if (e.target.classList.contains("info-icon")) return;
-  state.mode = "test"; renderHome();
+  state.mode = "test"; state.testVolume = "half"; saveProgress(); renderHome();
+});
+$("modeTestFull").addEventListener("click", (e) => {
+  if (e.target.classList.contains("info-icon")) return;
+  state.mode = "test"; state.testVolume = "full"; saveProgress(); renderHome();
 });
 $("modeReview").addEventListener("click", (e) => {
   if (e.target.classList.contains("info-icon")) return;
   state.mode = "review"; renderHome();
 });
-$("volumeHalf").addEventListener("click", () => { state.testVolume = "half"; saveProgress(); renderHome(); });
-$("volumeFull").addEventListener("click", () => { state.testVolume = "full"; saveProgress(); renderHome(); });
 
 // Tap an (i) icon on a mode tab → toggle a small popover with that mode's
 // description. Tap elsewhere to dismiss.
