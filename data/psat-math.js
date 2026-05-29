@@ -24,7 +24,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If 3x + 7 = 22, what is the value of x?",
     correct: "5",
-    wrong: ["3", "7", "15"],
+    wrong: ["29/3", "15", "−5"],
     explanation: "Subtract 7 from both sides: 3x = 15. Then x = 5.",
   },
   {
@@ -32,7 +32,7 @@ const PSAT_MATH = [
     topic: "pythagorean",
     question: "A rectangle has length 12 and width 5. What is the length of its diagonal?",
     correct: "13",
-    wrong: ["17", "7", "60"],
+    wrong: ["17", "7", "169"],
     explanation: "By the Pythagorean theorem, diagonal² = 12² + 5² = 144 + 25 = 169. So diagonal = 13.",
   },
   {
@@ -40,7 +40,7 @@ const PSAT_MATH = [
     topic: "function_notation",
     question: "If f(x) = 2x² − 3x + 1, what is f(4)?",
     correct: "21",
-    wrong: ["17", "25", "32"],
+    wrong: ["53", "45", "−3"],
     explanation: "f(4) = 2(16) − 3(4) + 1 = 32 − 12 + 1 = 21.",
   },
   {
@@ -67,7 +67,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If 4x − 9 = 23, what is the value of x?",
     correct: "8",
-    wrong: ["7", "9", "14"],
+    wrong: ["3.5", "32", "14"],
     explanation: "Add 9 to both sides: 4x = 32. Divide by 4: x = 8.",
   },
   {
@@ -75,7 +75,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "Solve for n: 5(n − 3) = 2n + 6.",
     correct: "7",
-    wrong: ["3", "5", "9"],
+    wrong: ["3", "21", "−3"],
     explanation: "Distribute: 5n − 15 = 2n + 6. Subtract 2n: 3n − 15 = 6. Add 15: 3n = 21. So n = 7.",
   },
   {
@@ -83,7 +83,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If 2(x + 4) − 3 = 11, what is x?",
     correct: "3",
-    wrong: ["2", "4", "5"],
+    wrong: ["7", "6", "10"],
     explanation: "Distribute: 2x + 8 − 3 = 11, so 2x + 5 = 11. Subtract 5: 2x = 6. Divide by 2: x = 3.",
   },
   {
@@ -91,7 +91,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If x/3 + 5 = 11, what is the value of x?",
     correct: "18",
-    wrong: ["12", "16", "21"],
+    wrong: ["6", "48", "2"],
     explanation: "Subtract 5: x/3 = 6. Multiply by 3: x = 18.",
   },
   {
@@ -99,7 +99,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "Solve for y: 7y − 4 = 3y + 16.",
     correct: "5",
-    wrong: ["3", "4", "6"],
+    wrong: ["3", "20", "−5"],
     explanation: "Subtract 3y: 4y − 4 = 16. Add 4: 4y = 20. So y = 5.",
   },
   {
@@ -107,7 +107,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If 0.5x + 1.5 = 4, what is x?",
     correct: "5",
-    wrong: ["2.5", "3", "8"],
+    wrong: ["2.5", "11", "1.25"],
     explanation: "Subtract 1.5: 0.5x = 2.5. Divide by 0.5: x = 5.",
   },
   {
@@ -115,7 +115,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If (2x − 1)/3 = 5, what is the value of x?",
     correct: "8",
-    wrong: ["7", "9", "16"],
+    wrong: ["3", "16", "7"],
     explanation: "Multiply both sides by 3: 2x − 1 = 15. Add 1: 2x = 16. So x = 8.",
   },
   {
@@ -123,7 +123,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If 6 − 2x = 4x − 12, what is x?",
     correct: "3",
-    wrong: ["−3", "2", "6"],
+    wrong: ["−3", "18", "1"],
     explanation: "Add 2x to both sides: 6 = 6x − 12. Add 12: 18 = 6x. So x = 3.",
   },
   {
@@ -131,7 +131,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "Solve for x: 3x/4 = 9.",
     correct: "12",
-    wrong: ["6", "9", "27"],
+    wrong: ["6.75", "36", "27"],
     explanation: "Multiply both sides by 4: 3x = 36. Divide by 3: x = 12.",
   },
   {
@@ -139,7 +139,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If 4(2x + 1) = 3(x + 8), what is x?",
     correct: "4",
-    wrong: ["2", "3", "5"],
+    wrong: ["28/11", "20", "8"],
     explanation: "Distribute: 8x + 4 = 3x + 24. Subtract 3x: 5x + 4 = 24. Subtract 4: 5x = 20. So x = 4.",
   },
   {
@@ -147,7 +147,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If (x + 2)/5 = (x − 1)/2, what is x?",
     correct: "3",
-    wrong: ["−3", "1", "9"],
+    wrong: ["−3", "9", "1/3"],
     explanation: "Cross-multiply: 2(x + 2) = 5(x − 1), so 2x + 4 = 5x − 5. Subtract 2x: 4 = 3x − 5. Add 5: 9 = 3x. So x = 3.",
   },
   {
@@ -155,7 +155,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "Solve for t: 0.2t − 3 = 1.",
     correct: "20",
-    wrong: ["10", "15", "25"],
+    wrong: ["10", "0.8", "−10"],
     explanation: "Add 3: 0.2t = 4. Divide by 0.2: t = 20.",
   },
   {
@@ -163,7 +163,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If 3x + 11 = 5x − 7, what is x?",
     correct: "9",
-    wrong: ["2", "4", "18"],
+    wrong: ["2", "18", "−9"],
     explanation: "Subtract 3x: 11 = 2x − 7. Add 7: 18 = 2x. So x = 9.",
   },
   {
@@ -187,7 +187,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "Solve for x: 8 − (x + 3) = 2x − 1.",
     correct: "2",
-    wrong: ["1", "3", "4"],
+    wrong: ["4", "11/3", "−2"],
     explanation: "Distribute the negative: 8 − x − 3 = 2x − 1, so 5 − x = 2x − 1. Add x: 5 = 3x − 1. Add 1: 6 = 3x. So x = 2.",
   },
   {
@@ -195,7 +195,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "If 5x − 3 = 2(x + 6), what is x?",
     correct: "5",
-    wrong: ["3", "4", "6"],
+    wrong: ["3", "15", "−3"],
     explanation: "Distribute: 5x − 3 = 2x + 12. Subtract 2x: 3x − 3 = 12. Add 3: 3x = 15. So x = 5.",
   },
   {
@@ -219,7 +219,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "Three more than twice a number equals 17. What is the number?",
     correct: "7",
-    wrong: ["5", "8", "10"],
+    wrong: ["10", "14", "8.5"],
     explanation: "Let n be the number: 2n + 3 = 17. Subtract 3: 2n = 14. So n = 7.",
   },
   {
@@ -227,7 +227,7 @@ const PSAT_MATH = [
     topic: "systems",
     question: "If x + y = 10 and x − y = 4, what is x?",
     correct: "7",
-    wrong: ["3", "5", "6"],
+    wrong: ["3", "14", "6"],
     explanation: "Add the equations: 2x = 14, so x = 7. (Then y = 3.)",
   },
   {
@@ -235,7 +235,7 @@ const PSAT_MATH = [
     topic: "systems",
     question: "If 2x + y = 11 and x − y = 1, what is x?",
     correct: "4",
-    wrong: ["3", "5", "7"],
+    wrong: ["3", "12", "10/3"],
     explanation: "Add the equations: 3x = 12, so x = 4. (Then y = 3.)",
   },
   {
@@ -243,7 +243,7 @@ const PSAT_MATH = [
     topic: "systems",
     question: "If y = 2x − 1 and y = x + 4, what is the value of x?",
     correct: "5",
-    wrong: ["3", "4", "9"],
+    wrong: ["9", "3", "1"],
     explanation: "Set equal: 2x − 1 = x + 4. Subtract x: x − 1 = 4. So x = 5.",
   },
   {
@@ -451,7 +451,7 @@ const PSAT_MATH = [
     topic: "function_notation",
     question: "If f(x) = x² + 2x, what is f(−3)?",
     correct: "3",
-    wrong: ["−3", "9", "15"],
+    wrong: ["−3", "−15", "15"],
     explanation: "f(−3) = (−3)² + 2(−3) = 9 − 6 = 3.",
   },
   {
@@ -459,7 +459,7 @@ const PSAT_MATH = [
     topic: "function_notation",
     question: "If g(x) = 2x + 1, what is g(g(2))?",
     correct: "11",
-    wrong: ["5", "9", "13"],
+    wrong: ["5", "10", "25"],
     explanation: "First, g(2) = 2(2) + 1 = 5. Then g(5) = 2(5) + 1 = 11.",
   },
   {
@@ -467,7 +467,7 @@ const PSAT_MATH = [
     topic: "function_notation",
     question: "If f(x) = x − 4 and g(x) = 2x, what is f(g(3))?",
     correct: "2",
-    wrong: ["−2", "5", "6"],
+    wrong: ["−2", "6", "−1"],
     explanation: "g(3) = 2(3) = 6. Then f(6) = 6 − 4 = 2.",
   },
   {
@@ -475,7 +475,7 @@ const PSAT_MATH = [
     topic: "function_notation",
     question: "If h(x) = 4 − x², what is h(−2)?",
     correct: "0",
-    wrong: ["−4", "4", "8"],
+    wrong: ["8", "−8", "6"],
     explanation: "h(−2) = 4 − (−2)² = 4 − 4 = 0.",
   },
   {
@@ -499,7 +499,7 @@ const PSAT_MATH = [
     topic: "function_notation",
     question: "If f(x) = x² and g(x) = x + 3, what is g(f(2))?",
     correct: "7",
-    wrong: ["5", "11", "25"],
+    wrong: ["5", "25", "10"],
     explanation: "f(2) = 2² = 4. Then g(4) = 4 + 3 = 7.",
   },
   {
@@ -611,7 +611,7 @@ const PSAT_MATH = [
     topic: "pythagorean",
     question: "A right triangle has legs of length 9 and 12. What is the length of the hypotenuse?",
     correct: "15",
-    wrong: ["21", "11", "108"],
+    wrong: ["21", "225", "3"],
     explanation: "By the Pythagorean theorem, hypotenuse² = 9² + 12² = 81 + 144 = 225. So hypotenuse = √225 = 15.",
   },
   {
@@ -619,7 +619,7 @@ const PSAT_MATH = [
     topic: "pythagorean",
     question: "A right triangle has legs 8 and 15. What is the length of the hypotenuse?",
     correct: "17",
-    wrong: ["23", "13", "120"],
+    wrong: ["23", "289", "13"],
     explanation: "By the Pythagorean theorem, hypotenuse² = 8² + 15² = 64 + 225 = 289. So hypotenuse = √289 = 17.",
   },
   {
@@ -635,7 +635,7 @@ const PSAT_MATH = [
     topic: "area_perimeter",
     question: "A rectangle has length 14 cm and width 6 cm. What is its perimeter?",
     correct: "40 cm",
-    wrong: ["84 cm", "20 cm", "42 cm"],
+    wrong: ["84 cm", "20 cm", "28 cm"],
     explanation: "Perimeter of a rectangle = 2(length + width) = 2(14 + 6) = 2(20) = 40 cm.",
   },
   {
@@ -651,7 +651,7 @@ const PSAT_MATH = [
     topic: "circles",
     question: "A circle has a radius of 6. What is its area, in terms of π?",
     correct: "36π",
-    wrong: ["12π", "6π", "72π"],
+    wrong: ["12π", "6π", "144π"],
     explanation: "Area of a circle = πr² = π(6²) = 36π.",
   },
   {
@@ -691,7 +691,7 @@ const PSAT_MATH = [
     topic: "angles",
     question: "Two parallel lines are cut by a transversal. One of the angles formed measures 65°. What is the measure of its corresponding angle?",
     correct: "65°",
-    wrong: ["115°", "25°", "180°"],
+    wrong: ["115°", "25°", "130°"],
     explanation: "When parallel lines are cut by a transversal, corresponding angles are congruent. So the corresponding angle also measures 65°.",
   },
   {
@@ -699,7 +699,7 @@ const PSAT_MATH = [
     topic: "angles",
     question: "In a triangle, two angles measure 47° and 68°. What is the measure of the third angle?",
     correct: "65°",
-    wrong: ["75°", "115°", "55°"],
+    wrong: ["75°", "115°", "21°"],
     explanation: "Angles in a triangle sum to 180°. Third angle = 180° − 47° − 68° = 65°.",
   },
   {
@@ -707,7 +707,7 @@ const PSAT_MATH = [
     topic: "angles",
     question: "Two angles are vertical angles. One measures (3x + 10)° and the other measures 70°. What is x?",
     correct: "20",
-    wrong: ["10", "30", "60"],
+    wrong: ["10", "60", "26.67"],
     explanation: "Vertical angles are equal. So 3x + 10 = 70, giving 3x = 60, x = 20.",
   },
   {
@@ -715,7 +715,7 @@ const PSAT_MATH = [
     topic: "similarity",
     question: "Triangle ABC is similar to triangle DEF. AB = 6, DE = 9. If BC = 8, what is the length of EF?",
     correct: "12",
-    wrong: ["10", "11", "16"],
+    wrong: ["11", "5.33", "5"],
     explanation: "Similar triangles have proportional sides. AB/DE = 6/9 = 2/3, so BC/EF = 2/3. Thus 8/EF = 2/3, giving EF = 24/2 = 12.",
   },
   {
@@ -723,7 +723,7 @@ const PSAT_MATH = [
     topic: "pythagorean",
     question: "In a 45-45-90 right triangle, each leg has length 7. What is the length of the hypotenuse?",
     correct: "7√2",
-    wrong: ["14", "7", "49"],
+    wrong: ["14", "7√3", "49"],
     explanation: "In a 45-45-90 triangle, hypotenuse = leg × √2 = 7√2.",
   },
   {
@@ -779,7 +779,7 @@ const PSAT_MATH = [
     topic: "area_perimeter",
     question: "A square has a perimeter of 36 cm. What is the area of the square?",
     correct: "81 cm²",
-    wrong: ["36 cm²", "324 cm²", "144 cm²"],
+    wrong: ["36 cm²", "1296 cm²", "144 cm²"],
     explanation: "Side length = 36/4 = 9 cm. Area = side² = 9² = 81 cm².",
   },
   {
@@ -795,7 +795,7 @@ const PSAT_MATH = [
     topic: "angles",
     question: "Two complementary angles have measures x° and (2x + 9)°. What is x?",
     correct: "27",
-    wrong: ["57", "60", "33"],
+    wrong: ["57", "63", "33"],
     explanation: "Complementary angles sum to 90°. So x + 2x + 9 = 90, giving 3x = 81, x = 27.",
   },
   {
@@ -811,7 +811,7 @@ const PSAT_MATH = [
     topic: "percent",
     question: "What is 35% of 80?",
     correct: "28",
-    wrong: ["35", "45", "115"],
+    wrong: ["35", "52", "280"],
     explanation: "35% of 80 = 0.35 × 80 = 28.",
   },
   {
@@ -819,7 +819,7 @@ const PSAT_MATH = [
     topic: "percent",
     question: "A shirt originally costs $40. It is on sale for 25% off. What is the sale price?",
     correct: "$30",
-    wrong: ["$15", "$35", "$25"],
+    wrong: ["$10", "$50", "$25"],
     explanation: "25% off means you pay 75% of the original. 0.75 × $40 = $30. (Or: discount is 0.25 × 40 = $10; price = $40 − $10 = $30.)",
   },
   {
@@ -827,7 +827,7 @@ const PSAT_MATH = [
     topic: "percent",
     question: "A population increased from 200 to 250. What is the percent increase?",
     correct: "25%",
-    wrong: ["20%", "50%", "5%"],
+    wrong: ["20%", "50%", "125%"],
     explanation: "Percent increase = (new − old)/old × 100% = (250 − 200)/200 × 100% = 50/200 × 100% = 25%.",
   },
   {
@@ -835,7 +835,7 @@ const PSAT_MATH = [
     topic: "percent",
     question: "A laptop costs $600. Sales tax is 8%. What is the total cost including tax?",
     correct: "$648",
-    wrong: ["$608", "$680", "$540"],
+    wrong: ["$608", "$48", "$552"],
     explanation: "Tax = 0.08 × $600 = $48. Total = $600 + $48 = $648.",
   },
   {
@@ -859,7 +859,7 @@ const PSAT_MATH = [
     topic: "ratios_proportions",
     question: "A recipe uses 2 cups of flour for every 3 cups of milk. If you use 9 cups of milk, how many cups of flour do you need?",
     correct: "6",
-    wrong: ["4", "5", "13.5"],
+    wrong: ["4.5", "8", "13.5"],
     explanation: "Set up the proportion: 2/3 = x/9. Cross-multiply: 3x = 18, so x = 6 cups of flour.",
   },
   {
@@ -867,7 +867,7 @@ const PSAT_MATH = [
     topic: "probability",
     question: "A bag contains 4 red, 6 blue, and 10 green marbles. If one marble is drawn at random, what is the probability it is blue?",
     correct: "3/10",
-    wrong: ["1/5", "1/3", "2/5"],
+    wrong: ["6/14", "1/3", "10/3"],
     explanation: "Total marbles = 4 + 6 + 10 = 20. P(blue) = 6/20 = 3/10.",
   },
   {
@@ -875,7 +875,7 @@ const PSAT_MATH = [
     topic: "probability",
     question: "A fair coin is flipped twice. What is the probability of getting heads both times?",
     correct: "1/4",
-    wrong: ["1/2", "1/3", "1/8"],
+    wrong: ["1/2", "1", "1/8"],
     explanation: "The flips are independent. P(H and H) = ½ × ½ = 1/4.",
   },
   {
@@ -907,7 +907,7 @@ const PSAT_MATH = [
     topic: "mean_median_mode",
     question: "Find the mean of 12, 15, 18, 20, and 25.",
     correct: "18",
-    wrong: ["17", "20", "19"],
+    wrong: ["90", "20", "22.5"],
     explanation: "Mean = sum/count = (12 + 15 + 18 + 20 + 25)/5 = 90/5 = 18.",
   },
   {
@@ -923,7 +923,7 @@ const PSAT_MATH = [
     topic: "mean_median_mode",
     question: "What is the range of the data set 14, 22, 9, 31, 17, 25?",
     correct: "22",
-    wrong: ["9", "31", "20"],
+    wrong: ["31", "19.67", "21"],
     explanation: "Range = max − min = 31 − 9 = 22.",
   },
   {
@@ -939,7 +939,7 @@ const PSAT_MATH = [
     topic: "rate_work",
     question: "Maya earns $13.50 per hour. If she works 8 hours, how much does she earn?",
     correct: "$108",
-    wrong: ["$104", "$118.50", "$21.50"],
+    wrong: ["$104", "$1080", "$21.50"],
     explanation: "Earnings = rate × time = $13.50 × 8 = $108.",
   },
   {
@@ -963,7 +963,7 @@ const PSAT_MATH = [
     topic: "unit_conversion",
     question: "Convert 5 feet to inches.",
     correct: "60 in",
-    wrong: ["12 in", "50 in", "72 in"],
+    wrong: ["12 in", "17 in", "72 in"],
     explanation: "1 foot = 12 inches. So 5 ft = 5 × 12 = 60 in.",
   },
   {
@@ -979,7 +979,7 @@ const PSAT_MATH = [
     topic: "linear_eq",
     question: "A taxi charges a $4 flat fee plus $2 per mile. Sam paid $24 for a ride. How many miles was the ride?",
     correct: "10",
-    wrong: ["12", "8", "14"],
+    wrong: ["12", "20", "14"],
     explanation: "Cost = 4 + 2m. Set 4 + 2m = 24. Then 2m = 20, so m = 10 miles.",
   },
   {
@@ -987,7 +987,7 @@ const PSAT_MATH = [
     topic: "mean_median_mode",
     question: "Three numbers have a mean of 14. Two of the numbers are 11 and 16. What is the third number?",
     correct: "15",
-    wrong: ["13", "14", "16"],
+    wrong: ["13", "14", "42"],
     explanation: "Sum of the three = 3 × 14 = 42. Third number = 42 − 11 − 16 = 15.",
   },
   {
@@ -1019,7 +1019,7 @@ const PSAT_MATH = [
     topic: "angles",
     question: "An isosceles triangle has two equal angles, each measuring 55°. What is the measure of the third angle?",
     correct: "70°",
-    wrong: ["55°", "125°", "90°"],
+    wrong: ["55°", "125°", "35°"],
     explanation: "Angles in a triangle sum to 180°. Third angle = 180° − 55° − 55° = 70°.",
   },
   {
@@ -1035,7 +1035,7 @@ const PSAT_MATH = [
     topic: "probability",
     question: "A bag contains 3 red and 5 blue marbles. Two marbles are drawn one at a time WITH replacement. What is the probability both are red?",
     correct: "9/64",
-    wrong: ["3/28", "6/16", "3/8"],
+    wrong: ["3/28", "6/64", "3/8"],
     explanation: "Each draw is independent (with replacement). P(red) = 3/8 each time. P(both red) = 3/8 × 3/8 = 9/64.",
   },
   {
@@ -1043,7 +1043,7 @@ const PSAT_MATH = [
     topic: "area_perimeter",
     question: "A rectangular garden is 8 m long and 6 m wide. A walkway 1 m wide surrounds it on all sides. What is the total area of the walkway?",
     correct: "32 m²",
-    wrong: ["28 m²", "48 m²", "16 m²"],
+    wrong: ["28 m²", "48 m²", "80 m²"],
     explanation: "Outer rectangle is (8 + 2)(6 + 2) = 10 × 8 = 80 m². Inner garden area = 8 × 6 = 48 m². Walkway = 80 − 48 = 32 m².",
   },
 
@@ -1119,7 +1119,7 @@ const PSAT_MATH = [
       values: [12, 8, 18, 14, 22],
     },
     correct: "14",
-    wrong: ["10", "16", "22"],
+    wrong: ["8", "22", "74"],
     explanation: "Highest = Friday (22 cups). Lowest = Tuesday (8 cups). 22 − 8 = 14.",
   },
   {
@@ -1134,7 +1134,7 @@ const PSAT_MATH = [
       points: [[2010, 5], [2012, 7], [2014, 11], [2016, 18], [2018, 25], [2020, 32]],
     },
     correct: "27 thousand",
-    wrong: ["20 thousand", "32 thousand", "15 thousand"],
+    wrong: ["5 thousand", "32 thousand", "37 thousand"],
     explanation: "Population in 2010 = 5k; in 2020 = 32k. Growth = 32 − 5 = 27 thousand.",
   },
   {
@@ -1540,7 +1540,7 @@ const PSAT_MATH = [
       points: [[1, 50], [2, 70], [3, 85], [4, 65], [5, 90], [6, 110], [7, 95]],
     },
     correct: "$60 thousand",
-    wrong: ["$50 thousand", "$110 thousand", "$45 thousand"],
+    wrong: ["$50 thousand", "$110 thousand", "$565 thousand"],
     explanation: "Highest = Q6 at 110k. Lowest = Q1 at 50k. 110 - 50 = 60 thousand dollars.",
   },
   {
@@ -1617,7 +1617,7 @@ const PSAT_MATH = [
       points: [[2018, 200], [2019, 220], [2020, 230], [2021, 240], [2022, 250]],
     },
     correct: "25%",
-    wrong: ["20%", "50%", "12.5%"],
+    wrong: ["20%", "50%", "125%"],
     explanation: "2018 = 200, 2022 = 250. Increase = 50. Percent change = 50 / 200 = 0.25 = 25%.",
   },
   {
@@ -1664,7 +1664,7 @@ const PSAT_MATH = [
     topic: "data_tables",
     question: "The table shows the round-trip times (in minutes) of five different city bus routes.<table><tr><th>Route</th><th>Time (min)</th></tr><tr><td>Route 1</td><td>22</td></tr><tr><td>Route 2</td><td>35</td></tr><tr><td>Route 3</td><td>47</td></tr><tr><td>Route 4</td><td>29</td></tr><tr><td>Route 5</td><td>33</td></tr></table>What is the range of the round-trip times?",
     correct: "25 minutes",
-    wrong: ["33 minutes", "47 minutes", "13 minutes"],
+    wrong: ["33 minutes", "47 minutes", "33.2 minutes"],
     explanation: "Range = max − min = 47 − 22 = 25 minutes.",
   },
   {
@@ -1672,7 +1672,7 @@ const PSAT_MATH = [
     topic: "data_tables",
     question: "The frequency table shows how 22 customers rated a new movie on a 1-to-5 scale.<table><tr><th>Rating</th><th>Frequency</th></tr><tr><td>1</td><td>2</td></tr><tr><td>2</td><td>3</td></tr><tr><td>3</td><td>5</td></tr><tr><td>4</td><td>8</td></tr><tr><td>5</td><td>4</td></tr></table>What is the mode of the ratings?",
     correct: "4",
-    wrong: ["8", "3", "5"],
+    wrong: ["8", "3", "3.4"],
     explanation: "The mode is the value with the highest frequency. Rating 4 appears 8 times, more than any other rating.",
   },
   {
@@ -1680,7 +1680,7 @@ const PSAT_MATH = [
     topic: "data_tables",
     question: "The table shows the daily high temperatures (in °F) recorded over five days in two cities.<table><tr><th>Day</th><th>City A</th><th>City B</th></tr><tr><td>Mon</td><td>68</td><td>72</td></tr><tr><td>Tue</td><td>71</td><td>74</td></tr><tr><td>Wed</td><td>74</td><td>70</td></tr><tr><td>Thu</td><td>69</td><td>78</td></tr><tr><td>Fri</td><td>73</td><td>76</td></tr></table>By how many degrees does the mean high temperature of City B exceed that of City A?",
     correct: "3 °F",
-    wrong: ["2 °F", "4 °F", "5 °F"],
+    wrong: ["−3 °F", "15 °F", "74 °F"],
     explanation: "City A mean = (68+71+74+69+73)/5 = 355/5 = 71. City B mean = (72+74+70+78+76)/5 = 370/5 = 74. Difference = 74 − 71 = 3.",
   },
   {
