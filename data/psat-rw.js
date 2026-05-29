@@ -37,6 +37,7 @@ const PSAT_READING_WRITING = [
       "are found exclusively in arctic regions",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage emphasizes the fungus-alga partnership ('neither could survive alone… but together they endure'). Choice B captures this mutualism.",
   },
   {
@@ -45,6 +46,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'austere' most nearly means:",
     choices: ["lavish", "spare", "confusing", "joyful"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "The passage describes the prose as having 'short sentences, plain words, almost no adjectives' — i.e. stripped down. 'Spare' captures that meaning. 'Lavish' is the opposite; 'confusing' and 'joyful' don't fit.",
   },
   {
@@ -58,6 +60,7 @@ const PSAT_READING_WRITING = [
       "having been formed only just now",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "The original mixes a relative pronoun ('which') with a redundant subject ('they'). 'Which had only just been formed' is the cleanest fix — relative clause with no double subject.",
   },
   {
@@ -71,6 +74,7 @@ const PSAT_READING_WRITING = [
       "was eventually replaced by scripted television",
     ],
     correct: 1,
+    qType: "centralIdeas",
     explanation: "The passage frames the chaos positively — 'a feature… uncertainty was part of the appeal'. Choice B captures the author's actual claim. The other choices are not supported by the text.",
   },
   {
@@ -79,6 +83,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'tepid' most nearly means:",
     choices: ["enthusiastic", "lukewarm", "secret", "controversial"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Tepid literally means slightly warm — figuratively, lacking enthusiasm or commitment. The resolution 'neither raised funds nor blocked' the project, so it was half-hearted. 'Lukewarm' captures that.",
   },
 
@@ -95,6 +100,7 @@ const PSAT_READING_WRITING = [
       "pressure from foreign powers to centralize authority",
     ],
     correct: 0,
+    qType: "inferences",
     explanation: "The passage describes two opposing fears — tyranny from a strong center and chaos from a weak one — and presents the compromise as a response to both. Choice A captures this tension directly.",
   },
   {
@@ -108,6 +114,7 @@ const PSAT_READING_WRITING = [
       "requires bees to memorize landmarks over long distances",
     ],
     correct: 2,
+    qType: "inferences",
     explanation: "The opening sentence identifies the dance as a rare example of 'symbolic communication outside of humans.' Choice C reflects this. The other options are not supported.",
   },
   {
@@ -121,6 +128,7 @@ const PSAT_READING_WRITING = [
       "limited mainly to the southern states",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage explicitly explains the metaphor: a 'thin layer of gold disguising a duller metal underneath.' Choice B captures the idea that the prosperity hid deeper problems.",
   },
   {
@@ -134,6 +142,7 @@ const PSAT_READING_WRITING = [
       "compare black holes to ordinary stars",
     ],
     correct: 2,
+    qType: "textStructurePurpose",
     explanation: "The passage frames the 2019 image as 'confirming predictions that Einstein had made more than a century earlier.' Choice C matches this purpose.",
   },
   {
@@ -147,6 +156,7 @@ const PSAT_READING_WRITING = [
       "trying to ignore mail she finds unimportant",
     ],
     correct: 0,
+    qType: "inferences",
     explanation: "The narrator says Maya 'had almost convinced herself she no longer cared,' but her shaking hands reveal that this self-assurance was 'a kind of lie.' Choice A captures the contrast.",
   },
   {
@@ -160,6 +170,7 @@ const PSAT_READING_WRITING = [
       "price depends partly on the choices buyers have available",
     ],
     correct: 3,
+    qType: "textStructurePurpose",
     explanation: "The passage attributes the price difference to the 'alternatives available to buyers' in each setting. Choice D reflects this point.",
   },
   {
@@ -173,6 +184,7 @@ const PSAT_READING_WRITING = [
       "designed only machines that could be built in his lifetime",
     ],
     correct: 0,
+    qType: "inferences",
     explanation: "The final sentence states that Leonardo 'refused to draw a sharp line between art and science.' Choice A matches this characterization.",
   },
   {
@@ -186,6 +198,7 @@ const PSAT_READING_WRITING = [
       "Ocean temperatures have remained stable in recent decades.",
     ],
     correct: 2,
+    qType: "centralIdeas",
     explanation: "The passage first establishes how much marine life depends on reefs, then describes the temperature threat. Choice C captures both halves of the argument.",
   },
   {
@@ -199,6 +212,7 @@ const PSAT_READING_WRITING = [
       "praise her for the wrong reasons entirely",
     ],
     correct: 0,
+    qType: "inferences",
     explanation: "The author contrasts the dismissive label with the 'sharper' reality that Austen exposes social and economic pressure on women. Choice A captures what such critics overlook.",
   },
   {
@@ -212,6 +226,7 @@ const PSAT_READING_WRITING = [
       "to describe how water moves continuously through different reservoirs",
     ],
     correct: 3,
+    qType: "centralIdeas",
     explanation: "The passage traces water from ocean to atmosphere to surface and back. Choice D captures this descriptive purpose. Choice A riffs on the closing sentence ('any individual molecule may travel through this cycle thousands of times') but it's a supporting detail, not the main purpose.",
   },
   {
@@ -225,6 +240,7 @@ const PSAT_READING_WRITING = [
       "unrelated to the broader civil rights movement",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage explicitly states that Parks's arrest 'was not a spontaneous accident' and notes her prior NAACP work and training. Choice B reflects this.",
   },
   {
@@ -238,6 +254,7 @@ const PSAT_READING_WRITING = [
       "describe the largest volcano in the world",
     ],
     correct: 0,
+    qType: "textStructurePurpose",
     explanation: "Hawaii is introduced with 'however' as an exception to the boundary rule. Choice A captures this function.",
   },
   {
@@ -251,6 +268,7 @@ const PSAT_READING_WRITING = [
       "a technology unlikely to last beyond the next decade",
     ],
     correct: 2,
+    qType: "inferences",
     explanation: "The passage presents both criticism and defense without endorsing either. Choice C captures this balanced framing.",
   },
   {
@@ -264,6 +282,7 @@ const PSAT_READING_WRITING = [
       "a system primarily designed for memorization",
     ],
     correct: 2,
+    qType: "inferences",
     explanation: "The passage states that Basho saw the rules 'not as a constraint but as a discipline' that 'forced the writer to choose precisely the right images.' Choice C reflects this.",
   },
   {
@@ -277,6 +296,7 @@ const PSAT_READING_WRITING = [
       "its symbolic meaning outweighed its practical effect",
     ],
     correct: 3,
+    qType: "inferences",
     explanation: "The passage notes that the prison held only seven non-political prisoners but that the event 'ignited a revolution.' The closing sentence emphasizes that 'symbols… can carry weight far heavier than the things themselves.' Choice D captures this.",
   },
   {
@@ -290,6 +310,7 @@ const PSAT_READING_WRITING = [
       "compare placebos to ordinary nutritional supplements",
     ],
     correct: 1,
+    qType: "centralIdeas",
     explanation: "The passage contrasts the older view (placebos as 'noise') with newer findings (real biological effects). Choice B captures this shift.",
   },
   {
@@ -303,6 +324,7 @@ const PSAT_READING_WRITING = [
       "a period whose costs prompted later reform efforts",
     ],
     correct: 3,
+    qType: "centralIdeas",
     explanation: "The passage describes harsh conditions and notes that reforms 'slowly took shape' in response. Choice D captures this cause-and-effect framing.",
   },
   {
@@ -316,6 +338,7 @@ const PSAT_READING_WRITING = [
       "identical to their uses in modern birds",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage states that 'many dinosaur species had feathers long before any could fly,' listing insulation, display, and balance as early uses. Choice B captures this.",
   },
   {
@@ -329,6 +352,7 @@ const PSAT_READING_WRITING = [
       "required fewer government officials to operate",
     ],
     correct: 2,
+    qType: "inferences",
     explanation: "The closing sentence makes the point directly: keeping 'the power to convict close to the people most affected by the law.' Choice C matches.",
   },
   {
@@ -342,6 +366,7 @@ const PSAT_READING_WRITING = [
       "Livestock are immune to most modern antibiotics.",
     ],
     correct: 0,
+    qType: "centralIdeas",
     explanation: "The passage explains how resistance evolves and identifies overuse as the accelerator. Choice A captures both pieces.",
   },
   {
@@ -355,6 +380,7 @@ const PSAT_READING_WRITING = [
       "a device used only in comedies, not tragedies",
     ],
     correct: 1,
+    qType: "centralIdeas",
     explanation: "The passage states that the chorus 'spoke for the community watching' and reminded the audience that events 'belonged… to the city as a whole.' Choice B captures this.",
   },
   {
@@ -368,6 +394,7 @@ const PSAT_READING_WRITING = [
       "interest rates have little effect on the broader economy",
     ],
     correct: 2,
+    qType: "inferences",
     explanation: "The passage emphasizes the trade-off — tightening risks unemployment, loosening risks inflation — and the inevitable critics. Choice C captures this difficulty.",
   },
   {
@@ -381,6 +408,7 @@ const PSAT_READING_WRITING = [
       "achieved through gradual, unnoticed daily improvement",
     ],
     correct: 3,
+    qType: "inferences",
     explanation: "The closing sentences describe Theo's improvement as so gradual that 'no single day could be marked as the turning point.' Choice D captures this.",
   },
   {
@@ -394,6 +422,7 @@ const PSAT_READING_WRITING = [
       "a written constitution that lists every citizen right",
     ],
     correct: 1,
+    qType: "centralIdeas",
     explanation: "The passage explicitly contrasts formal rules with the 'habits' passed through schools and families, and warns that elections alone are not enough. Choice B captures this.",
   },
   {
@@ -407,6 +436,7 @@ const PSAT_READING_WRITING = [
       "is the only chemical reaction performed by living things",
     ],
     correct: 2,
+    qType: "inferences",
     explanation: "The passage explains that animals depend on plants for 'the energy stored in those sugars and the oxygen needed to breathe.' Choice C captures this dual dependence.",
   },
   {
@@ -420,6 +450,7 @@ const PSAT_READING_WRITING = [
       "imposed on her by editors who preferred shorter novels",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage contrasts critics who 'mistook this restraint for simplicity' with the modern view of it as 'a deliberate art.' Choice B captures this contrast.",
   },
   {
@@ -433,6 +464,7 @@ const PSAT_READING_WRITING = [
       "becomes less important as a person ages",
     ],
     correct: 2,
+    qType: "centralIdeas",
     explanation: "The closing sentence summarizes the argument directly: sleep 'does work the body cannot do while awake.' Choice C matches.",
   },
   {
@@ -446,6 +478,7 @@ const PSAT_READING_WRITING = [
       "both destructive and an unintended driver of exchange",
     ],
     correct: 3,
+    qType: "inferences",
     explanation: "The passage acknowledges 'destruction' but also describes the Mongols opening safe trade routes that carried goods and ideas across continents. Choice D reflects this dual portrayal.",
   },
   {
@@ -459,6 +492,7 @@ const PSAT_READING_WRITING = [
       "the spread of electricity into urban buildings",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage identifies 'structural steel and the safety elevator' as the two key innovations and explains the role of each. Choice B matches.",
   },
   {
@@ -472,6 +506,7 @@ const PSAT_READING_WRITING = [
       "neutral, presenting it as common and not inherently negative",
     ],
     correct: 3,
+    qType: "centralIdeas",
     explanation: "The passage notes the imbalance but explicitly says it 'is not necessarily a sign of failure,' offering reasons quiet users still matter. Choice D captures the balanced tone.",
   },
   {
@@ -485,6 +520,7 @@ const PSAT_READING_WRITING = [
       "treat him as the most important figure of his century",
     ],
     correct: 1,
+    qType: "centralIdeas",
     explanation: "The final sentence says that 'neither portrait, taken alone, captures the full weight of the historical record.' Choice B reflects this call for a fuller picture.",
   },
   {
@@ -498,6 +534,7 @@ const PSAT_READING_WRITING = [
       "describe the chemical makeup of the Martian core",
     ],
     correct: 2,
+    qType: "textStructurePurpose",
     explanation: "Mars is introduced as a contrast: it lost its magnetic field and, with it, its atmosphere. Choice C captures the illustrative function.",
   },
   {
@@ -511,6 +548,7 @@ const PSAT_READING_WRITING = [
       "Their main function is to serve as community gathering spaces.",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage emphasizes that, despite added services, 'the core idea remains constant.' Choice B captures this continuity.",
   },
   {
@@ -524,6 +562,7 @@ const PSAT_READING_WRITING = [
       "correct a common misconception about how spiders are classified",
     ],
     correct: 3,
+    qType: "centralIdeas",
     explanation: "The passage opens by noting that spiders 'are often grouped with insects' and then lists the differences. Choice D captures the corrective purpose.",
   },
   {
@@ -537,6 +576,7 @@ const PSAT_READING_WRITING = [
       "a sharp reduction in the world's overall electricity use",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The closing sentence states that plans 'depend not on any single source but on a careful mix of generation and large-scale energy storage.' Choice B reflects this.",
   },
   {
@@ -550,6 +590,7 @@ const PSAT_READING_WRITING = [
       "The Suez Canal is no longer as important as it was in the nineteenth century.",
     ],
     correct: 0,
+    qType: "centralIdeas",
     explanation: "The passage describes the canal's effect on travel time, trade, and political conflict. Choice A captures all three threads.",
   },
   {
@@ -563,6 +604,7 @@ const PSAT_READING_WRITING = [
       "its careful imitation of earlier Dutch masters",
     ],
     correct: 0,
+    qType: "inferences",
     explanation: "The passage contrasts the rejection of van Gogh's 'thick brushstrokes and intense colors' in his day with their being 'precisely why his paintings are treasured' today. Choice A captures this reversal.",
   },
   {
@@ -576,6 +618,7 @@ const PSAT_READING_WRITING = [
       "confusion between the brain and the nervous system",
     ],
     correct: 2,
+    qType: "inferences",
     explanation: "The final sentence speculates that the myth survives because it 'offers a hopeful suggestion' of untapped potential. Choice C reflects this.",
   },
   {
@@ -589,6 +632,7 @@ const PSAT_READING_WRITING = [
       "an early belief in language as a means of facing difficult truths",
     ],
     correct: 3,
+    qType: "inferences",
     explanation: "The passage describes Baldwin learning to see language as 'powerful enough to confront the injustices he witnessed.' Choice D captures the source of his later honesty.",
   },
   {
@@ -602,6 +646,7 @@ const PSAT_READING_WRITING = [
       "indifferent, treating it as a minor diplomatic matter",
     ],
     correct: 1,
+    qType: "centralIdeas",
     explanation: "The passage calls the arrangement 'fragile in some respects' but praises it as 'one of the more successful examples of international cooperation.' Choice B captures this balanced positive view.",
   },
   {
@@ -615,6 +660,7 @@ const PSAT_READING_WRITING = [
       "explain why earthquakes occur more often in some regions",
     ],
     correct: 2,
+    qType: "centralIdeas",
     explanation: "The passage describes three different strategies tied to different cities' situations, without ranking them. Choice C captures the comparative purpose.",
   },
   {
@@ -628,6 +674,7 @@ const PSAT_READING_WRITING = [
       "highly skilled, relying on a deep knowledge of natural signs",
     ],
     correct: 3,
+    qType: "inferences",
     explanation: "The passage describes navigators using stars, waves, and bird flight to reach distant islands and notes Europeans' astonishment. Choice D captures this skill.",
   },
   {
@@ -641,6 +688,7 @@ const PSAT_READING_WRITING = [
       "improves only when octopuses live in large social groups",
     ],
     correct: 0,
+    qType: "inferences",
     explanation: "The passage emphasizes that octopuses are solitary and 'pass on no learned behavior,' so each one 'must… figure the world out from scratch.' Choice A captures this.",
   },
   {
@@ -654,6 +702,7 @@ const PSAT_READING_WRITING = [
       "primarily focused on commercial advertising",
     ],
     correct: 2,
+    qType: "inferences",
     explanation: "The passage describes a trend of 'steadily widened' protection that is 'uneven' but 'hard to reverse.' Choice C captures this growth-with-limits view.",
   },
   {
@@ -667,6 +716,7 @@ const PSAT_READING_WRITING = [
       "finds reassurance in the predictability of his daily route",
     ],
     correct: 3,
+    qType: "inferences",
     explanation: "The passage says Tomas 'found a strange comfort' in the route's predictability and describes the city as 'a kind of large, slow clock that he alone knew how to read.' Choice D captures this.",
   },
   {
@@ -680,6 +730,7 @@ const PSAT_READING_WRITING = [
       "an event that produced no lasting effect on later science",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage stresses that the revolution 'unfolded over more than two centuries' and was linked by 'a shared method.' Choice B captures both points.",
   },
   {
@@ -693,6 +744,7 @@ const PSAT_READING_WRITING = [
       "exaggerated by environmental groups in recent years",
     ],
     correct: 2,
+    qType: "centralIdeas",
     explanation: "The passage notes that 'few of their inventors anticipated' how long plastics would last, framing the issue as a problem 'an earlier generation did not see coming.' Choice C reflects this.",
   },
   {
@@ -706,6 +758,7 @@ const PSAT_READING_WRITING = [
       "the choice of projection influences how viewers perceive the world",
     ],
     correct: 3,
+    qType: "textStructurePurpose",
     explanation: "The Greenland example shows how a particular projection distorts size; the passage connects this to the mapmaker's choices. Choice D captures the lesson.",
   },
   {
@@ -719,6 +772,7 @@ const PSAT_READING_WRITING = [
       "fail to spread beyond a small group of wealthy enthusiasts",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage credits the bicycle with expanding women's freedom and notes that critics 'accurately' feared it would 'unsettle older social arrangements.' Choice B captures this.",
   },
   {
@@ -732,6 +786,7 @@ const PSAT_READING_WRITING = [
       "argue that surveillance technology is never harmful",
     ],
     correct: 2,
+    qType: "inferences",
     explanation: "The passage explicitly states that Orwell wrote the book as 'a warning' about 'habits of mind' that could 'creep into any society inattentive to its own freedoms.' Choice C matches.",
   },
   {
@@ -745,6 +800,7 @@ const PSAT_READING_WRITING = [
       "explain why older adults remember childhood events vividly",
     ],
     correct: 1,
+    qType: "textStructurePurpose",
     explanation: "The passage notes that patients 'retain the ability to recall events from before the injury but cannot reliably store new ones afterward.' Choice B captures this distinction.",
   },
   {
@@ -758,6 +814,7 @@ const PSAT_READING_WRITING = [
       "lost its influence by the early nineteenth century",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage traces the idea from Locke to the American, French, and Latin American movements, calling it 'portable.' Choice B captures this spread.",
   },
   {
@@ -771,6 +828,7 @@ const PSAT_READING_WRITING = [
       "the disappearance of opportunities for scientific research",
     ],
     correct: 0,
+    qType: "inferences",
     explanation: "The final sentence highlights 'downstream cities that depend on glacial meltwater… face an uncertain future.' Choice A captures this concern.",
   },
   {
@@ -784,6 +842,7 @@ const PSAT_READING_WRITING = [
       "ended the Articles of Confederation immediately",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage says calls for stronger federal power 'gained traction they had previously lacked' after the rebellion — Choice B captures this. The rebellion did not abolish foreclosure laws, and it did not 'end the Articles' on its own (that took the Constitutional Convention months later). The federal-army-against-citizens precedent point is unsupported.",
   },
   {
@@ -797,6 +856,7 @@ const PSAT_READING_WRITING = [
       "an emphasis on using only materials produced locally",
     ],
     correct: 1,
+    qType: "inferences",
     explanation: "The passage describes Wright's central principle — a building should 'grow out of its site' and treat 'the landscape as a partner.' Choice B captures this lasting idea.",
   },
   {
@@ -805,6 +865,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'candid' most nearly means:",
     choices: ["photographed", "cheerful", "biased", "frank"],
     correct: 3,
+    qType: "wordsInContext",
     explanation: "The CEO 'openly admits' mistakes — she is being frank. 'Photographed' is a common literal meaning (candid photo) but doesn't fit; 'cheerful' and 'biased' miss the sense of honesty.",
   },
   {
@@ -813,6 +874,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'mitigate' most nearly means:",
     choices: ["increase", "ease", "explain", "ignore"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "The manager wants 'relief' from frustration — to make it less severe. 'Increase' is the opposite; 'explain' and 'ignore' don't fit the idea of softening a problem.",
   },
   {
@@ -821,6 +883,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'laconic' most nearly means:",
     choices: ["lengthy", "concise", "cheerful", "encrypted"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "'A one-line battle plan, a single word of acknowledgment' signals extreme brevity. 'Concise' captures that. 'Lengthy' is the opposite; 'cheerful' and 'encrypted' don't fit the context.",
   },
   {
@@ -829,6 +892,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'ephemeral' most nearly means:",
     choices: ["expensive", "popular", "complicated", "short-lived"],
     correct: 3,
+    qType: "wordsInContext",
     explanation: "A style that vanishes in a season is fleeting. 'Short-lived' fits. 'Popular' is true of the style but isn't the meaning of the word; 'expensive' and 'complicated' don't fit at all.",
   },
   {
@@ -837,6 +901,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'ambivalent' most nearly means:",
     choices: ["conflicted", "furious", "uninterested", "thrilled"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "She has both positive and negative feelings — that's the definition of conflicted. 'Uninterested' is wrong because she clearly feels strongly; 'furious' and 'thrilled' each capture only one side.",
   },
   {
@@ -845,6 +910,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'succinct' most nearly means:",
     choices: ["accurate", "boring", "brief", "official"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "Three pages instead of thirty — the report is short and to the point. 'Brief' fits. 'Accurate' and 'official' may be true but aren't the meaning; 'boring' has the wrong tone (admiring, not critical).",
   },
   {
@@ -853,6 +919,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'scrupulous' most nearly means:",
     choices: ["wealthy", "suspicious", "slow", "careful"],
     correct: 3,
+    qType: "wordsInContext",
     explanation: "Checking everything twice shows extreme care. 'Careful' fits. 'Slow' might result from his habits but isn't the meaning; 'wealthy' and 'suspicious' are unrelated.",
   },
   {
@@ -861,6 +928,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'vehement' most nearly means:",
     choices: ["confused", "passionate", "quiet", "lengthy"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Pounding the podium and raising her voice show intense feeling. 'Passionate' fits. 'Quiet' is the opposite; 'lengthy' and 'confused' aren't supported.",
   },
   {
@@ -869,6 +937,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'pragmatic' most nearly means:",
     choices: ["practical", "cowardly", "creative", "secretive"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Settling to save time and money is a practical choice. 'Practical' fits. 'Cowardly' adds a negative judgment the passage doesn't; 'creative' and 'secretive' don't match.",
   },
   {
@@ -877,6 +946,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'resolute' most nearly means:",
     choices: ["confused", "polite", "determined", "angry"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "He won't change course despite criticism — he's firm in his decision. 'Determined' fits. 'Angry' might be a reaction but isn't the meaning; 'confused' is the opposite; 'polite' is unrelated.",
   },
   {
@@ -885,6 +955,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'indignant' most nearly means:",
     choices: ["sleepy", "outraged", "amused", "embarrassed"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Booing for a full minute shows strong anger at perceived injustice. 'Outraged' fits. 'Amused' is the opposite; 'sleepy' and 'embarrassed' don't fit.",
   },
   {
@@ -893,6 +964,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'deferential' most nearly means:",
     choices: ["ambitious", "rude", "talkative", "respectful"],
     correct: 3,
+    qType: "wordsInContext",
     explanation: "Not interrupting and asking permission show respect for rank. 'Respectful' fits. 'Rude' and 'talkative' are the opposite; 'ambitious' may describe an intern but isn't the meaning here.",
   },
   {
@@ -901,6 +973,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'magnanimous' most nearly means:",
     choices: ["public", "generous", "calculated", "reluctant"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Welcoming a defeated rival shows largeness of spirit. 'Generous' fits. 'Calculated' suggests a strategic motive not in the passage; 'reluctant' is the opposite; 'public' describes the act but not the word.",
   },
   {
@@ -909,6 +982,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'exacerbate' most nearly means:",
     choices: ["worsen", "explain", "delay", "solve"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Goods will become 'even scarcer' — the problem grows worse. 'Worsen' fits. 'Solve' is the opposite; 'explain' and 'delay' don't match.",
   },
   {
@@ -917,6 +991,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'prolific' most nearly means:",
     choices: ["famous", "productive", "wealthy", "elderly"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Twenty-three novels means producing a lot of work. 'Productive' fits. 'Famous' and 'wealthy' may follow from being prolific but aren't the meaning; 'elderly' is unsupported.",
   },
   {
@@ -925,6 +1000,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'judicious' most nearly means:",
     choices: ["slow", "harsh", "predictable", "wise"],
     correct: 3,
+    qType: "wordsInContext",
     explanation: "Weighing motions carefully and refusing to rush show good judgment. 'Wise' fits. 'Slow' describes pace, not wisdom; 'harsh' and 'predictable' aren't supported.",
   },
   {
@@ -933,6 +1009,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'latent' most nearly means:",
     choices: ["deadly", "hidden", "spreading", "harmless"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "The virus is present but produces no symptoms — it's dormant and unseen. 'Hidden' fits. 'Spreading' contradicts the no-symptoms idea; 'deadly' and 'harmless' aren't the meaning.",
   },
   {
@@ -941,6 +1018,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'novel' most nearly means:",
     choices: ["fictional", "complicated", "fresh", "lengthy"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "No one had tried it before — the approach is new. 'Fresh' fits. 'Fictional' is the common noun meaning (a novel = a book) but doesn't apply here; 'complicated' and 'lengthy' aren't supported.",
   },
   {
@@ -949,6 +1027,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'staid' most nearly means:",
     choices: ["austere", "boastful", "creative", "sedate"],
     correct: 3,
+    qType: "wordsInContext",
     explanation: "'The same gray suit and measured speeches' show a calm, dignified, settled style. 'Sedate' best captures that. 'Austere' (strict, plain) is close but emphasizes severity rather than dignified calm — the speeches are measured, not harsh. 'Boastful' and 'creative' are opposites.",
   },
   {
@@ -957,6 +1036,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'contentious' most nearly means:",
     choices: ["productive", "argumentative", "quiet", "brief"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Shouting and storming out show heated argument. 'Argumentative' fits. 'Quiet' and 'productive' are the opposite; 'brief' isn't supported.",
   },
   {
@@ -965,6 +1045,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'copious' most nearly means:",
     choices: ["colorful", "abundant", "scattered", "neat"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Three or four colors per page plus diagrams means lots of notes. 'Abundant' fits. 'Colorful' is true but describes a different feature; 'scattered' and 'neat' don't match the idea of quantity.",
   },
   {
@@ -973,6 +1054,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'esoteric' most nearly means:",
     choices: ["boring", "obscure", "controversial", "ancient"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Even graduate students couldn't follow it — the material is understood only by specialists. 'Obscure' fits. 'Ancient' describes the topic but not the word; 'boring' and 'controversial' aren't supported.",
   },
   {
@@ -981,6 +1063,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'conciliatory' most nearly means:",
     choices: ["aggressive", "official", "soothing", "formal"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "Apologizing and offering personal meetings is meant to calm anger. 'Soothing' fits. 'Aggressive' is the opposite; 'official' and 'formal' miss the peacemaking intent.",
   },
   {
@@ -989,6 +1072,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'conspicuous' most nearly means:",
     choices: ["obvious", "tasteful", "hidden", "imaginary"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Gold gates and marble fountains are impossible to miss. 'Obvious' fits. 'Hidden' is the opposite; 'tasteful' is a judgment the passage doesn't support; 'imaginary' contradicts the description.",
   },
   {
@@ -997,6 +1081,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'equivocate' most nearly means:",
     choices: ["dodge", "shout", "agree", "explain"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Long answers committing to nothing means avoiding a clear answer. 'Dodge' fits. 'Agree' and 'explain' would require clarity; 'shout' is unrelated.",
   },
   {
@@ -1005,6 +1090,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'fastidious' most nearly means:",
     choices: ["stylish", "anxious", "wealthy", "meticulous"],
     correct: 3,
+    qType: "wordsInContext",
     explanation: "Pressing shirts nightly and tolerating no stray hair shows attention to detail. 'Meticulous' fits. 'Stylish' may be a result but isn't the meaning; 'anxious' and 'wealthy' aren't supported.",
   },
   {
@@ -1013,6 +1099,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'immutable' most nearly means:",
     choices: ["unchanging", "complicated", "useful", "ancient"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "The same answer in every century shows the laws don't change. 'Unchanging' fits. 'Ancient' describes age, not the quality of being fixed; 'useful' and 'complicated' don't match.",
   },
   {
@@ -1021,6 +1108,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'mundane' most nearly means:",
     choices: ["ordinary", "stressful", "global", "secretive"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Emails and printer refills are everyday tasks. 'Ordinary' fits. 'Global' (the other dictionary sense — worldly) doesn't fit here; 'stressful' and 'secretive' aren't supported.",
   },
   {
@@ -1029,6 +1117,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'peripheral' most nearly means:",
     choices: ["digital", "wealthy", "marginal", "exciting"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "He watches from the edges, not the center. 'Marginal' fits. 'Digital' is a computer-hardware sense (peripherals) that doesn't apply; 'exciting' is the opposite; 'wealthy' is unrelated.",
   },
   {
@@ -1037,6 +1126,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'sanguine' most nearly means:",
     choices: ["bloody", "exhausted", "optimistic", "bitter"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "Believing they'll return stronger shows cheerful confidence. 'Optimistic' fits. 'Bloody' is the literal Latin meaning but doesn't fit; 'bitter' and 'exhausted' are the opposite tone.",
   },
   {
@@ -1045,6 +1135,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'stoic' most nearly means:",
     choices: ["impassive", "frightened", "clever", "religious"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Calmly recording data during a storm shows lack of visible emotion. 'Impassive' fits. 'Frightened' is the opposite reaction; 'clever' and 'religious' aren't supported.",
   },
   {
@@ -1053,6 +1144,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'taciturn' most nearly means:",
     choices: ["cheerful", "rude", "reserved", "elderly"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "Single-word answers and long silences show someone who speaks little. 'Reserved' fits. 'Rude' adds a judgment not in the passage; 'cheerful' is the wrong tone; 'elderly' describes the grandfather but isn't the meaning.",
   },
   {
@@ -1061,6 +1153,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'vacillate' most nearly means:",
     choices: ["waver", "complain", "lie", "promise"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Switching from support to opposition to silence shows shifting back and forth. 'Waver' fits. 'Lie' adds an accusation the passage doesn't; 'complain' and 'promise' don't match.",
   },
   {
@@ -1069,6 +1162,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'reverence' most nearly means:",
     choices: ["humor", "boredom", "awe", "anger"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "Treating someone's choices as faultless reflects deep respect. 'Awe' fits. 'Anger' is the opposite; 'humor' and 'boredom' don't match the worshipful tone.",
   },
   {
@@ -1077,6 +1171,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'tenuous' most nearly means:",
     choices: ["fraudulent", "weak", "rapid", "permanent"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "A recovery that any setback could erase is fragile. 'Weak' fits. 'Permanent' is the opposite; 'fraudulent' adds dishonesty not in the passage; 'rapid' doesn't match either.",
   },
   {
@@ -1085,6 +1180,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'verbose' most nearly means:",
     choices: ["honest", "loud", "dull", "wordy"],
     correct: 3,
+    qType: "wordsInContext",
     explanation: "Listeners tune out before he reaches the point because he uses too many words. 'Wordy' fits. 'Dull' might be a result but isn't the meaning; 'honest' and 'loud' aren't supported.",
   },
   {
@@ -1093,6 +1189,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'earnest' most nearly means:",
     choices: ["public", "lengthy", "sincere", "rehearsed"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "An apology that 'cannot always restore' trust is genuine but still falls short. 'Sincere' fits. 'Rehearsed' would suggest the opposite; 'public' and 'lengthy' aren't the meaning.",
   },
   {
@@ -1101,6 +1198,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'poignant' most nearly means:",
     choices: ["humorous", "moving", "expensive", "brief"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Reminding someone of long-lost letters from a parent stirs emotion. 'Moving' fits. 'Brief' may describe the letter but isn't the meaning; 'humorous' is the wrong tone; 'expensive' is unrelated.",
   },
   {
@@ -1109,6 +1207,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'sprawling' most nearly means:",
     choices: ["wealthy", "lazy", "expansive", "ruined"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "Hotels for miles along formerly bare coast means spread out over a wide area. 'Expansive' fits. 'Lazy' is the other sense (sprawled on a couch) but doesn't fit; 'wealthy' and 'ruined' aren't the meaning.",
   },
   {
@@ -1117,6 +1216,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'astute' most nearly means:",
     choices: ["perceptive", "ruthless", "polite", "talkative"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Spotting a bluff quickly shows sharp insight. 'Perceptive' fits. 'Ruthless' adds an aggressive quality the passage doesn't; 'polite' and 'talkative' don't match.",
   },
   {
@@ -1125,6 +1225,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'lenient' most nearly means:",
     choices: ["forgetful", "merciful", "strict", "confused"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Asking only for review rather than punishment shows mildness in discipline. 'Merciful' fits. 'Strict' is the opposite; 'forgetful' and 'confused' aren't supported.",
   },
   {
@@ -1133,6 +1234,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'acclaim' most nearly means:",
     choices: ["praise", "income", "criticism", "attention"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Being called the best of a generation is high praise. 'Praise' fits. 'Criticism' is the opposite; 'income' and 'attention' may follow but aren't the meaning.",
   },
   {
@@ -1141,6 +1243,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'clout' most nearly means:",
     choices: ["wealth", "anger", "influence", "secrecy"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "Former allies still consulting him shows he can still sway decisions. 'Influence' fits. 'Wealth' isn't mentioned; 'anger' and 'secrecy' don't match.",
   },
   {
@@ -1149,6 +1252,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'hyperbolic' most nearly means:",
     choices: ["mathematical", "exaggerated", "humorous", "negative"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Calling a debut the greatest English book ever is wildly overstated. 'Exaggerated' fits. 'Mathematical' is the geometry meaning (hyperbola) and doesn't apply; 'humorous' and 'negative' don't match.",
   },
   {
@@ -1157,6 +1261,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'disingenuous' most nearly means:",
     choices: ["insincere", "stupid", "guilty", "shy"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Rehearsed answers and unfelt grief suggest pretending. 'Insincere' fits. 'Guilty' may be implied later but isn't the meaning; 'stupid' and 'shy' don't fit the description.",
   },
   {
@@ -1165,6 +1270,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'inscrutable' most nearly means:",
     choices: ["dishonest", "boring", "famous", "mysterious"],
     correct: 3,
+    qType: "wordsInContext",
     explanation: "No one can read which way she'll vote — her position can't be made out. 'Mysterious' fits. 'Dishonest' adds an accusation; 'boring' and 'famous' don't match.",
   },
   {
@@ -1173,6 +1279,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'galvanize' most nearly means:",
     choices: ["coat", "energize", "confuse", "divide"],
     correct: 1,
+    qType: "wordsInContext",
     explanation: "Turning quiet residents into protesters means stirring them to action. 'Energize' fits. 'Coat' is the literal metallurgy meaning (galvanized steel) and doesn't apply; 'confuse' and 'divide' aren't supported.",
   },
   {
@@ -1181,6 +1288,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'reconcile' most nearly means:",
     choices: ["balance", "ignore", "publish", "remember"],
     correct: 0,
+    qType: "wordsInContext",
     explanation: "Finding a middle ground between opposite positions means bringing them into harmony. 'Balance' fits. 'Ignore' would mean abandoning the effort; 'publish' and 'remember' don't match.",
   },
   {
@@ -1189,6 +1297,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'unequivocal' most nearly means:",
     choices: ["unfair", "complicated", "clear", "temporary"],
     correct: 2,
+    qType: "wordsInContext",
     explanation: "A ruling that throws out every piece of evidence leaves no doubt. 'Clear' fits. 'Unfair' is a judgment the passage doesn't make; 'complicated' is the opposite; 'temporary' isn't supported.",
   },
   {
@@ -1197,6 +1306,7 @@ const PSAT_READING_WRITING = [
     question: "As used in the passage, 'wary' most nearly means:",
     choices: ["bored", "exhausted", "eager", "cautious"],
     correct: 3,
+    qType: "wordsInContext",
     explanation: "Waiting for long-term studies before prescribing shows careful caution. 'Cautious' fits. 'Eager' is the opposite; 'bored' and 'exhausted' don't match the medical-judgment context.",
   },
   {
@@ -1210,6 +1320,7 @@ const PSAT_READING_WRITING = [
       "contain it",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "The singular subject 'wing' requires the singular verb 'contains.' The original 'contain' is plural and disagrees with the subject. 'Are containing' is both plural and unnecessarily progressive. 'Contain it' adds a redundant pronoun and still has the agreement error.",
   },
   {
@@ -1223,6 +1334,7 @@ const PSAT_READING_WRITING = [
       "are asked",
     ],
     correct: 2,
+    qType: "formStructureSense",
     explanation: "'Each' is a singular indefinite pronoun and takes a singular verb: 'was asked.' The phrase 'of the students' does not change the subject. 'Were asked' and 'were being asked' are plural; 'are asked' shifts tense incorrectly.",
   },
   {
@@ -1236,6 +1348,7 @@ const PSAT_READING_WRITING = [
       "Maria heard the sound of an owl",
     ],
     correct: 3,
+    qType: "formStructureSense",
     explanation: "The introductory phrase 'Walking through the forest at dusk' must modify the person doing the walking. Only choice D makes Maria the subject of the main clause, fixing the dangling modifier. The other options leave 'the sound' or 'an owl' as the subject, implying the sound or owl was walking.",
   },
   {
@@ -1249,6 +1362,7 @@ const PSAT_READING_WRITING = [
       "and making a chocolate souffle",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "Parallel structure requires each item in the list to share the same form. The first two items are noun phrases ('a roasted duck,' 'a vegetable risotto'), so the third should match: 'a chocolate souffle.' The other choices break the noun-phrase pattern with verbs or new clauses.",
   },
   {
@@ -1262,6 +1376,7 @@ const PSAT_READING_WRITING = [
       "however they still, managed",
     ],
     correct: 2,
+    qType: "boundaries",
     explanation: "'However' as a conjunctive adverb at the beginning of a clause is followed by a comma. The semicolon before it correctly joins the two independent clauses, but a comma must follow 'however.' Choice B double-punctuates; choice D places a comma in the wrong spot.",
   },
   {
@@ -1275,6 +1390,7 @@ const PSAT_READING_WRITING = [
       "is housed",
     ],
     correct: 3,
+    qType: "formStructureSense",
     explanation: "The subject is 'collection' (singular), not 'rare books.' Singular subjects take singular verbs: 'is housed.' 'Are housed' and 'have been housed' are plural. 'Were housing' switches to active voice incorrectly and is also past progressive.",
   },
   {
@@ -1288,6 +1404,7 @@ const PSAT_READING_WRITING = [
       "their results",
     ],
     correct: 0,
+    qType: "formStructureSense",
     explanation: "'Its' is the possessive form (no apostrophe) and is correct here — the experiment owns the results. 'It's' is a contraction for 'it is,' which doesn't make sense. 'Its'' is not a valid English form. 'Their' is plural and would not match the singular 'experiment.'",
   },
   {
@@ -1301,6 +1418,7 @@ const PSAT_READING_WRITING = [
       "and they should answer",
     ],
     correct: 2,
+    qType: "formStructureSense",
     explanation: "The list begins with bare verbs after 'to': '(to) read,' '(to) take,' and so the third item should also be a bare verb: 'answer.' Adding 'to' or a new clause breaks the parallelism. 'Read,' 'take,' and 'answer' share the same infinitive base governed by the leading 'to.'",
   },
   {
@@ -1314,6 +1432,7 @@ const PSAT_READING_WRITING = [
       "fewer",
     ],
     correct: 3,
+    qType: "formStructureSense",
     explanation: "'Fewer' is used with countable nouns (students); 'less' is used with uncountable nouns (water, time). 'Lesser' implies inferior quality, not quantity. 'Least' is a superlative and would not fit a two-way comparison.",
   },
   {
@@ -1327,6 +1446,7 @@ const PSAT_READING_WRITING = [
       "affecting",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "'Affect' is the verb meaning 'to influence'; 'effect' as a verb means 'to bring about,' which doesn't fit the sentence. The policy will influence employees, so 'affect' is right. 'Effected' is past tense and clashes with 'will.' 'Affecting' is not a finite verb.",
   },
   {
@@ -1340,6 +1460,7 @@ const PSAT_READING_WRITING = [
       "is",
     ],
     correct: 2,
+    qType: "formStructureSense",
     explanation: "The main clause uses past tense ('arrived'), so the action that happened before it should use past perfect: 'had been.' 'Has been' is present perfect and doesn't sequence properly. 'Was being' is past progressive; 'is' shifts to present.",
   },
   {
@@ -1353,6 +1474,7 @@ const PSAT_READING_WRITING = [
       "and dismissed",
     ],
     correct: 3,
+    qType: "formStructureSense",
     explanation: "The list already establishes 'the professor' as the subject; repeating 'she' is redundant. 'And dismissed' continues the parallel verb structure cleanly. 'Dismissing' breaks parallelism, and 'she also' is wordy and unnecessary.",
   },
   {
@@ -1366,6 +1488,7 @@ const PSAT_READING_WRITING = [
       "has been willing",
     ],
     correct: 2,
+    qType: "formStructureSense",
     explanation: "With 'neither...nor,' the verb agrees with the subject closest to it. 'Players' is plural, so the verb must be plural: 'were willing.' 'Was willing' and 'is willing' are singular; 'has been willing' is also singular.",
   },
   {
@@ -1379,6 +1502,7 @@ const PSAT_READING_WRITING = [
       "in addition, they failed",
     ],
     correct: 0,
+    qType: "transitions",
     explanation: "The contrast between being vivid/emotional and failing to attract attention requires a contrast transition. 'Nevertheless' signals that contrast. 'Therefore' implies cause, 'for example' implies illustration, and 'in addition' implies adding similar info — none fit.",
   },
   {
@@ -1392,6 +1516,7 @@ const PSAT_READING_WRITING = [
       "of who are",
     ],
     correct: 2,
+    qType: "formStructureSense",
     explanation: "'Both of whom' is the correct construction when referring to two people in a nonrestrictive clause. 'Whom' is the object of 'of.' 'Who is' is singular and ungrammatical here; 'of which' is for things, not people; 'of who' uses the wrong case.",
   },
   {
@@ -1405,6 +1530,7 @@ const PSAT_READING_WRITING = [
       ", and three large eggs at room temperature",
     ],
     correct: 3,
+    qType: "boundaries",
     explanation: "A serial comma before 'and' is needed in a list of three items, and 'at room temperature' modifies 'eggs' tightly enough that no comma is needed. The original omits the comma before 'and'; choice B adds an unnecessary comma; choice C omits both.",
   },
   {
@@ -1418,6 +1544,7 @@ const PSAT_READING_WRITING = [
       "that they had all agreed on it",
     ],
     correct: 2,
+    qType: "formStructureSense",
     explanation: "The original is redundant: 'that' already refers to 'decision,' so adding 'it' is ungrammatical. Choice C ('they all agreed on') is the shortest grammatical fix and is uniquely correct under the conciseness criterion in the question stem. Choice B ('which they all agreed on') is grammatically fine but longer; choice D doubles down on the redundant 'it' and adds tense complexity.",
   },
   {
@@ -1431,6 +1558,7 @@ const PSAT_READING_WRITING = [
       "that was scheduled, for the following morning,",
     ],
     correct: 0,
+    qType: "formStructureSense",
     explanation: "The original is a clean reduced relative clause — 'scheduled for the following morning' is concise and clear. Choice B uses awkward phrasing ('next day morning'); choice C is wordy and roundabout; choice D adds unnecessary commas that turn a tight modifier into a parenthetical.",
   },
   {
@@ -1444,6 +1572,7 @@ const PSAT_READING_WRITING = [
       "than",
     ],
     correct: 3,
+    qType: "formStructureSense",
     explanation: "'Than' is used for comparisons; 'then' refers to time. 'Longer than' is the correct comparative construction. 'As' would require 'as long as,' and 'from' doesn't pair with 'longer.'",
   },
   {
@@ -1457,6 +1586,7 @@ const PSAT_READING_WRITING = [
       "and explaining",
     ],
     correct: 1,
+    qType: "boundaries",
     explanation: "The original is a comma splice — two independent clauses joined by only a comma. 'Explaining' turns the second clause into a participial phrase, fixing the splice. 'She explains' shifts tense; 'and explaining' creates a hybrid that doesn't match the first clause's verb form.",
   },
   {
@@ -1470,6 +1600,7 @@ const PSAT_READING_WRITING = [
       "the damage, and it was caused by high winds and heavy rain",
     ],
     correct: 0,
+    qType: "formStructureSense",
     explanation: "The reduced relative clause 'caused by the high winds and heavy rain' is concise and clear. Choice B adds unnecessary 'which was'; choice C is wordy and awkward; choice D adds an unnecessary independent clause. Concise reduced relative clauses are preferred when meaning is preserved.",
   },
   {
@@ -1483,6 +1614,7 @@ const PSAT_READING_WRITING = [
       "who many had predicted would lose",
     ],
     correct: 3,
+    qType: "formStructureSense",
     explanation: "The pronoun is the subject of the embedded clause 'would lose,' so the subjective 'who' is correct. The phrase 'many had predicted' is interrupting. 'Whom' would only be correct if the pronoun were an object. Choices B and C shift the verb structure incorrectly.",
   },
   {
@@ -1496,6 +1628,7 @@ const PSAT_READING_WRITING = [
       "she still struggled",
     ],
     correct: 3,
+    qType: "formStructureSense",
     explanation: "'Although' already introduces a contrast clause; pairing it with 'but' is redundant. Just 'she still struggled' works. 'Yet still' double-stacks the contrast. 'But still struggling' creates a fragment.",
   },
   {
@@ -1509,6 +1642,7 @@ const PSAT_READING_WRITING = [
       "was contain",
     ],
     correct: 0,
+    qType: "formStructureSense",
     explanation: "Simple past 'contained' is correct for this stative verb describing a past state. State verbs like 'contain' generally don't take progressive aspect, so 'was containing' and 'is containing' are awkward and incorrect. 'Was contain' is ungrammatical.",
   },
   {
@@ -1522,6 +1656,7 @@ const PSAT_READING_WRITING = [
       "to improve public transit, affordable housing, and parks",
     ],
     correct: 2,
+    qType: "formStructureSense",
     explanation: "Parallel structure requires each item to share the same form. Choice C uses three '-ing' gerunds: 'improving,' 'expanding,' 'investing.' The original mixes gerund, noun, and infinitive. Choice B mixes gerund and noun phrases; choice D mixes infinitive and bare nouns.",
   },
   {
@@ -1535,6 +1670,7 @@ const PSAT_READING_WRITING = [
       "are being",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "With 'neither X nor Y,' the verb agrees with the nearer subject. 'Assistants' (plural, closer to the verb) requires the plural 'were.' 'Was' would only be correct if the order were reversed ('Neither her assistants nor the manager was'); 'is' and 'are being' shift to wrong tenses.",
   },
   {
@@ -1548,6 +1684,7 @@ const PSAT_READING_WRITING = [
       "in between",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "'Between' is used for two items; 'among' is used for three or more. Since there are four restaurants, 'among' is correct. 'From amongst' is wordy; 'in between' suggests location, not choice.",
   },
   {
@@ -1561,6 +1698,7 @@ const PSAT_READING_WRITING = [
       "the report needed several hours of overtime",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "The opening infinitive phrase 'To finish the report before the Monday deadline' must modify someone who can finish a report — that's the auditing team, not 'hours' or 'the report.' Choice B makes the team the subject, anchoring the modifier correctly. Choice C still leaves 'overtime' as the subject; choice D wrongly implies the report (not the team) needed the overtime.",
   },
   {
@@ -1574,6 +1712,7 @@ const PSAT_READING_WRITING = [
       "and it had beauty",
     ],
     correct: 0,
+    qType: "formStructureSense",
     explanation: "'Both...and' requires parallel structure. The first item is the adjective 'functional,' so the second must also be an adjective: 'beautiful.' The original is correct. The other choices use noun phrases or clauses, breaking the parallel.",
   },
   {
@@ -1587,6 +1726,7 @@ const PSAT_READING_WRITING = [
       "owing to the fact that",
     ],
     correct: 2,
+    qType: "formStructureSense",
     explanation: "'Because' alone expresses cause clearly and concisely; 'because of the fact that' is wordy. The other choices are also unnecessarily long versions of 'because.' Strong writing prefers the single word.",
   },
   {
@@ -1600,6 +1740,7 @@ const PSAT_READING_WRITING = [
       "which opened last month",
     ],
     correct: 3,
+    qType: "formStructureSense",
     explanation: "Nonrestrictive clauses (set off by commas) use 'which,' not 'that.' 'That' is for restrictive clauses without commas. 'What' is incorrect for a relative pronoun here, and 'opened last month' without a relative pronoun creates an awkward fragment within the sentence.",
   },
   {
@@ -1613,6 +1754,7 @@ const PSAT_READING_WRITING = [
       "winning",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "A semicolon already joins two independent clauses; adding 'and' is redundant. 'They won' alone completes the second clause. 'And won' creates a comma-splice-style hybrid after a semicolon, and 'winning' creates a fragment.",
   },
   {
@@ -1626,6 +1768,7 @@ const PSAT_READING_WRITING = [
       "with textiles from Edo Japan as well",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "The list uses parallel noun phrases with prepositional modifiers: 'paintings from Renaissance Italy,' 'sculptures from ancient Greece.' The third should follow the same pattern: 'textiles from Edo Japan.' The original introduces a new subject/verb; choice C breaks the prep-phrase structure; choice D drops the coordinating conjunction.",
   },
   {
@@ -1639,6 +1782,7 @@ const PSAT_READING_WRITING = [
       "convene",
     ],
     correct: 3,
+    qType: "formStructureSense",
     explanation: "'Convene' already means 'to come together for a meeting,' so 'convene at a meeting' is redundant. Just 'convene' is sufficient. The other options pile on extra words without adding meaning.",
   },
   {
@@ -1652,6 +1796,7 @@ const PSAT_READING_WRITING = [
       "their collar",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "Possessive 'its' (no apostrophe) is correct — the dog owns the collar. The original 'it's' is the contraction of 'it is,' which makes no sense here ('it is collar was soaked'). 'Its'' is never a valid form. 'Their' would not agree with the singular 'dog.'",
   },
   {
@@ -1661,11 +1806,12 @@ const PSAT_READING_WRITING = [
     choices: [
       "NO CHANGE",
       "however, the audience gave a standing ovation",
-      "in contrast, the audience gave a standing ovation",
-      "despite this, the audience gave a standing ovation",
+      "for instance, the audience gave a standing ovation",
+      "consequently, the audience gave a standing ovation",
     ],
     correct: 0,
-    explanation: "The second clause adds a positive consequence consistent with the first, so an additive transition like 'moreover' is right. 'However,' 'in contrast,' and 'despite this' all suggest contrast, which doesn't match the logic — a beautiful performance and a standing ovation reinforce each other.",
+    qType: "transitions",
+    explanation: "The second clause adds a positive consequence consistent with the first, so an additive transition like 'moreover' is right. 'However' signals contrast, which doesn't match — a beautiful performance and a standing ovation reinforce each other. 'For instance' wrongly frames the ovation as an example of the performance itself, and 'consequently' overstates the link as strict cause and effect when the writer is simply adding a related observation.",
   },
   {
     type: "psatRW", subtype: "writingEdit",
@@ -1678,6 +1824,7 @@ const PSAT_READING_WRITING = [
       "is",
     ],
     correct: 2,
+    qType: "formStructureSense",
     explanation: "With 'neither...nor,' the verb agrees with the closer subject. 'Demeanor' is singular, so the verb must be singular: 'was.' 'Were' and 'have been' are plural; 'is' shifts tense away from the past 'questioned.'",
   },
   {
@@ -1691,6 +1838,7 @@ const PSAT_READING_WRITING = [
       "are studying",
     ],
     correct: 0,
+    qType: "formStructureSense",
     explanation: "Future perfect progressive ('will have been studying') correctly describes an action ongoing up to a point in the future and emphasizes duration ('for over a decade'). 'Have studied' is present perfect and misses the future reference; 'are studying' is simple present progressive; 'will have studied' loses the continuous duration emphasized by 'for over a decade.'",
   },
   {
@@ -1704,6 +1852,7 @@ const PSAT_READING_WRITING = [
       "is featuring hiking trails and picnic areas, plus a playground meant for the use of children",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "'A children's playground' is more concise than 'a playground that is for children' and preserves meaning. Choice C adds unnecessary phrases like 'the following' and 'also'; choice D is wordy and shifts to progressive aspect.",
   },
   {
@@ -1717,6 +1866,7 @@ const PSAT_READING_WRITING = [
       "but improving emergency response across the county too",
     ],
     correct: 1,
+    qType: "formStructureSense",
     explanation: "The 'not only X but also Y' construction requires X and Y to be parallel. 'Not only reduce daily travel time' is a verb phrase, so the second half should also begin with a verb: 'but also improve emergency response.' The original inserts a subject and an auxiliary; choice C breaks the 'not only / but also' pairing; choice D shifts to a gerund and drops 'also.'",
   },
 
@@ -1732,6 +1882,7 @@ const PSAT_READING_WRITING = [
       "All three had the same range",
     ],
     correct: 2,
+    qType: "commandEvidenceQuant",
     explanation: "Range = max − min for each flavor. Vanilla: 18 − 12 = 6. Chocolate: 22 − 14 = 8. Strawberry: 10 − 8 = 2. Strawberry has the smallest range, meaning it moved most consistently.",
   },
 ];
