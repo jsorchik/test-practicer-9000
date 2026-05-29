@@ -2,73 +2,83 @@
 const BRIDGE_READING = {
   passages: [
     { id: "bp1", title: "The Saturday Inventor", genre: "fiction",
-      text: `Maya spread her supplies across the kitchen table: rubber bands, cardboard tubes, three plastic spoons, and a roll of tape that was already losing its stick. The school's Invention Fair was Monday, and so far her best idea was a "self-stirring" cereal bowl that did not actually stir anything.
+      text: `Maya had been telling herself all week that Saturday morning would be different. This was the morning she would finally come up with a brilliant idea for the Invention Fair. She had a notebook full of crossed-out sketches, a pencil that was mostly eraser by now, and the kind of stubborn hope that only shows up two days before a deadline.
 
-Her older brother Theo wandered in, took one look at the mess, and snorted. "Let me guess. Another cereal bowl?"
+Maya spread her supplies across the kitchen table: rubber bands, cardboard tubes, three plastic spoons, and a roll of tape that was already losing its stick. The school's Invention Fair was Monday, and so far her best idea was a "self-stirring" cereal bowl that did not actually stir anything. She had presented an early version to her cat, who had walked away unimpressed.
 
-"It's a marble launcher," Maya said firmly, even though she had only decided this five seconds ago. She taped two spoons to a cardboard tube, stretched a rubber band between them, and dropped a marble in. When she pulled back and let go, the marble flew exactly four inches before rolling sadly off the table.
+Her older brother Theo wandered in, still in pajama pants, took one look at the mess, and snorted. "Let me guess. Another cereal bowl?"
 
-Theo laughed, but then he sat down. "The rubber band's too loose. And your spoons are pointing the wrong way." He flipped one spoon around so it cupped the marble instead of letting it slide off.
+"It's a marble launcher," Maya said firmly, even though she had only decided this five seconds ago. She taped two spoons to a cardboard tube, stretched a rubber band between them, and dropped a marble in. The rubber band sagged a little, as if it already knew this wasn't going to work. When she pulled back and let go, the marble flew exactly four inches before rolling sadly off the table and disappearing under the fridge.
+
+Theo laughed, the loud kind of laugh that filled the whole kitchen, but then, surprising her, he sat down. He picked up the cardboard tube and turned it slowly in his hands like a real engineer studying a real problem. "The rubber band's too loose. And your spoons are pointing the wrong way." He flipped one spoon around so it cupped the marble instead of letting it slide off, and he wound the rubber band around the tube twice to tighten it.
 
 Maya tried again. This time the marble shot across the kitchen and bounced off the refrigerator with a satisfying ping. She grinned so wide her cheeks hurt.
 
-"Okay," Theo said, pretending not to be impressed. "But you need a target. Inventions need a point."
+"Okay," Theo said, pretending not to be impressed, though he was already looking around the kitchen for more supplies. "But you need a target. Inventions need a point."
 
-By dinner, Maya had built a cardboard castle with paper soldiers on top. The launcher knocked them down one by one.` },
+By dinner, Maya had built a cardboard castle with paper soldiers on top. The launcher knocked them down one by one, and even Theo cheered each time another soldier toppled.` },
     { id: "bp2", title: "The Night Shift in the Garden", genre: "nonfiction",
-      text: `When the sun goes down, most flowers close their petals and rest. But a small group of plants does the opposite. These night-blooming flowers wait until darkness falls, then open wide to greet a very different crowd of visitors.
+      text: `If you have ever walked through a garden in the late afternoon, you have probably noticed how busy it is. Bees move from petal to petal in a quick, fuzzy hurry. Butterflies float between blossoms, and hummingbirds dart in and out so fast they almost vanish. But what happens after the sun sets? You might guess that the garden simply falls asleep. In a way, it does. But it also wakes up.
 
-During the day, gardens are busy with bees, butterflies, and hummingbirds. These animals find flowers using bright colors and sweet smells. At night, however, those colorful petals would be useless. Most night creatures cannot see red or yellow in the dark. So night-blooming plants take a different approach. Their petals are usually white or pale, which reflects what little moonlight there is. Their scents are also much stronger, sometimes carrying for hundreds of feet through the still night air.
+When the sun goes down, most flowers close their petals and rest. But a small group of plants does the opposite. These night-blooming flowers wait until darkness falls, then open wide to greet a very different crowd of visitors.
 
-The visitors these flowers attract are surprising. Moths are the most common pollinators, fluttering from bloom to bloom on dusty wings. In some parts of the world, bats also do the job. Even certain beetles get involved, crawling into wide blossoms and staying the night.
+During the day, gardens are busy with bees, butterflies, and hummingbirds. These animals find flowers using bright colors and sweet smells. At night, however, those colorful petals would be useless. Most night creatures cannot see red or yellow in the dark. So night-blooming plants take a different approach. Their petals are usually white or pale, which reflects what little moonlight there is. Some flowers, such as the moonflower and the evening primrose, look almost glowing in the dim light. Their scents are also much stronger, sometimes carrying for hundreds of feet through the still night air. A single open blossom can perfume an entire backyard.
 
-Scientists believe night blooming evolved because the daytime competition for pollinators is fierce. By opening after dark, these plants find quieter customers and avoid the crowd.` },
+The visitors these flowers attract are surprising. Moths are the most common pollinators, fluttering from bloom to bloom on dusty wings. Some moths have tongues so long they can reach nectar deep inside narrow flowers, brushing pollen onto their faces in the process. In some parts of the world, bats also do the job. They hover at the blossom, lap up the sweet nectar, and carry pollen from plant to plant on their fur. Even certain beetles get involved, crawling into wide blossoms and staying the night, fed and sheltered until morning.
+
+Scientists believe night blooming evolved because the daytime competition for pollinators is fierce. With so many flowers calling for attention all at once, a daytime bloom may be ignored. By opening after dark, these plants find quieter customers and avoid the crowd. Next time you walk past a garden at dusk, look closely. The night shift may just be clocking in.` },
     { id: "bp3", title: "The Boy Who Mapped the Cold", genre: "biography",
-      text: `Matthew Henson grew up in Maryland in the 1870s, the son of free Black farmers. By the time he was twelve, both his parents had died, and he set out on his own. He walked to Washington, then to Baltimore, where he talked his way onto a merchant ship as a cabin boy. The captain taught him to read charts, handle ropes, and navigate by the stars. By the time Henson was a young man, he had sailed across three oceans.
+      text: `Most people remember the names of famous explorers, but they often forget the people who walked beside them through the snow. Matthew Henson is one of those forgotten figures. For most of the twentieth century, his name was missing from history books that should have included him. The story of how he reached the top of the world is one of stubborn courage, careful learning, and a friendship that lasted more than two decades.
 
-In 1887, he met an explorer named Robert Peary, who was planning trips to the Arctic. Peary needed someone strong, clever, and willing to face brutal cold. Henson agreed. Over the next twenty-two years, the two men made several attempts to reach the North Pole.
+Matthew Henson grew up in Maryland in the 1870s, the son of free Black farmers. By the time he was twelve, both his parents had died, and he set out on his own. He walked to Washington, then to Baltimore, where he talked his way onto a merchant ship as a cabin boy. The captain, a kind man who saw something special in the young sailor, taught him to read charts, handle ropes, and navigate by the stars. By the time Henson was a young man, he had sailed across three oceans and seen ports on three continents.
 
-Henson became the team's most skilled member. He learned the Inuktitut language from the Inuit people of Greenland, who shared their knowledge of sled-building, dog handling, and surviving on the ice.
+In 1887, he met an explorer named Robert Peary, who was planning trips to the Arctic. Peary needed someone strong, clever, and willing to face brutal cold. Henson agreed. Over the next twenty-two years, the two men made several attempts to reach the North Pole. They suffered frostbite, near-starvation, and storms that tore at their tents for days. Each expedition taught them more, and each time they returned home, they began planning the next one.
+
+Henson became the team's most skilled member. He learned the Inuktitut language from the Inuit people of Greenland, who shared their knowledge of sled-building, dog handling, and surviving on the ice. He could repair a broken sled in freezing wind and read the shifting ice the way other sailors read the open sea. The Inuit trusted him in a way they did not trust other outsiders, and that trust opened doors the team could not have opened on its own.
 
 In April 1909, after weeks of brutal travel across drifting sea ice, a small group reached what they believed was the North Pole. Henson was at the front, breaking trail. For decades, history books gave most of the credit to Peary alone. Today his name appears in museums, on stamps, and in books that finally tell the whole story.` },
     { id: "bp4", title: "How a Snowflake Gets Its Shape", genre: "informational",
-      text: `No two snowflakes are exactly alike, but every single one starts the same way: with a speck of dust floating high in a cloud. When the air around that speck is cold enough, water vapor freezes onto it, forming a tiny six-sided crystal. From that moment on, the snowflake begins a long, twisting journey toward the ground.
+      text: `On a quiet winter morning, when snow piles up against the windowsill, it is easy to think of snowflakes as simple little bits of frozen rain. But each tiny crystal is actually the result of a long and surprising journey through the sky. Scientists who have studied snowflakes under microscopes have discovered patterns so detailed they look like miniature stars or lace.
 
-The six-sided shape is not an accident. Water molecules naturally lock together at angles that produce hexagons. As the crystal falls, more water vapor freezes onto its edges, and tiny arms begin to grow outward from each of the six corners.
+No two snowflakes are exactly alike, but every single one starts the same way: with a speck of dust floating high in a cloud. When the air around that speck is cold enough, water vapor freezes onto it, forming a tiny six-sided crystal. From that moment on, the snowflake begins a long, twisting journey toward the ground. Depending on the wind, that journey may take an hour or more, and the crystal may rise and fall many times before it finally lands.
 
-The exact shape a snowflake takes depends on the temperature and humidity of every layer of air it passes through. A flake that drifts through warmer, wetter air may grow wide, flat plates. One that travels through colder, drier air may sprout long needles instead. Because no two snowflakes follow the exact same path, no two end up looking exactly the same.
+The six-sided shape is not an accident. Water molecules naturally lock together at angles that produce hexagons. You can think of the molecules as tiny magnets that prefer to connect in only certain directions. As the crystal falls, more water vapor freezes onto its edges, and tiny arms begin to grow outward from each of the six corners. These arms branch and split as the flake passes through different layers of air, creating the lacy patterns we see.
 
-Each flake in your hand carries a tiny record of the sky it just fell through.` },
+The exact shape a snowflake takes depends on the temperature and humidity of every layer of air it passes through. A flake that drifts through warmer, wetter air may grow wide, flat plates that look like tiny shields. One that travels through colder, drier air may sprout long needles instead, thin and sharp as pine. Some flakes travel through several different layers, mixing plates and needles in the same crystal. Because no two snowflakes follow the exact same path, no two end up looking exactly the same.
+
+Next time a snowstorm passes through, try catching a few flakes on a dark glove or a piece of black cloth. If you look closely, you may see the six arms, the delicate branches, and the small differences that make every flake its own. Each flake in your hand carries a tiny record of the sky it just fell through.` },
     { id: "bp5", title: "The Treehouse Vote", genre: "fiction",
-      text: `Jordan and his cousins had been working on the treehouse all summer. By August, the platform was finally finished, and the four of them sat on it, sweaty and proud. Now came the hard part: deciding what to put inside.
+      text: `The old oak tree in the backyard of Grandma's house had been waiting for a treehouse for as long as anyone could remember. Its lowest branch was so wide and flat that it almost looked like a built-in floor, and its leaves spread out into a thick green roof. Every summer, when the four cousins came together for their long August visit, they talked about building something in that tree. This year, finally, they had done it.
+
+Jordan and his cousins had been working on the treehouse all summer. By August, the platform was finally finished, and the four of them sat on it, sweaty and proud. The wood smelled clean and new, and a warm breeze moved through the leaves above. Now came the hard part: deciding what to put inside.
 
 "A reading corner," said Priya, who always had a book in her backpack. "With pillows."
 
 "A snack station," said Marcus, who always had crumbs on his shirt. "With a cooler."
 
-"A lookout tower," said Jordan. He had wanted a lookout tower since he first saw the tree.
+"A lookout tower," said Jordan. He had wanted a lookout tower since he first saw the tree. In his head he could already see himself standing high up, spotting his cousins coming up the path long before they arrived.
 
 The fourth cousin, little Ezra, was only seven. He pulled at his shoelaces and said quietly, "A place where everybody can fit."
 
-Nobody answered right away. The platform was big, but not huge. They could not have all three things, and four people meant any vote would end in a tie.
+Nobody answered right away. The platform was big, but not huge. They could not have all three things, and four people meant any vote would end in a tie. For a long minute, the only sound was a robin chirping in the branches above.
 
-Priya sighed first. "Okay. What if the reading corner is also the snack spot? Pillows are good for sitting and eating."
+Priya sighed first, the kind of sigh that meant she had been thinking. "Okay. What if the reading corner is also the snack spot? Pillows are good for sitting and eating."
 
-Marcus shrugged. "Fine by me, as long as the cooler fits."
+Marcus shrugged, already imagining a row of cold drinks. "Fine by me, as long as the cooler fits."
 
-Jordan stared up through the leaves. A lookout tower would have been amazing. But he pictured himself sitting alone in it while the others laughed below. "We could put a window on that side," he said, pointing. "Anyone can look out."
+Jordan stared up through the leaves, watching them shift in the breeze. A lookout tower would have been amazing. But he pictured himself sitting alone in it while the others laughed below, sharing snacks and pages and jokes he could not hear. "We could put a window on that side," he said, pointing. "Anyone can look out."
 
-Ezra grinned and bounced on his heels. They spent the rest of the afternoon arguing about pillow colors, which felt, somehow, like a victory.` },
+Ezra grinned and bounced on his heels so hard the platform creaked. They spent the rest of the afternoon arguing about pillow colors, which felt, somehow, like a victory.` },
     { id: "bp6", title: "The Town Under the Sand", genre: "informational",
-      text: `In the deserts of southern Africa lies a place called Kolmanskop. Today it is silent. Sand pours through broken windows and piles up against doors that have not opened in decades. But a hundred years ago, Kolmanskop was one of the richest towns in the region.
+      text: `Some towns disappear slowly, building by building. Others vanish almost overnight when the reason for their existence runs out. In the deserts of southern Africa lies a place called Kolmanskop, and it is a strange mix of both kinds of disappearance. Today it is silent. Sand pours through broken windows and piles up against doors that have not opened in decades. Old wallpaper peels from cracked walls, and once-grand staircases lead nowhere but into smooth dunes. But a hundred years ago, Kolmanskop was one of the richest towns in the region.
 
-The story began in 1908, when a railway worker noticed something glittering in the sand. It turned out to be a diamond. Word spread quickly, and within months, miners and their families had rushed in to dig for more.
+The story began in 1908, when a railway worker noticed something glittering in the sand. It turned out to be a diamond. He brought it to his supervisor, who held it up to the harsh desert sunlight and recognized the prize at once. Word spread quickly, and within months, miners and their families had rushed in to dig for more. Tents were pitched in the dust. Wooden houses were shipped in piece by piece, then nailed together as fast as the workers could build.
 
-The town that grew up around the diamond fields was unlike anything else in the desert. Kolmanskop had a hospital with the first X-ray machine in southern Africa. It had a bowling alley, a theater, an ice factory, and even a tram that carried fresh water from the coast.
+The town that grew up around the diamond fields was unlike anything else in the desert. Kolmanskop had a hospital with the first X-ray machine in southern Africa. It had a bowling alley, a theater, an ice factory, and even a tram that carried fresh water from the coast. Children went to school in a tidy building with a tall roof. Families ordered fancy furniture from Germany, and visitors said the streets sometimes echoed with piano music drifting from open windows in the cool evenings.
 
-But the diamonds did not last forever. By the 1930s, miners began finding larger deposits farther south. People packed up and left, taking what they could carry. The desert wasted no time. Wind carried sand through every open window, and dunes climbed slowly up staircases and into bedrooms.
+But the diamonds did not last forever. The richest stones near the surface were soon picked clean. By the 1930s, miners began finding larger deposits farther south. People packed up and left, taking what they could carry. They locked their doors behind them, as if they might return one day. They never did. The desert wasted no time. Wind carried sand through every open window, and dunes climbed slowly up staircases and into bedrooms. Year by year, the rooms filled in, until in some houses the sand reached almost to the ceiling.
 
-Today Kolmanskop is a ghost town that visitors can tour.` }
+Today Kolmanskop is a ghost town that visitors can tour. They wander through hallways half-buried in dunes and stand in old rooms where the desert has, room by room, taken back what people once thought they owned.` }
   ],
   questions: [
     { passageId: "bp1", question: "What is the main idea of the passage?", correct: 1, qType: "mainIdea", choices: ["Maya wins the Invention Fair with a marble launcher.","With Theo's help, Maya turns a failing project into something she's proud of.","Theo teaches Maya that engineering is harder than it looks.","Maya's family always supports her projects."], explanation: "The story shows Maya's project transforming with Theo's quiet help." },
