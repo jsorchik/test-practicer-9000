@@ -2956,7 +2956,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.16";
+const APP_VERSION = "3.17";
 const APP_VERSION_DATE = "2026-05-27";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3288,15 +3288,15 @@ const state = {
   // {lower, bridge, middle} shape; loadProgress migrates them under isee.
   lifetimes: {
     isee: {
-      lower:  { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
-      bridge: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
-      middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
+      lower:  { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0, recentPicks: {} },
+      bridge: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0, recentPicks: {} },
+      middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0, recentPicks: {} },
     },
     psat: {
-      psat89: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
+      psat89: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0, recentPicks: {} },
     },
     tiny: {
-      prek:   { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0 },
+      prek:   { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0, recentPicks: {} },
     },
   },
 };
@@ -3371,6 +3371,46 @@ function shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+// ─── Recent-picks exclusion ────────────────────────────────────────────────
+// Even with hundreds of entries per bank, random draws across multiple
+// tests yield birthday-paradox repeats fast (e.g. 668-word bank, 10 picks
+// per test → ~25% chance of any repeat by test 2, ~84% by test 5). To
+// prevent that we remember the last ~K tests' worth of picked indices
+// per (testType × grade × poolKey) and bias each new draw AWAY from
+// those. If the available fresh-pool isn't big enough, we top up with
+// the OLDEST recent picks (FIFO un-exclusion) so a draw never short-
+// returns.
+function pickWithExclusion(pool, count, recent) {
+  const recentSet = new Set(recent || []);
+  const fresh = [];
+  for (let i = 0; i < pool.length; i++) {
+    if (!recentSet.has(i)) fresh.push(i);
+  }
+  if (fresh.length >= count) {
+    return shuffle(fresh).slice(0, count);
+  }
+  // Pool exhausted of fresh — take all fresh + oldest recents to fill
+  const needed = count - fresh.length;
+  const topUp = (recent || []).slice(0, needed);
+  return shuffle(fresh.concat(topUp)).slice(0, count);
+}
+
+// Append a draw's picks to the per-pool recent-picks history, then trim
+// the head so the list stays bounded. Cap is ~40% of pool.length (max
+// 120) — leaves plenty of fresh choices for the next draw while still
+// giving the kid ~3-4 tests of variety before a question can recur.
+function rememberRecentPicks(poolKey, newPicks, poolSize) {
+  if (!poolKey || !Array.isArray(newPicks) || newPicks.length === 0) return;
+  const L_ = L();
+  if (!L_.recentPicks) L_.recentPicks = {};
+  const prev = L_.recentPicks[poolKey] || [];
+  // De-dup newPicks already in prev (can happen when fresh was too small
+  // and we topped up from old recents) then append the new ones.
+  const merged = prev.filter(i => !newPicks.includes(i)).concat(newPicks);
+  const maxRemember = Math.min(Math.floor(poolSize * 0.4), 120);
+  L_.recentPicks[poolKey] = merged.slice(-maxRemember);
 }
 function $(id) { return document.getElementById(id); }
 function fmtTime(sec) {
@@ -3659,6 +3699,7 @@ function loadProgress() {
         if (!Array.isArray(L.tests))          L.tests = [];
         if (L.rewardsBanked === undefined)    L.rewardsBanked = 0;
         if (!L.mistakes)                      L.mistakes = {};
+        if (!L.recentPicks || typeof L.recentPicks !== "object") L.recentPicks = {};
       }
     }
     // Single-bank migration. Pre-3.11 the bank was per-(test type × grade).
@@ -5797,6 +5838,9 @@ function startTest() {
     // from each underlying pool, then shuffle them together so synonyms and
     // sentence completion questions interleave like the real test. Each
     // question keeps its ORIGINAL sectionKey so mistakes route correctly.
+    // Each underlying pool uses its own recent-picks history so the kid
+    // doesn't see the same synonym (or same sentence-completion stem)
+    // repeated across consecutive tests.
     const sources = section.combinesSections.map(subKey => {
       const subSection = SECTIONS.find(s => s.key === subKey);
       return { subSection, pool: currentGrade().pools[subSection.poolKey] };
@@ -5806,7 +5850,10 @@ function startTest() {
     questions = [];
     sources.forEach((src, i) => {
       const count = per + (i < rem ? 1 : 0);
-      const pickedIdxs = shuffle(src.pool.map((_, idx) => idx)).slice(0, count);
+      const poolKey = src.subSection.poolKey;
+      const recent = (L().recentPicks && L().recentPicks[poolKey]) || [];
+      const pickedIdxs = pickWithExclusion(src.pool, count, recent);
+      rememberRecentPicks(poolKey, pickedIdxs, src.pool.length);
       for (const idx of pickedIdxs) {
         questions.push(makeQuestion(src.pool[idx], src.subSection.key, idx));
       }
@@ -5814,11 +5861,18 @@ function startTest() {
     questions = shuffle(questions);
   } else {
     const pool = poolFor(section);
-    const idxs = shuffle(pool.map((_, i) => i)).slice(0, t.questionCount);
+    const poolKey = section.poolKey;
+    const recent = (poolKey && L().recentPicks && L().recentPicks[poolKey]) || [];
+    const idxs = pickWithExclusion(pool, t.questionCount, recent);
+    rememberRecentPicks(poolKey, idxs, pool.length);
     questions = idxs.map(i => makeQuestion(pool[i], section.key, i));
   }
 
   state.testQueue = questions;
+  // Persist the updated recent-picks history immediately so the exclusion
+  // survives a mid-test refresh (kid reloads, next test still avoids the
+  // questions they just saw).
+  saveProgress();
   state.testAnswers = state.testQueue.map(q => ({
     id: q.id, sectionKey: q.sectionKey, displayLabel: q.displayLabel,
     choices: q.choices, correctIdx: q.answerIdx, feedbackHtml: q.feedbackHtml,
