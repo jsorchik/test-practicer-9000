@@ -2956,7 +2956,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.19";
+const APP_VERSION = "3.19.1";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3371,6 +3371,30 @@ function shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+// ISEE Math Achievement (and PSAT Math) convention: when every answer
+// choice is a pure number, present them in ASCENDING order rather than
+// shuffled. Matches the official ERB convention observed across released
+// items (ERB's Tips page + Test Innovators' worked examples). Non-numeric
+// answer sets (algebraic expressions, units, multiple-choice prose) fall
+// through to the standard shuffle path.
+function isPureNumeric(s) {
+  // Accept leading minus, integer + optional decimal, with $/,/whitespace
+  // stripped. Excludes fractions ("1/4"), scientific notation, expressions.
+  const cleaned = String(s).replace(/[$,\s%]/g, "");
+  return /^-?\d+(\.\d+)?$/.test(cleaned);
+}
+function buildMathChoices(correct, wrong) {
+  const all = [correct, ...wrong];
+  if (all.every(isPureNumeric)) {
+    return all.slice().sort((a, b) => {
+      const na = parseFloat(String(a).replace(/[$,\s%]/g, ""));
+      const nb = parseFloat(String(b).replace(/[$,\s%]/g, ""));
+      return na - nb;
+    });
+  }
+  return shuffle(all);
 }
 
 // ─── Recent-picks exclusion ────────────────────────────────────────────────
@@ -3979,7 +4003,7 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   // PSAT Math — same shape as ISEE math (multiple choice with correct + wrong).
   // Optional `chart` field renders an inline SVG chart above the question.
   if (entry.type === "psatMath") {
-    const choices = shuffle([entry.correct, ...entry.wrong]);
+    const choices = buildMathChoices(entry.correct, entry.wrong);
     const chartHtml = entry.chart ? renderChartSvg(entry.chart) : "";
     return {
       id, sectionKey, entry,
@@ -4086,7 +4110,7 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
     };
   }
   if (entry.type === "math") {
-    const choices = shuffle([entry.correct, ...entry.wrong]);
+    const choices = buildMathChoices(entry.correct, entry.wrong);
     return {
       id, sectionKey, entry,
       promptHtml: `<div class="prompt">Select the best answer from the choices given.</div><div class="math-q">${fmtFractions(entry.question)}</div>`,
