@@ -1408,31 +1408,6 @@
     60%  { transform: scale(1.04); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
   }
-  /* ─── Streak chip in quiz bar ─── */
-  #streakStat { transition: transform 0.15s ease, color 0.15s ease; }
-  #streakStat.pulse { transform: scale(1.18); color: #f97316; }
-  /* ─── Floating streak toast ─── */
-  .streak-toast {
-    position: fixed;
-    top: 90px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-12px);
-    background: linear-gradient(135deg, #f97316, #ec4899);
-    color: white;
-    padding: 14px 22px;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: 18px;
-    box-shadow: 0 12px 28px rgba(236, 72, 153, 0.5);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 9998;
-    transition: opacity 0.25s ease, transform 0.35s cubic-bezier(.34,1.56,.64,1);
-  }
-  .streak-toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
   /* ─── Essays history list ─── */
   .essays-list { display: flex; flex-direction: column; gap: 10px; }
   .essay-card {
@@ -2568,7 +2543,6 @@
 </div>
 
 <canvas id="confettiCanvas"></canvas>
-<div class="streak-toast" id="streakToast">🔥 5 in a row!</div>
 
 <!-- LOCK IN splash — overlay shown for ~3-4s when a test launches.
      Big animated hype text, countdown 3-2-1, floating emojis, tap to skip. -->
@@ -2956,7 +2930,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.21";
+const APP_VERSION = "3.21.1";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3027,11 +3001,6 @@ function isMonetizedActive() {
 }
 function isMonetizedFor(testType) {
   return !!(state.monetizedByType && state.monetizedByType[testType]);
-}
-// True if ANY test type has monetized on — used for the header chip when
-// the parent wants a "Monetized" visual regardless of which type is active.
-function isAnyMonetized() {
-  return Object.values(state.monetizedByType || {}).some(Boolean);
 }
 
 // Parent PIN to unlock Monetized Mode. Rotates daily to today's MMDD so the
@@ -3564,22 +3533,6 @@ function fireConfetti({ intensity = 1, durationMs = 2400 } = {}) {
   }
   requestAnimationFrame(step);
 }
-let streakToastTimer = null;
-function showStreakToast(message) {
-  const el = $("streakToast");
-  if (!el) return;
-  el.textContent = message;
-  el.classList.add("show");
-  if (streakToastTimer) clearTimeout(streakToastTimer);
-  streakToastTimer = setTimeout(() => el.classList.remove("show"), 1400);
-}
-function pulseStreakChip() {
-  const el = $("streakStat");
-  if (!el) return;
-  el.classList.add("pulse");
-  setTimeout(() => el.classList.remove("pulse"), 200);
-}
-
 // Convert ASCII fractions ("3/4") and Unicode fraction chars (½, ⅗, etc.) into
 // stacked HTML fractions like standardized tests print. Handles mixed numbers
 // ("3¼" → "3" + stacked "1/4"). Skips dates and paths (no digits adjacent

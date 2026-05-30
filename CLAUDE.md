@@ -206,7 +206,6 @@ Per-type config lives in `state.payoutConfigByType[testType]`. Defaults in `DEFA
 Helpers (always use these, don't read state directly):
 - `isMonetizedActive()` — current test type's switch
 - `isMonetizedFor(testType)` — specific test type
-- `isAnyMonetized()` — any switch on
 - `activePayoutConfig()` — current test type's payout config (with fallback)
 
 ### Single global rewards bank (v3.11+)
