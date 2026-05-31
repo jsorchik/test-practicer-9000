@@ -2944,7 +2944,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.22.2";
+const APP_VERSION = "3.22.3";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -5872,7 +5872,11 @@ function showLockInSplash(onDone) {
   timeouts.push(setTimeout(tick, 900));
 }
 
+// Re-entrancy guard for finishTest / finishEssay — see finishTest. Reset
+// whenever a new section begins so each section can finish exactly once.
+let _finishingSection = false;
 function startTest() {
+  _finishingSection = false;
   state.mode = "test";
   const section = state.section;
   const t = testConfigFor(section);
@@ -6060,6 +6064,15 @@ function finishTestEarly() {
   finishTest();
 }
 function finishTest() {
+  // Re-entrancy guard. The global keydown listener fires nextOrSubmit() on
+  // Enter/Space whenever view==="quiz", but the Submit-Section confirm modal
+  // doesn't change the view — so confirming with Enter (or a double click /
+  // double Enter on a rushed section) could call finishTest twice. In a
+  // battery that double-recorded the section AND advanced the queue twice
+  // (jumping past the next section onto a break). The flag is reset in
+  // startTest / startEssay when the next section begins.
+  if (_finishingSection) return;
+  _finishingSection = true;
   stopTimer();
   // Hide the test-mode chrome so it doesn't leak into the results / battery
   // transition views (battery skips renderTestResults). Tiny mascot too.
@@ -6577,6 +6590,7 @@ function renderQuiz(picked = -1) {
 // ESSAY MODE
 // ════════════════════════════════════════════════════════════════════════════
 function startEssay() {
+  _finishingSection = false;
   state.mode = state.mode === "test" ? "test" : "practice";
   const isTest = state.mode === "test";
   const pool = currentGrade().pools.essays;
