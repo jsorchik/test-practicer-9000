@@ -2977,7 +2977,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.23";
+const APP_VERSION = "3.24";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3786,6 +3786,162 @@ function saveProgress() {
   } catch (_) {}
 }
 
+// ─── Resume-after-reload (in-progress test / MTD) ──────────────────────────
+// The live queue + answers + timer live only in memory, so a crash, dead
+// battery, OS tab-kill, or a mis-tapped "Leave site?" mid-test would lose
+// everything. We snapshot the whole in-progress session to its own
+// localStorage key on every meaningful change, and offer to resume it at
+// boot. Only resumable session types are persisted — ISEE/PSAT timed tests,
+// Mock Test Day, and timed essays. Practice/review (saved per-answer, no
+// timer) and tiny mode are not.
+const ACTIVE_SESSION_KEY = "isee-active-session-v1";
+function persistActiveSession() {
+  try {
+    if (state.testType === "tiny") { clearActiveSession(); return; }
+    const inQuiz  = state.mode === "test" && state.view === "quiz" && state.testQueue.length > 0;
+    const inEssay = state.view === "essay" && state.essay.isTest;
+    const inBattery = !!state.battery.active;
+    if (!inQuiz && !inEssay && !inBattery) return;  // nothing resumable live
+    const blob = {
+      v: 1,
+      ts: Date.now(),
+      testType: state.testType,
+      gradeLevel: state.gradeLevel,
+      testVolume: state.testVolume,
+      sectionKey: state.section ? state.section.key : null,
+      view: state.view,
+      battery: inBattery ? {
+        queue: state.battery.queue,
+        queueIdx: state.battery.queueIdx,
+        startMs: state.battery.startMs,
+        results: state.battery.results,
+      } : null,
+    };
+    if (inQuiz) {
+      blob.testQueue = state.testQueue;
+      blob.testAnswers = state.testAnswers;
+      blob.testIndex = state.testIndex;
+      blob.testStartMs = state.testStartMs;
+      blob.testEndMs = state.testEndMs;
+    } else if (inEssay) {
+      blob.essay = {
+        prompt: state.essay.prompt, text: state.essay.text,
+        startMs: state.essay.startMs, endMs: state.essay.endMs, isTest: true,
+      };
+    }
+    localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(blob));
+  } catch (_) { /* quota / serialization — non-fatal */ }
+}
+function clearActiveSession() {
+  try { localStorage.removeItem(ACTIVE_SESSION_KEY); } catch (_) {}
+}
+function loadActiveSessionBlob() {
+  try {
+    const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+    if (!raw) return null;
+    const blob = JSON.parse(raw);
+    if (!blob || blob.v !== 1) return null;
+    // Sanity: the test type + grade must still exist in this build.
+    if (!TESTS[blob.testType]) return null;
+    return blob;
+  } catch (_) { return null; }
+}
+
+// Rehydrate a persisted in-progress session and drop the kid straight back
+// into it. Restores context, battery (if any), and the live quiz/essay
+// screen. The timer is restored from the persisted absolute end-time, so if
+// the section's clock fully ran out while away, the first tick auto-submits
+// it (correct: you can't reclaim lost time).
+function resumeActiveSession(blob) {
+  state.testType = blob.testType;
+  state.gradeLevel = blob.gradeLevel;
+  if (blob.testVolume === "half" || blob.testVolume === "full") state.testVolume = blob.testVolume;
+  const grades = currentGrades();
+  if (!grades[state.gradeLevel]) { clearActiveSession(); renderHome(); showView("home"); return; }
+  state.section = blob.sectionKey ? findSectionByKey(blob.sectionKey) : null;
+
+  if (blob.battery) {
+    state.battery = {
+      active: true,
+      queue: blob.battery.queue || [],
+      queueIdx: blob.battery.queueIdx || 0,
+      startMs: blob.battery.startMs || Date.now(),
+      results: blob.battery.results || [],
+    };
+    armMtdBackTrap();
+  }
+
+  if (blob.testQueue && blob.view === "quiz") {
+    state.mode = "test";
+    _finishingSection = false;
+    state.testQueue = blob.testQueue;
+    state.testAnswers = blob.testAnswers || [];
+    state.testIndex = Math.min(blob.testIndex || 0, state.testQueue.length - 1);
+    state.testCurrent = state.testQueue[state.testIndex];
+    state.testStartMs = blob.testStartMs || Date.now();
+    state.testEndMs = blob.testEndMs || (Date.now() + 60000);
+    const pk = state.testAnswers[state.testIndex] && state.testAnswers[state.testIndex].picked;
+    state.selectedIdx = (typeof pk === "number") ? pk : -1;
+    startTimer();           // reads testEndMs; auto-submits if already expired
+    showView("quiz");
+    renderQuiz();
+  } else if (blob.essay && blob.view === "essay") {
+    state.mode = "test";
+    _finishingSection = false;
+    state.essay.prompt = blob.essay.prompt || "";
+    state.essay.text = blob.essay.text || "";
+    state.essay.startMs = blob.essay.startMs || Date.now();
+    state.essay.endMs = blob.essay.endMs || (Date.now() + 60000);
+    state.essay.isTest = true;
+    $("essayPromptText").textContent = state.essay.prompt;
+    $("essayTextarea").value = state.essay.text;
+    $("essayMetaLeft").textContent = `Test mode — timed.`;
+    $("essayMetaRight").textContent = state.gradeLevel === "lower" ? `Aim for about a page.` : `Aim for 300–400 words.`;
+    $("essayTimer").classList.remove("hidden");
+    startEssayTimer();      // reads essay.endMs; auto-finishes if expired
+    updateEssayWordCount();
+    $("essayFinalWrapper").classList.add("hidden");
+    showView("essay");
+  } else if (state.battery.active) {
+    // Snapshot taken between sections (transition / break) — continue the
+    // battery from where the queue pointer left off.
+    batteryRunNext();
+  } else {
+    clearActiveSession();
+    renderHome(); showView("home");
+  }
+}
+
+// At boot, if a resumable session was left behind, offer to pick it up.
+async function maybeOfferResume() {
+  const blob = loadActiveSessionBlob();
+  if (!blob) return;
+  // Stale guard: a session older than 12h is almost certainly abandoned
+  // (and its timer would be long expired) — drop it silently.
+  if (Date.now() - (blob.ts || 0) > 12 * 3600 * 1000) { clearActiveSession(); return; }
+  const ttLabel = (TESTS[blob.testType] && TESTS[blob.testType].label) || "test";
+  const secName = blob.sectionKey ? ((findSectionByKey(blob.sectionKey) || {}).name || "") : "";
+  let where;
+  if (blob.battery) {
+    const done = (blob.battery.results || []).length;
+    where = `Mock Test Day — ${done} section${done === 1 ? "" : "s"} finished`;
+  } else if (blob.testQueue) {
+    where = `${secName} — question ${(blob.testIndex || 0) + 1} of ${blob.testQueue.length}`;
+  } else if (blob.essay) {
+    where = `${secName || "Essay"} — in progress`;
+  } else {
+    clearActiveSession(); return;
+  }
+  const ok = await appConfirm({
+    title: "Resume your test?",
+    body: `You left a ${escapeHtml(ttLabel)} session unfinished:<br><strong>${escapeHtml(where)}</strong><br><br>The clock kept running while you were away, so any time that passed is gone.`,
+    okLabel: "Resume →",
+    cancelLabel: "Discard",
+  });
+  if (ok) resumeActiveSession(blob);
+  else clearActiveSession();
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // QUESTION FACTORY
 // ════════════════════════════════════════════════════════════════════════════
@@ -4192,11 +4348,11 @@ function toggleEliminated(i) {
   const at = arr.indexOf(i);
   if (at >= 0) arr.splice(at, 1);
   else arr.push(i);
-  // Per-question crossed-out indices live in-memory (test mode: on the
-  // testAnswers entry; practice/review: state.practiceEliminated) — they
-  // survive navigation within the session, same as the answers themselves.
-  // Only the on/off preference is persisted (in the button handler).
+  // Crossed-out indices ride along in the resumable session snapshot (test
+  // mode persists testAnswers, where eliminated lives). Practice/review are
+  // transient. Only the on/off preference goes in the main save.
   renderQuiz();  // selection highlight is read from state, so no arg needed
+  if (state.mode === "test") persistActiveSession();
 }
 
 function selectOption(i) {
@@ -5402,6 +5558,7 @@ function renderBatteryTransition({ nextIsBreak }) {
   }
   $("batteryProgressRows").innerHTML = rows.join("");
   showView("batteryTransition");
+  persistActiveSession();  // between-section snapshot (battery state, no live section)
   // Auto-advance countdown — caps the mini break. Button label shows the
   // remaining time; clicking advances immediately (handled by the shared
   // batteryAdvanceFromTransition). At 0 we fire the same action.
@@ -5479,6 +5636,7 @@ function renderBatteryBreak() {
   });
   $("batteryProgressRows").innerHTML = rows.join("");
   showView("batteryTransition");
+  persistActiveSession();  // between-section snapshot during a break
   // Start 5-minute countdown that auto-advances when it hits 0
   const endsAt = Date.now() + 5 * 60 * 1000;
   if (batteryBreakTimer) clearInterval(batteryBreakTimer);
@@ -5581,6 +5739,7 @@ function calculateBatteryReward() {
 function renderBatteryFinal() {
   if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
   clearBatteryTransTimer();
+  clearActiveSession();  // whole MTD finished — nothing to resume
   state.battery.active = false;  // unlock back button etc. (showView disarms the exit guard)
   const r = calculateBatteryReward();
   const elapsedSec = Math.floor((Date.now() - state.battery.startMs) / 1000);
@@ -5753,6 +5912,7 @@ function practiceEntriesFor(section) {
 
 function startPractice() {
   state.mode = "practice";
+  clearActiveSession();  // practice isn't resumable; drop any stale test snapshot
   const entries = practiceEntriesFor(state.section);
   state.practicePool = shuffle(entries.map((_, i) => i));
   state.practiceCurrent = null;
@@ -6096,6 +6256,7 @@ function startTest() {
     startTimer();
     showView("quiz");
     renderQuiz();
+    persistActiveSession();  // snapshot for resume-after-reload
   };
   if (state.battery.active || isTinyTest) {
     launchTest();
@@ -6145,12 +6306,14 @@ function testAnswer(i) {
     if (correct) tinyCelebrate();
   }
   renderQuiz();
+  persistActiveSession();
 }
 function testToggleFlag() {
   const ans = state.testAnswers[state.testIndex];
   if (!ans) return;
   ans.flagged = !ans.flagged;
   renderQuiz();
+  persistActiveSession();
 }
 function testGoto(idx) {
   if (idx < 0 || idx >= state.testQueue.length) return;
@@ -6165,6 +6328,7 @@ function testGoto(idx) {
   // just goes forward — but reset is correct in either case.
   state.tinyFeedbackShown = false;
   renderQuiz();
+  persistActiveSession();
 }
 function testPrev() { if (state.testIndex > 0) testGoto(state.testIndex - 1); }
 function testNext() {
@@ -6291,6 +6455,7 @@ function finishTest() {
     batteryAdvanceAfterSection();
     return;
   }
+  clearActiveSession();  // single test done — nothing to resume
   renderTestResults();
   showView("results");
 }
@@ -6302,6 +6467,7 @@ function startReview() {
   const ids = getActiveMistakeIds();
   if (ids.length === 0) return;
   state.mode = "review";
+  clearActiveSession();  // review isn't resumable; drop any stale test snapshot
   state.reviewQueue = shuffle(ids);
   state.reviewIdx = 0;
   state.reviewCurrent = null;
@@ -6745,6 +6911,7 @@ function startEssay() {
   updateEssayWordCount();
   $("essayFinalWrapper").classList.add("hidden");
   showView("essay");
+  if (isTest) persistActiveSession();  // resume snapshot for timed essays
   setTimeout(() => $("essayTextarea").focus(), 50);
 }
 
@@ -6793,6 +6960,7 @@ function finishEssay() {
     batteryAdvanceAfterSection();
     return;
   }
+  clearActiveSession();  // standalone essay done — nothing to resume
   // Per-essay payout: tiered word count + minimum-time anti-spam. Only when
   // Monetized Mode is on AND it was a timed essay (practice essays don't
   // pay out, same as practice multiple-choice).
@@ -7487,6 +7655,7 @@ $("resetProgress").addEventListener("click", async () => {
 $("essayTextarea").addEventListener("input", (e) => {
   state.essay.text = e.target.value;
   updateEssayWordCount();
+  if (state.essay.isTest) persistActiveSession();  // keep resume snapshot fresh
 });
 $("essayFinishBtn").addEventListener("click", async () => {
   if (state.essay.isTest) {
@@ -7667,6 +7836,10 @@ else if (initialView === "tests")    { renderTestsHistory();    showView("tests"
 else if (initialView === "mistakes") { renderMistakesList();    showView("mistakes"); }
 else                                  { showView("home"); }
 suppressHashUpdate = false;
+// Offer to resume an unfinished timed test / Mock Test Day, if one was left
+// behind by a crash, refresh, or accidental close. Runs after the home view
+// is set up so the confirm modal has somewhere to sit.
+maybeOfferResume();
 </script>
 
 </body>
