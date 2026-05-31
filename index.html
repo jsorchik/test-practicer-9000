@@ -997,6 +997,38 @@
     text-align: left;
   }
   .option .option-word { font-weight: 600; }
+  /* ── Answer eliminator (cross-out) ── */
+  #eliminatorBtn.on {
+    background: rgba(96,165,250,.14);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  /* The per-option ✕ toggle. Lives inside the .option button as a span
+     (not a nested button — invalid HTML) with its own click handler that
+     stops propagation so it strikes out instead of selecting. */
+  .option .elim-toggle {
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--muted);
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    transition: background .12s, color .12s;
+  }
+  .option .elim-toggle:hover { background: rgba(239,68,68,.18); color: var(--bad); }
+  /* A crossed-out option: strike + dim the text and key, leave it clickable
+     (advisory — selecting it un-crosses it). */
+  .option.eliminated .option-word,
+  .option.eliminated .option-text { text-decoration: line-through; opacity: .45; }
+  .option.eliminated .key { opacity: .4; }
+  .option.eliminated .elim-toggle { color: var(--bad); background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.35); }
   .option .option-def {
     font-size: 13px;
     font-weight: 400;
@@ -2378,6 +2410,7 @@
       <div class="left">
         <button class="ghost hidden" id="prevBtn">← Prev</button>
         <button class="ghost hidden" id="flagBtn">⚑ Flag</button>
+        <button class="ghost hidden" id="eliminatorBtn" title="Cross out answers you've ruled out" aria-pressed="false"><s>ABC</s> Cross out</button>
         <button class="success hidden" id="masterBtn">Mark as mastered</button>
       </div>
       <div class="right">
@@ -2944,7 +2977,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.22.5";
+const APP_VERSION = "3.23";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3248,6 +3281,14 @@ const state = {
   // holds the typed string between keystrokes and the Submit click.
   // Test mode writes directly into testAnswers[testIndex].picked instead.
   gridInDraft: "",
+  // Answer eliminator (cross-out) toggle — when on, each MCQ option shows a
+  // ✕ to strike it out (advisory, still selectable), like the real ISEE /
+  // digital-SAT eliminator. Persisted so the kid only turns it on once.
+  // Per-question crossed-out indices live in testAnswers[i].eliminated (test
+  // mode) or state.practiceEliminated (practice/review, reset per question).
+  eliminatorOn: false,
+  practiceEliminated: [],
+  _eliminatedQid: null,   // which question practiceEliminated belongs to
   // Review
   reviewQueue: [],
   reviewIdx: 0,
@@ -3579,6 +3620,7 @@ function loadProgress() {
     const data = JSON.parse(raw);
     if (data.gradeLevel && GRADES[data.gradeLevel]) state.gradeLevel = data.gradeLevel;
     if (data.testVolume === "half" || data.testVolume === "full") state.testVolume = data.testVolume;
+    if (typeof data.eliminatorOn === "boolean") state.eliminatorOn = data.eliminatorOn;
     // parentPin used to be persisted as a static value (default 6969). It's
     // now computed daily from the current date via getCurrentParentPin(), so
     // we ignore any saved value from older versions.
@@ -3735,6 +3777,7 @@ function saveProgress() {
       testType: state.testType,
       lastGradeByType: state.lastGradeByType,
       testVolume: state.testVolume,
+      eliminatorOn: state.eliminatorOn,
       monetizedByType: state.monetizedByType,
       payoutConfigByType: state.payoutConfigByType,
       rewardsBanked: state.rewardsBanked,
@@ -4127,11 +4170,45 @@ function isAnswered() {
   return (state.mode === "practice" && state.practiceAnswered) ||
          (state.mode === "review"   && state.reviewAnswered);
 }
+// ─── Answer eliminator (cross-out) ─────────────────────────────────────────
+// Returns the array of crossed-out choice indices for the current question.
+// Test mode stores it on the (persistent, parallel) testAnswers entry so it
+// survives navigation + would survive a resume; practice/review use a
+// transient array reset whenever the question changes.
+function getEliminated() {
+  if (state.mode === "test") {
+    const a = state.testAnswers[state.testIndex];
+    if (!a) return [];
+    if (!Array.isArray(a.eliminated)) a.eliminated = [];
+    return a.eliminated;
+  }
+  const q = currentQuestion();
+  const qid = q ? q.id : null;
+  if (state._eliminatedQid !== qid) { state.practiceEliminated = []; state._eliminatedQid = qid; }
+  return state.practiceEliminated;
+}
+function toggleEliminated(i) {
+  const arr = getEliminated();
+  const at = arr.indexOf(i);
+  if (at >= 0) arr.splice(at, 1);
+  else arr.push(i);
+  // Per-question crossed-out indices live in-memory (test mode: on the
+  // testAnswers entry; practice/review: state.practiceEliminated) — they
+  // survive navigation within the session, same as the answers themselves.
+  // Only the on/off preference is persisted (in the button handler).
+  renderQuiz();  // selection highlight is read from state, so no arg needed
+}
+
 function selectOption(i) {
   const q = currentQuestion();
   if (!q) return;
   if (i < 0 || i >= q.choices.length) return;
   if (isAnswered()) return;          // can't change after feedback shown (practice/review)
+  // Selecting a crossed-out option un-crosses it — you've changed your mind
+  // and it's now your answer (advisory cross-out, never a hard lock).
+  const elim = getEliminated();
+  const ei = elim.indexOf(i);
+  if (ei >= 0) elim.splice(ei, 1);
   state.selectedIdx = i;
   // Test mode: tap-to-select is the answer (real-ISEE bubble behavior).
   // Record immediately; the kid stays on the question and can change later.
@@ -6449,6 +6526,10 @@ function renderQuiz(picked = -1) {
     }
   } else {
     const isVerbalQ = q.sectionKey === "verbal_synonyms" || q.sectionKey === "verbal_completion";
+    // Eliminator is available for ISEE/PSAT MCQ only — not tiny mode, not
+    // after feedback is shown. When on, each option gets a ✕ to strike it.
+    const elimUsable = state.eliminatorOn && !q.isTiny && !showFeedback;
+    const elimSet = elimUsable ? getEliminated() : [];
     q.choices.forEach((choice, i) => {
       const btn = document.createElement("button");
       btn.className = "option";
@@ -6465,14 +6546,20 @@ function renderQuiz(picked = -1) {
         }
         if (def) inlineDef = `<span class="option-def">${escapeHtml(def)}</span>`;
       }
-      btn.innerHTML = `<span class="key">${"ABCD"[i]}</span><span class="option-text"><span class="option-word">${renderChoiceText(choice)}</span>${inlineDef}</span>`;
+      const elimToggle = elimUsable ? `<span class="elim-toggle" data-elim="${i}" role="button" aria-label="Cross out this answer">✕</span>` : "";
+      btn.innerHTML = `<span class="key">${"ABCD"[i]}</span><span class="option-text"><span class="option-word">${renderChoiceText(choice)}</span>${inlineDef}</span>${elimToggle}`;
       if (showFeedback) {
         if (i === q.answerIdx) btn.classList.add("correct");
         else if (i === picked) btn.classList.add("wrong");
       } else if (i === state.selectedIdx) {
         btn.classList.add("selected");
       }
+      if (elimUsable && elimSet.includes(i)) btn.classList.add("eliminated");
       btn.addEventListener("click", () => selectOption(i));
+      // The ✕ toggle strikes out instead of selecting — stop the click from
+      // bubbling to the option's select handler.
+      const tog = btn.querySelector(".elim-toggle");
+      if (tog) tog.addEventListener("click", (e) => { e.stopPropagation(); toggleEliminated(i); });
       optsEl.appendChild(btn);
     });
   }
@@ -6483,6 +6570,18 @@ function renderQuiz(picked = -1) {
   const prevBtn = $("prevBtn");
   const flagBtn = $("flagBtn");
   const finishBtn = $("finishBtn");
+
+  // Answer-eliminator toggle button — shown for ISEE/PSAT MCQ questions
+  // (not tiny, not grid-in, not essay) and only while still answerable.
+  // Reflects the persisted on/off state. Works in test, practice, + review.
+  const elimBtn = $("eliminatorBtn");
+  if (elimBtn) {
+    const elimAvailable = !q.isTiny && !q.isGridIn &&
+      Array.isArray(q.choices) && q.choices.length > 0 && !showFeedback;
+    elimBtn.classList.toggle("hidden", !elimAvailable);
+    elimBtn.classList.toggle("on", state.eliminatorOn);
+    elimBtn.setAttribute("aria-pressed", state.eliminatorOn ? "true" : "false");
+  }
 
   if (mode === "test") {
     // ── Tiny mode in test mode: always instant feedback (5yo wants to
@@ -7272,6 +7371,11 @@ document.addEventListener("click", (e) => {
 $("nextBtn").addEventListener("click", nextOrSubmit);
 $("prevBtn").addEventListener("click", () => { if (state.mode === "test") testPrev(); });
 $("flagBtn").addEventListener("click", () => { if (state.mode === "test") testToggleFlag(); });
+$("eliminatorBtn").addEventListener("click", () => {
+  state.eliminatorOn = !state.eliminatorOn;
+  saveProgress();   // remember the preference across questions + tests
+  renderQuiz();
+});
 $("finishBtn").addEventListener("click", () => { triggerFinishTest(); });
 $("masterBtn").addEventListener("click", () => { if (state.mode === "review") reviewMarkMastered(); });
 
