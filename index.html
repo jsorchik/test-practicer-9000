@@ -1266,6 +1266,90 @@
     padding: 18px 8px 24px;
     letter-spacing: .3px;
     font-variant-numeric: tabular-nums;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  /* Math-reference button living in the footer — slightly more prominent
+     than the build stamp so a kid can find it, but still understated. */
+  .footer-ref-btn {
+    background: rgba(96,165,250,.12);
+    border: 1px solid rgba(96,165,250,.3);
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    opacity: 1;
+    transition: background .15s;
+  }
+  .footer-ref-btn:hover { background: rgba(96,165,250,.2); }
+  .footer-version { display: block; }
+  /* ─── Math Reference (cheat sheet) ─── */
+  .view-reference { width: min(960px, 100%); }
+  .ref-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+  .ref-title { font-size: 26px; font-weight: 800; color: var(--text); }
+  .ref-sub { font-size: 14px; color: var(--muted); margin-top: 4px; max-width: 560px; }
+  .ref-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    align-items: start;
+  }
+  .ref-card {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .ref-card-wide { grid-column: 1 / -1; }
+  .ref-card h3 {
+    margin: 0 0 12px;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: .2px;
+  }
+  .ref-rows { display: flex; flex-direction: column; }
+  .ref-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 14px;
+    padding: 7px 0;
+    border-top: 1px solid rgba(255,255,255,.05);
+  }
+  .ref-row:first-child { border-top: 0; }
+  .ref-row .rl { color: var(--muted); font-size: 13px; flex-shrink: 0; }
+  .ref-row .rf {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 15px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .ref-card-wide .ref-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+  .ref-footnote {
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.5;
+  }
+  @media (max-width: 600px) {
+    .ref-card-wide .ref-rows { grid-template-columns: 1fr; }
+    .ref-row { flex-direction: column; align-items: flex-start; gap: 2px; }
+    .ref-row .rf { text-align: left; }
   }
   /* ─── LOCK IN splash (test launch hype overlay) ─── */
   .lock-in-splash {
@@ -2594,6 +2678,132 @@
   <div class="essays-list" id="testsList"></div>
 </div>
 
+<!-- ─── MATH REFERENCE (cheat sheet) ─── -->
+<div class="view-reference hidden" id="viewReference">
+  <div class="ref-head">
+    <div>
+      <div class="ref-title">📐 Math Reference</div>
+      <div class="ref-sub">The formulas, facts, and tricks worth memorizing for ISEE &amp; PSAT math.</div>
+    </div>
+  </div>
+
+  <div class="ref-grid">
+
+    <div class="ref-card">
+      <h3>⭕ Circles</h3>
+      <div class="ref-rows">
+        <div class="ref-row"><span class="rl">Circumference</span><span class="rf">C = 2πr = πd</span></div>
+        <div class="ref-row"><span class="rl">Area</span><span class="rf">A = πr²</span></div>
+        <div class="ref-row"><span class="rl">Diameter</span><span class="rf">d = 2r</span></div>
+        <div class="ref-row"><span class="rl">π (pi)</span><span class="rf">≈ 3.14 ≈ 22/7</span></div>
+        <div class="ref-row"><span class="rl">Degrees in a circle</span><span class="rf">360°</span></div>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <h3>📐 Triangles &amp; Right Angles</h3>
+      <div class="ref-rows">
+        <div class="ref-row"><span class="rl">Area</span><span class="rf">A = ½ · b · h</span></div>
+        <div class="ref-row"><span class="rl">Angles add to</span><span class="rf">180°</span></div>
+        <div class="ref-row"><span class="rl">Pythagorean</span><span class="rf">a² + b² = c²</span></div>
+        <div class="ref-row"><span class="rl">Common triples</span><span class="rf">3-4-5 · 5-12-13 · 8-15-17 · 7-24-25</span></div>
+        <div class="ref-row"><span class="rl">…and multiples</span><span class="rf">6-8-10 · 9-12-15 · 10-24-26</span></div>
+        <div class="ref-row"><span class="rl">45-45-90</span><span class="rf">sides x : x : x√2</span></div>
+        <div class="ref-row"><span class="rl">30-60-90</span><span class="rf">sides x : x√3 : 2x</span></div>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <h3>▱ Quadrilaterals</h3>
+      <div class="ref-rows">
+        <div class="ref-row"><span class="rl">Square</span><span class="rf">A = s² · P = 4s</span></div>
+        <div class="ref-row"><span class="rl">Rectangle</span><span class="rf">A = l·w · P = 2(l+w)</span></div>
+        <div class="ref-row"><span class="rl">Parallelogram</span><span class="rf">A = b·h</span></div>
+        <div class="ref-row"><span class="rl">Trapezoid</span><span class="rf">A = ½(b₁ + b₂)·h</span></div>
+        <div class="ref-row"><span class="rl">Triangle</span><span class="rf">A = ½·b·h</span></div>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <h3>🧊 Solids (Volume &amp; Surface)</h3>
+      <div class="ref-rows">
+        <div class="ref-row"><span class="rl">Cube</span><span class="rf">V = s³ · SA = 6s²</span></div>
+        <div class="ref-row"><span class="rl">Rect. prism (box)</span><span class="rf">V = l·w·h</span></div>
+        <div class="ref-row"><span class="rl">Box surface area</span><span class="rf">SA = 2(lw + lh + wh)</span></div>
+        <div class="ref-row"><span class="rl">Cylinder</span><span class="rf">V = πr²h</span></div>
+        <div class="ref-row"><span class="rl">Cylinder surface</span><span class="rf">SA = 2πr² + 2πrh</span></div>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <h3>％ Percent &amp; Fractions</h3>
+      <div class="ref-rows">
+        <div class="ref-row"><span class="rl">Percent of a whole</span><span class="rf">part = % × whole</span></div>
+        <div class="ref-row"><span class="rl">"What % is A of B?"</span><span class="rf">A ÷ B × 100</span></div>
+        <div class="ref-row"><span class="rl">Percent change</span><span class="rf">(new − old) ÷ old × 100</span></div>
+        <div class="ref-row"><span class="rl">% → decimal</span><span class="rf">divide by 100 (move ·· left)</span></div>
+        <div class="ref-row"><span class="rl">Half / quarter</span><span class="rf">½ = 50% · ¼ = 25% · ¾ = 75%</span></div>
+        <div class="ref-row"><span class="rl">Thirds</span><span class="rf">⅓ ≈ 33⅓% · ⅔ ≈ 66⅔%</span></div>
+        <div class="ref-row"><span class="rl">Fifths / eighths</span><span class="rf">⅕ = 20% · ⅛ = 12.5%</span></div>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <h3>📊 Averages, Stats &amp; Probability</h3>
+      <div class="ref-rows">
+        <div class="ref-row"><span class="rl">Mean (average)</span><span class="rf">sum ÷ how many</span></div>
+        <div class="ref-row"><span class="rl">Find a missing value</span><span class="rf">sum = average × count</span></div>
+        <div class="ref-row"><span class="rl">Median</span><span class="rf">middle value (sort first!)</span></div>
+        <div class="ref-row"><span class="rl">Mode</span><span class="rf">most frequent value</span></div>
+        <div class="ref-row"><span class="rl">Range</span><span class="rf">highest − lowest</span></div>
+        <div class="ref-row"><span class="rl">Probability</span><span class="rf">favorable ÷ total outcomes</span></div>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <h3>📈 Algebra &amp; Coordinates</h3>
+      <div class="ref-rows">
+        <div class="ref-row"><span class="rl">Slope</span><span class="rf">m = (y₂ − y₁) ÷ (x₂ − x₁)</span></div>
+        <div class="ref-row"><span class="rl">Line equation</span><span class="rf">y = mx + b</span></div>
+        <div class="ref-row"><span class="rl">Distance (2 pts)</span><span class="rf">√[(x₂−x₁)² + (y₂−y₁)²]</span></div>
+        <div class="ref-row"><span class="rl">Midpoint</span><span class="rf">((x₁+x₂)/2 , (y₁+y₂)/2)</span></div>
+        <div class="ref-row"><span class="rl">Exponents ×</span><span class="rf">xᵃ · xᵇ = xᵃ⁺ᵇ</span></div>
+        <div class="ref-row"><span class="rl">Exponents ÷</span><span class="rf">xᵃ ÷ xᵇ = xᵃ⁻ᵇ</span></div>
+        <div class="ref-row"><span class="rl">Power of power</span><span class="rf">(xᵃ)ᵇ = xᵃᵇ</span></div>
+        <div class="ref-row"><span class="rl">Zero / negative</span><span class="rf">x⁰ = 1 · x⁻ᵃ = 1/xᵃ</span></div>
+      </div>
+    </div>
+
+    <div class="ref-card">
+      <h3>🔢 Number Sense</h3>
+      <div class="ref-rows">
+        <div class="ref-row"><span class="rl">Order of operations</span><span class="rf">PEMDAS</span></div>
+        <div class="ref-row"><span class="rl">Ratios</span><span class="rf">cross-multiply to solve a/b = c/d</span></div>
+        <div class="ref-row"><span class="rl">Distance</span><span class="rf">distance = rate × time</span></div>
+        <div class="ref-row"><span class="rl">Polygon angles</span><span class="rf">sum = (n − 2) × 180°</span></div>
+        <div class="ref-row"><span class="rl">Prime numbers</span><span class="rf">2, 3, 5, 7, 11, 13, 17, 19, 23…</span></div>
+        <div class="ref-row"><span class="rl">Even ÷ odd</span><span class="rf">even ± even = even · odd ± odd = even</span></div>
+      </div>
+    </div>
+
+    <div class="ref-card ref-card-wide">
+      <h3>💡 Handy Tricks</h3>
+      <div class="ref-rows">
+        <div class="ref-row"><span class="rl">"of" means ×</span><span class="rf">"20% of 50" → 0.2 × 50 = 10</span></div>
+        <div class="ref-row"><span class="rl">"is" means =</span><span class="rf">"15 is what % of 60?" → 15 = (x/100)·60</span></div>
+        <div class="ref-row"><span class="rl">Percent shortcut</span><span class="rf">10% = move ·· left once; 5% = half of that</span></div>
+        <div class="ref-row"><span class="rl">Divisible by 3</span><span class="rf">if digits add to a multiple of 3</span></div>
+        <div class="ref-row"><span class="rl">Divisible by 9</span><span class="rf">if digits add to a multiple of 9</span></div>
+        <div class="ref-row"><span class="rl">Estimate first</span><span class="rf">round, get a ballpark, eliminate wild answers</span></div>
+        <div class="ref-row"><span class="rl">Plug in answers</span><span class="rf">stuck on algebra? test the choices</span></div>
+        <div class="ref-row"><span class="rl">Watch the units</span><span class="rf">feet vs inches, minutes vs hours — convert!</span></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="ref-footnote">A quick-reference sheet — not every formula appears on every level. Lower Level focuses on arithmetic, percent, and basic geometry; PSAT adds coordinate geometry, exponents, and functions.</div>
+</div>
+
 <canvas id="confettiCanvas"></canvas>
 
 <!-- LOCK IN splash — overlay shown for ~3-4s when a test launches.
@@ -2607,7 +2817,10 @@
 
 <!-- Build stamp — populated at boot from APP_VERSION / APP_VERSION_DATE so
      the parent can tell what version is running after a hard refresh. -->
-<footer class="app-footer" id="appFooter"></footer>
+<footer class="app-footer" id="appFooter">
+  <button class="footer-ref-btn" id="mathRefBtn">📐 Math Reference</button>
+  <span class="footer-version" id="appVersionStamp"></span>
+</footer>
 
 <!-- ─── Generic confirm modal (replaces native confirm() everywhere) ─── -->
 <!-- z-index nudged above the battery modal so confirms triggered from
@@ -2982,7 +3195,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.24.2";
+const APP_VERSION = "3.25";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -4534,11 +4747,12 @@ function getActiveMistakeIds() {
 // work. Transient views (quiz, results, essay views, battery transitions) are
 // excluded since they have no meaningful state to restore from a URL alone.
 const ROUTABLE_VIEWS = {
-  home:     "/",
-  stats:    "/stats",
-  essays:   "/essays",
-  tests:    "/tests",
-  mistakes: "/mistakes",
+  home:      "/",
+  stats:     "/stats",
+  essays:    "/essays",
+  tests:     "/tests",
+  mistakes:  "/mistakes",
+  reference: "/reference",
 };
 const PATH_TO_VIEW = Object.fromEntries(Object.entries(ROUTABLE_VIEWS).map(([k,v]) => [v, k]));
 let suppressHashUpdate = false;  // set true when handling popstate to avoid loops
@@ -4563,9 +4777,16 @@ function showView(name) {
   $("viewBatteryResults").classList.toggle("hidden", name !== "batteryResults");
   $("viewEssays").classList.toggle("hidden", name !== "essays");
   $("viewTests").classList.toggle("hidden", name !== "tests");
+  $("viewReference").classList.toggle("hidden", name !== "reference");
   // Hide home button during battery (kid is locked in) and on the home view.
   const hideBack = name === "home" || state.battery.active;
   $("backBtn").classList.toggle("hidden", hideBack);
+  // Hide the footer's Math Reference button during a TIMED test / essay /
+  // MTD — peeking at formulas mid-test is cheating. Still available in
+  // practice + review (where it's a learning aid) and everywhere else.
+  const inTimedSession = (state.mode === "test" && (name === "quiz" || name === "essay")) || state.battery.active;
+  const refBtn = $("mathRefBtn");
+  if (refBtn) refBtn.classList.toggle("hidden", inTimedSession);
   // Reload/unload guard: armed while the kid is in an active quiz or essay
   // session (any mode) or anywhere inside Mock Test Day (incl. the between-
   // section transition + break screens, where view !== quiz/essay but the
@@ -7548,6 +7769,9 @@ $("viewEssaysBtn").addEventListener("click", () => { renderEssaysHistory(); show
 $("viewTestsBtn").addEventListener("click",  () => { renderTestsHistory();  showView("tests"); });
 $("testsHomeBtn").addEventListener("click",  () => { renderHome();           showView("home"); });
 $("essaysHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });
+// Math Reference (cheat sheet) — footer button opens it; the global back
+// button (top of every non-home view) handles returning home.
+$("mathRefBtn").addEventListener("click", () => { showView("reference"); window.scrollTo(0, 0); });
 // (The Mock Test Day card is now dynamically created inside renderSectionsGrid
 //  with its click handler wired there — no static #batteryCTA element exists.)
 $("batteryModalCancel").addEventListener("click", () => $("batteryModal").classList.add("hidden"));
@@ -7763,6 +7987,7 @@ window.addEventListener("popstate", (e) => {
   else if (targetView === "essays") { renderEssaysHistory(); showView("essays"); }
   else if (targetView === "tests") { renderTestsHistory(); showView("tests"); }
   else if (targetView === "mistakes") { renderMistakesList(); showView("mistakes"); }
+  else if (targetView === "reference") { showView("reference"); }
   suppressHashUpdate = false;
 });
 
@@ -7770,7 +7995,7 @@ window.addEventListener("popstate", (e) => {
 buildRegistries();
 loadProgress();
 // Build-stamp footer — populated once at boot from the version constants.
-const _fEl = document.getElementById("appFooter");
+const _fEl = document.getElementById("appVersionStamp");
 if (_fEl) _fEl.textContent = `Custom Test Practicer 9000 · v${APP_VERSION} · ${APP_VERSION_DATE}`;
 
 // ─── Update-available detection ─────────────────────────────────────────────
@@ -7827,6 +8052,7 @@ if (initialView === "stats")    { renderStats();          showView("stats"); }
 else if (initialView === "essays")   { renderEssaysHistory();   showView("essays"); }
 else if (initialView === "tests")    { renderTestsHistory();    showView("tests"); }
 else if (initialView === "mistakes") { renderMistakesList();    showView("mistakes"); }
+else if (initialView === "reference"){ showView("reference"); }
 else                                  { showView("home"); }
 suppressHashUpdate = false;
 // Offer to resume an unfinished timed test / Mock Test Day, if one was left
