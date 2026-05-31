@@ -1593,6 +1593,28 @@
     max-height: 400px;
     overflow-y: auto;
   }
+  .essay-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .essay-card-actions .essay-fb-btn {
+    background: rgba(96,165,250,.12);
+    border: 1px solid rgba(96,165,250,.3);
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 7px 14px;
+    border-radius: 9px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .15s;
+  }
+  .essay-card-actions .essay-fb-btn:hover { background: rgba(96,165,250,.22); }
+  .essay-fb-hint { font-size: 11px; color: var(--muted); }
   /* Inline colored score in past-test cards */
   .essay-card-head .good { color: var(--good); }
   .essay-card-head .ok   { color: var(--warn); }
@@ -3190,7 +3212,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.25.3";
+const APP_VERSION = "3.26";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -5155,8 +5177,85 @@ function renderEssaysHistory() {
         <summary>Read full response</summary>
         <div class="essay-card-text">${escapeHtml(e.text)}</div>
       </details>
+      <div class="essay-card-actions">
+        <button class="ghost essay-fb-btn" data-essay-date="${e.dateMs}">✨ Get feedback</button>
+        <span class="essay-fb-hint">Copies the essay + a coaching prompt — paste into Claude or ChatGPT.</span>
+      </div>
     </div>
   `).join("");
+  // Wire the "Get feedback" buttons: copy the essay + a tailored ISEE
+  // writing-coach prompt to the clipboard so a parent can paste it straight
+  // into Claude/ChatGPT. (Kept copy-paste rather than a built-in API call —
+  // the app is static + backend-free, so there's no safe place for a key.)
+  document.querySelectorAll(".essay-fb-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const dms = Number(btn.dataset.essayDate);
+      const essay = (L().essays || []).find(x => x.dateMs === dms);
+      if (!essay) return;
+      const text = buildEssayFeedbackPrompt(essay, currentGrade().label);
+      const ok = await copyToClipboard(text);
+      const orig = btn.textContent;
+      btn.textContent = ok ? "✓ Copied — paste into Claude" : "Press ⌘/Ctrl+C to copy";
+      if (!ok) showCopyFallback(text);
+      setTimeout(() => { btn.textContent = orig; }, 2600);
+    });
+  });
+}
+
+// Build the clipboard payload for AI essay feedback: a warm, age-appropriate
+// ISEE writing-coach instruction + the prompt the kid answered + their essay.
+function buildEssayFeedbackPrompt(essay, gradeLabel) {
+  const mode = essay.isTest ? "timed test" : "practice";
+  return `You are a warm, encouraging writing coach helping a ${gradeLabel} student (around 10–12 years old) practice for the ISEE essay.
+
+About the ISEE essay: it is NOT given a number score — schools receive it as a writing sample to see how the student organizes and expresses ideas. Look at it the way an admissions reader would: organization & structure, development (specific details and examples), word choice & voice, sentence variety, and mechanics (grammar, spelling, punctuation). Keep your feedback kind, specific, and appropriate for a kid — celebrate what works before suggesting fixes, and don't overwhelm.
+
+Please reply with:
+1. ⭐ Two or three specific things the writer did well (quote a short phrase or two from the essay).
+2. 🔧 Two or three concrete, doable improvements — for each, rewrite one of the student's own sentences to show the fix.
+3. ✍️ One "try this next time" tip.
+Keep it under ~250 words and speak directly to the student in a friendly, motivating tone.
+
+PROMPT THE STUDENT RESPONDED TO:
+"${essay.prompt}"
+
+THE STUDENT'S ESSAY (${essay.words} words, written in ${mode} mode):
+"""
+${essay.text}
+"""`;
+}
+
+// Clipboard helper with a graceful fallback for non-secure contexts / older
+// browsers (the async Clipboard API needs https or localhost).
+async function copyToClipboard(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch (_) { /* fall through */ }
+  try {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    const ok = document.execCommand("copy");
+    document.body.removeChild(ta);
+    return ok;
+  } catch (_) { return false; }
+}
+
+// Last-resort fallback: drop the text into a modal the parent can manually
+// select + copy if the clipboard API is blocked.
+function showCopyFallback(text) {
+  appConfirm({
+    title: "Copy this for feedback",
+    body: `Select all of the text below and copy it, then paste into Claude or ChatGPT:<br><br><textarea readonly style="width:100%;height:180px;font-size:12px;font-family:monospace;background:rgba(255,255,255,.05);color:var(--text);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:8px;">${escapeHtml(text)}</textarea>`,
+    okLabel: "Done",
+    cancelLabel: "Close",
+  });
 }
 
 // Past tests history view — mirrors the essays history. Each card shows a
