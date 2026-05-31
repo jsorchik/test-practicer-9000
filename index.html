@@ -2982,7 +2982,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.24.1";
+const APP_VERSION = "3.24.2";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3884,6 +3884,13 @@ function resumeActiveSession(blob) {
     state.testEndMs = blob.testEndMs || (Date.now() + 60000);
     const pk = state.testAnswers[state.testIndex] && state.testAnswers[state.testIndex].picked;
     state.selectedIdx = (typeof pk === "number") ? pk : -1;
+    // Reveal the test-mode chrome. Normally startTest does this; resume
+    // bypasses startTest, so without it the numbered nav strip stays hidden.
+    // (Resume is ISEE/PSAT only — never tiny — so the full strip applies.)
+    $("testNavStrip").classList.remove("hidden");
+    $("flagBtn").classList.remove("hidden");
+    $("prevBtn").classList.remove("hidden");
+    state.tinyFeedbackShown = false;
     startTimer();           // reads testEndMs; auto-submits if already expired
     showView("quiz");
     renderQuiz();
