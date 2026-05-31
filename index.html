@@ -2944,7 +2944,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.22.4";
+const APP_VERSION = "3.22.5";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -4324,6 +4324,11 @@ function showView(name) {
   // Hide home button during battery (kid is locked in) and on the home view.
   const hideBack = name === "home" || state.battery.active;
   $("backBtn").classList.toggle("hidden", hideBack);
+  // Reload/unload guard: armed while the kid is in an active quiz or essay
+  // session (any mode) or anywhere inside Mock Test Day (incl. the between-
+  // section transition + break screens, where view !== quiz/essay but the
+  // battery is still live). Disarmed on every other view.
+  setSessionExitGuard(name === "quiz" || name === "essay" || state.battery.active);
   // Banked-balance badge in header — refreshed both here (on view changes)
   // and from renderHome / Settings auto-save / finishTest so the chip stays
   // current even when the home view doesn't get re-shown after a payout.
@@ -5165,31 +5170,36 @@ function actuallyLaunchBattery() {
   state.battery.startMs = Date.now();
   state.battery.results = [];
   state.mode = "test";  // each section runs in test mode
-  armBatteryExitGuard();
+  armMtdBackTrap();  // beforeunload guard is armed by showView once a section renders
   batteryRunNext();
 }
 
-// ─── Mock Test Day exit guard ──────────────────────────────────────────────
-// The battery lives only in memory (state.battery isn't persisted), so a
-// browser Back / swipe-back gesture / refresh would silently wipe every
-// section's progress. Two layers of protection while a battery is active:
-//   1. A sentinel history entry so a single Back press pops into our
-//      popstate handler (which confirms) instead of unloading the page.
-//   2. A beforeunload handler so a true page-unload (refresh, close tab,
-//      back that leaves the site) prompts the browser's "Leave site?" guard.
-// Both are torn down when the battery ends (final screen / done / quit).
-function _batteryBeforeUnload(e) {
-  if (!state.battery.active) return;
+// ─── In-progress session exit guard ───────────────────────────────────────
+// Protects any active quiz/essay session — test, practice, review, AND Mock
+// Test Day — from accidental loss via refresh, tab-close, or a browser Back
+// that leaves the site. The beforeunload handler fires ONLY on a true page
+// unload, never on in-app navigation, so it doesn't nag during normal use.
+// Armed/disarmed centrally in showView() based on whether the kid is
+// mid-session, so every view transition is covered with no path to forget.
+//
+// MTD adds one more layer (armMtdBackTrap): a sentinel history entry so a
+// single in-page Back press is absorbed by our popstate handler — which
+// confirms — instead of unloading the page. Single-section tests rely on
+// their existing popstate confirm + this beforeunload guard.
+function _sessionBeforeUnload(e) {
   e.preventDefault();
-  e.returnValue = "";  // some browsers require a string / returnValue set
+  e.returnValue = "";  // some browsers require returnValue set to prompt
   return "";
 }
-function armBatteryExitGuard() {
-  try { window.history.pushState({ mtdTrap: true }, "", window.location.hash || "#/"); } catch (_) {}
-  window.addEventListener("beforeunload", _batteryBeforeUnload);
+let _sessionGuardArmed = false;
+function setSessionExitGuard(active) {
+  if (active === _sessionGuardArmed) return;
+  _sessionGuardArmed = active;
+  if (active) window.addEventListener("beforeunload", _sessionBeforeUnload);
+  else window.removeEventListener("beforeunload", _sessionBeforeUnload);
 }
-function disarmBatteryExitGuard() {
-  window.removeEventListener("beforeunload", _batteryBeforeUnload);
+function armMtdBackTrap() {
+  try { window.history.pushState({ mtdTrap: true }, "", window.location.hash || "#/"); } catch (_) {}
 }
 
 // Running banked = base + per-correct portion only. Bonuses depend on FINAL
@@ -5494,8 +5504,7 @@ function calculateBatteryReward() {
 function renderBatteryFinal() {
   if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
   clearBatteryTransTimer();
-  disarmBatteryExitGuard();  // test is finished — safe to leave now
-  state.battery.active = false;  // unlock back button etc.
+  state.battery.active = false;  // unlock back button etc. (showView disarms the exit guard)
   const r = calculateBatteryReward();
   const elapsedSec = Math.floor((Date.now() - state.battery.startMs) / 1000);
   const pct = r.total > 0 ? Math.round(r.accuracy * 100) : 0;
@@ -7318,7 +7327,6 @@ $("batteryNextBtn").addEventListener("click", () => {
 });
 $("batteryDoneBtn").addEventListener("click", () => {
   clearBatteryTransTimer();
-  disarmBatteryExitGuard();
   if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
   state.battery = { active: false, queue: [], queueIdx: 0, startMs: 0, results: [] };
   renderHome();
@@ -7442,7 +7450,6 @@ window.addEventListener("popstate", (e) => {
         try { window.history.pushState({ mtdTrap: true }, "", window.location.hash || "#/"); } catch (_) {}
         return;
       }
-      disarmBatteryExitGuard();
       if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
       clearBatteryTransTimer();
       stopTimer();
