@@ -1373,6 +1373,19 @@
     flex-wrap: wrap;
   }
   .results-summary .row strong { color: var(--text); font-size: 18px; display: block; margin-bottom: 2px; }
+  .score-explainer {
+    max-width: 520px;
+    margin: 14px auto 0;
+    padding: 10px 14px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--muted);
+    text-align: left;
+  }
+  .score-explainer strong { color: var(--text); }
   .results-actions {
     display: flex;
     gap: 10px;
@@ -2417,6 +2430,7 @@
     <div class="big" id="resultScore">—</div>
     <div class="sub" id="resultPct">—</div>
     <div class="row" id="resultRow"></div>
+    <div class="score-explainer hidden" id="scoreExplainer"></div>
   </div>
   <div class="results-actions">
     <button class="primary" id="retryBtn">Try again</button>
@@ -2930,7 +2944,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.22.1";
+const APP_VERSION = "3.22.2";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -6657,6 +6671,8 @@ function finishEssay() {
   $("resultScore").textContent = `${words}`;
   $("resultScore").className = "big " + (words >= goal ? "good" : words >= goal * 0.66 ? "ok" : "bad");
   $("resultPct").textContent = `words written`;
+  // Essays have no percent score, so no stanine explainer applies.
+  { const ex = $("scoreExplainer"); if (ex) ex.classList.add("hidden"); }
   const essayEarnedCell = essayEarned > 0
     ? `<div><strong style="color:#fbbf24">💰 $${essayEarned.toFixed(2)}</strong>earned this essay</div>`
     : essayRushed
@@ -6723,6 +6739,22 @@ function renderTestResults() {
   $("resultScore").textContent = `${correct} / ${total}`;
   $("resultScore").className = "big " + (pct >= 80 ? "good" : pct >= 60 ? "ok" : "bad");
   $("resultPct").textContent = `${pct}%`;
+  // Score-meaning explainer — sets expectations vs the real exam's reported
+  // score. The real ISEE reports a 1-9 stanine normed against same-grade
+  // applicants (not a raw %); PSAT reports a scaled score + percentile.
+  // We show raw % because the official norming data is proprietary and
+  // can't be replicated. Tiny mode gets nothing (no real-exam analogue).
+  const explainer = $("scoreExplainer");
+  if (explainer) {
+    let txt = "";
+    if (state.testType === "isee") {
+      txt = `<strong>About this score:</strong> this is your raw percent correct — a practice metric for tracking progress. The real ISEE doesn't report a percentage: it converts your raw score to a <strong>1–9 stanine</strong> ranked against other students in your grade applying to private schools, so the official score depends on how everyone else did too.`;
+    } else if (state.testType === "psat") {
+      txt = `<strong>About this score:</strong> this is your raw percent correct — a practice metric. The real PSAT reports a <strong>scaled score</strong> (120–720 per section) and a percentile vs. other test-takers, not a raw percentage.`;
+    }
+    explainer.innerHTML = txt;
+    explainer.classList.toggle("hidden", !txt);
+  }
   // Build stats row: correct/wrong/skipped/time + longest streak this test +
   // personal best (lifetime) for this section + lifetime perfect-test count.
   const lt = L();
