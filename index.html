@@ -2930,7 +2930,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.21.1";
+const APP_VERSION = "3.22";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -5183,6 +5183,7 @@ function batteryBankedChipHTML() {
 }
 
 function batteryRunNext() {
+  clearBatteryTransTimer();  // any pending transition auto-advance is now moot
   // Walk forward through queue until we either run a section or hit a break.
   while (state.battery.queueIdx < state.battery.queue.length) {
     const key = state.battery.queue[state.battery.queueIdx];
@@ -5254,7 +5255,7 @@ function renderBatteryTransition({ nextIsBreak }) {
       `<div><strong>${lastResult.correct}</strong>correct</div><div><strong>${lastResult.total - lastResult.correct}</strong>missed</div>` +
       batteryBankedChipHTML();
   }
-  $("batteryNextBtn").textContent = nextIsBreak ? "Start 5-min break →" : "Begin next section →";
+  const transBaseLabel = nextIsBreak ? "Start 5-min break" : "Begin next section";
   state.batteryButtonIntent = nextIsBreak ? "begin-break" : "begin-section";
   // Progress checklist
   const totalQs = state.battery.queue.filter(k => k !== "break");
@@ -5276,10 +5277,55 @@ function renderBatteryTransition({ nextIsBreak }) {
   }
   $("batteryProgressRows").innerHTML = rows.join("");
   showView("batteryTransition");
+  // Auto-advance countdown — caps the mini break. Button label shows the
+  // remaining time; clicking advances immediately (handled by the shared
+  // batteryAdvanceFromTransition). At 0 we fire the same action.
+  clearBatteryTransTimer();
+  const transEndsAt = Date.now() + MTD_TRANSITION_SEC * 1000;
+  const tickTrans = () => {
+    const remaining = Math.max(0, Math.round((transEndsAt - Date.now()) / 1000));
+    const btn = $("batteryNextBtn");
+    if (btn) btn.textContent = `${transBaseLabel} → (auto in ${fmtTime(remaining)})`;
+    if (remaining <= 0) batteryAdvanceFromTransition();
+  };
+  tickTrans();
+  batteryTransTimer = setInterval(tickTrans, 500);
+}
+
+// The between-section transition screen ("Section X complete → Begin next
+// section") is a MINI break, not an open-ended rest. Without a cap a kid
+// could sit on it forever and effectively pause Mock Test Day indefinitely.
+// We auto-advance after MTD_TRANSITION_SEC; the button still lets them go
+// sooner. (The real 5-min break — renderBatteryBreak — is separate and
+// already auto-advances.)
+const MTD_TRANSITION_SEC = 60;
+let batteryTransTimer = null;
+function clearBatteryTransTimer() {
+  if (batteryTransTimer) { clearInterval(batteryTransTimer); batteryTransTimer = null; }
+}
+
+// Perform the transition screen's primary action based on the current
+// intent. Shared by both the button click and the auto-advance countdown.
+function batteryAdvanceFromTransition() {
+  clearBatteryTransTimer();
+  const intent = state.batteryButtonIntent;
+  if (intent === "begin-break") {
+    renderBatteryBreak();
+    return;
+  }
+  if (intent === "skip-break") {
+    if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
+    state.battery.queueIdx += 1;  // step past the break sentinel
+    batteryRunNext();
+    return;
+  }
+  // default: begin-section
+  batteryRunNext();
 }
 
 let batteryBreakTimer = null;
 function renderBatteryBreak() {
+  clearBatteryTransTimer();  // leaving the transition screen
   const totalSections = state.battery.queue.filter(k => k !== "break").length;
   const completedSections = state.battery.results.length;
   $("batteryTransLabel").textContent = `Break · ${completedSections} of ${totalSections} sections done`;
@@ -5400,6 +5446,7 @@ function calculateBatteryReward() {
 
 function renderBatteryFinal() {
   if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
+  clearBatteryTransTimer();
   state.battery.active = false;  // unlock back button etc.
   const r = calculateBatteryReward();
   const elapsedSec = Math.floor((Date.now() - state.battery.startMs) / 1000);
@@ -7172,27 +7219,15 @@ $("batteryModal").addEventListener("click", (e) => {
   if (e.target.id === "batteryModal") $("batteryModal").classList.add("hidden");
 });
 $("batteryNextBtn").addEventListener("click", () => {
-  // The button's behavior depends on what screen we just showed, tracked
-  // via state.batteryButtonIntent. Three cases:
-  //  - "begin-section": user just saw "Section X complete" — start next section
-  //  - "begin-break":   user just saw "Section X complete (break next)" — open the break screen
-  //  - "skip-break":    user is on the break screen — skip remaining time and continue
-  const intent = state.batteryButtonIntent;
-  if (intent === "begin-break") {
-    // queueIdx is currently on the "break" sentinel — show the timer screen
-    renderBatteryBreak();
-    return;
-  }
-  if (intent === "skip-break") {
-    if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
-    state.battery.queueIdx += 1;  // step past the break sentinel
-    batteryRunNext();
-    return;
-  }
-  // default: begin-section
-  batteryRunNext();
+  // Behavior depends on the screen we just showed, tracked via
+  // state.batteryButtonIntent (begin-section / begin-break / skip-break).
+  // Shared with the transition auto-advance countdown so clicking and
+  // timing-out do the same thing.
+  batteryAdvanceFromTransition();
 });
 $("batteryDoneBtn").addEventListener("click", () => {
+  clearBatteryTransTimer();
+  if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
   state.battery = { active: false, queue: [], queueIdx: 0, startMs: 0, results: [] };
   renderHome();
   showView("home");
