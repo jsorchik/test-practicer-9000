@@ -2944,7 +2944,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.22.3";
+const APP_VERSION = "3.22.4";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -5165,7 +5165,31 @@ function actuallyLaunchBattery() {
   state.battery.startMs = Date.now();
   state.battery.results = [];
   state.mode = "test";  // each section runs in test mode
+  armBatteryExitGuard();
   batteryRunNext();
+}
+
+// ─── Mock Test Day exit guard ──────────────────────────────────────────────
+// The battery lives only in memory (state.battery isn't persisted), so a
+// browser Back / swipe-back gesture / refresh would silently wipe every
+// section's progress. Two layers of protection while a battery is active:
+//   1. A sentinel history entry so a single Back press pops into our
+//      popstate handler (which confirms) instead of unloading the page.
+//   2. A beforeunload handler so a true page-unload (refresh, close tab,
+//      back that leaves the site) prompts the browser's "Leave site?" guard.
+// Both are torn down when the battery ends (final screen / done / quit).
+function _batteryBeforeUnload(e) {
+  if (!state.battery.active) return;
+  e.preventDefault();
+  e.returnValue = "";  // some browsers require a string / returnValue set
+  return "";
+}
+function armBatteryExitGuard() {
+  try { window.history.pushState({ mtdTrap: true }, "", window.location.hash || "#/"); } catch (_) {}
+  window.addEventListener("beforeunload", _batteryBeforeUnload);
+}
+function disarmBatteryExitGuard() {
+  window.removeEventListener("beforeunload", _batteryBeforeUnload);
 }
 
 // Running banked = base + per-correct portion only. Bonuses depend on FINAL
@@ -5470,6 +5494,7 @@ function calculateBatteryReward() {
 function renderBatteryFinal() {
   if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
   clearBatteryTransTimer();
+  disarmBatteryExitGuard();  // test is finished — safe to leave now
   state.battery.active = false;  // unlock back button etc.
   const r = calculateBatteryReward();
   const elapsedSec = Math.floor((Date.now() - state.battery.startMs) / 1000);
@@ -7293,6 +7318,7 @@ $("batteryNextBtn").addEventListener("click", () => {
 });
 $("batteryDoneBtn").addEventListener("click", () => {
   clearBatteryTransTimer();
+  disarmBatteryExitGuard();
   if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
   state.battery = { active: false, queue: [], queueIdx: 0, startMs: 0, results: [] };
   renderHome();
@@ -7399,6 +7425,36 @@ document.addEventListener("keydown", (e) => {
 // via the address bar. For transient views (mid-test, results screens) we
 // fall back to the existing back-button confirm logic.
 window.addEventListener("popstate", (e) => {
+  // Mock Test Day exit guard — covers EVERY battery screen (quiz, essay,
+  // transition, break), not just the quiz, because the battery is in-memory
+  // only and leaving abandons all sections. Confirm with battery-specific
+  // copy; if they stay, re-arm the history trap so the next Back is also
+  // absorbed. This runs before the generic mid-test guard below.
+  if (state.battery.active) {
+    appConfirm({
+      title: "Quit Mock Test Day?",
+      body: "Going back will end the whole test — every section, not just this one — and you can't pick up where you left off.",
+      okLabel: "Yes, quit the test",
+      cancelLabel: "Stay in the test",
+    }).then(ok => {
+      if (!ok) {
+        // Re-arm the trap: push the sentinel forward so Back stays absorbed.
+        try { window.history.pushState({ mtdTrap: true }, "", window.location.hash || "#/"); } catch (_) {}
+        return;
+      }
+      disarmBatteryExitGuard();
+      if (batteryBreakTimer) { clearInterval(batteryBreakTimer); batteryBreakTimer = null; }
+      clearBatteryTransTimer();
+      stopTimer();
+      stopEssayTimer();
+      state.battery = { active: false, queue: [], queueIdx: 0, startMs: 0, results: [] };
+      suppressHashUpdate = true;
+      renderHome();
+      showView("home");
+      suppressHashUpdate = false;
+    });
+    return;
+  }
   const path = window.location.hash.replace(/^#/, "") || "/";
   const targetView = PATH_TO_VIEW[path];
   if (!targetView) return;  // unknown hash — ignore
