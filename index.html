@@ -2964,6 +2964,7 @@
 <script src="data/tiny-numbers.js"></script>
 <script src="data/parents-prealgebra.js"></script>
 <script src="data/parents-units.js"></script>
+<script src="data/parents-pythagoras.js"></script>
 <script src="data/definitions.js"></script>
 <script>
 // ════════════════════════════════════════════════════════════════════════════
@@ -3241,23 +3242,24 @@ TESTS.tiny.sections = TINY_SECTIONS;
 // in renderSectionsGrid).
 // ════════════════════════════════════════════════════════════════════════════
 const PARENTS_SECTIONS = [
-  { key: "pc_prealgebra", name: "Pre-Algebra",     parent: "Parents' Choice", description: "Solve for a variable, step by step — 4h + 10 = 26 and friends.", poolKey: "prealgebra" },
-  { key: "pc_units",      name: "Unit Conversion", parent: "Parents' Choice", description: "The 'fencepost' method — cancel units to convert feet, hours, pounds, and more.", poolKey: "units" },
+  { key: "pc_prealgebra", name: "Pre-Algebra",         parent: "Parents' Choice", description: "Solve for a variable, step by step — 4h + 10 = 26 and friends.", poolKey: "prealgebra" },
+  { key: "pc_units",      name: "Unit Conversion",     parent: "Parents' Choice", description: "The 'fencepost' method — cancel units to convert feet, hours, pounds, and more.", poolKey: "units" },
+  { key: "pc_pythagoras", name: "Pythagorean Theorem", parent: "Parents' Choice", description: "a² + b² = c² — find the hypotenuse or a missing leg of a right triangle.", poolKey: "pythagoras" },
 ];
 TESTS.parents.grades = {
   pc_lower: {
     label: "Lower",
     sub: "Younger / earlier topics",
-    pools: { prealgebra: PARENTS_PREALGEBRA, units: [] },
+    pools: { prealgebra: PARENTS_PREALGEBRA, units: [], pythagoras: [] },
     tests:     { pc_prealgebra: { questionCount:  8, durationSec: 12 * 60 } },
     testsFull: { pc_prealgebra: { questionCount: 12, durationSec: 20 * 60 } },
   },
   pc_middle: {
     label: "Middle",
     sub: "Older / harder topics",
-    pools: { prealgebra: [], units: PARENTS_UNITS },
-    tests:     { pc_units: { questionCount:  8, durationSec: 12 * 60 } },
-    testsFull: { pc_units: { questionCount: 12, durationSec: 20 * 60 } },
+    pools: { prealgebra: [], units: PARENTS_UNITS, pythagoras: PARENTS_PYTHAGORAS },
+    tests:     { pc_units: { questionCount: 8, durationSec: 12 * 60 }, pc_pythagoras: { questionCount: 8, durationSec: 12 * 60 } },
+    testsFull: { pc_units: { questionCount: 12, durationSec: 20 * 60 }, pc_pythagoras: { questionCount: 12, durationSec: 20 * 60 } },
   },
 };
 TESTS.parents.sections = PARENTS_SECTIONS;
@@ -3270,7 +3272,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.28";
+const APP_VERSION = "3.29";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3372,6 +3374,7 @@ const SECTION_EMOJI = {
   // Parents' Choice
   pc_prealgebra:     "🔢",
   pc_units:          "📏",
+  pc_pythagoras:     "📐",
 };
 function sectionEmoji(key) { return SECTION_EMOJI[key] || "•"; }
 
