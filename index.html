@@ -1157,6 +1157,21 @@
   .feedback.bad .verdict { color: var(--bad); }
   .feedback .explanation { color: var(--muted); font-size: 16px; line-height: 1.55; }
   .feedback .explanation b { color: var(--text); font-weight: 600; }
+  /* Step-by-step "How to solve it" list (math entries with a `steps` array). */
+  .feedback .explanation .solve-steps {
+    margin: 8px 0 0;
+    padding-left: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .feedback .explanation .solve-steps li {
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    padding-left: 4px;
+  }
+  .feedback .explanation .solve-steps li::marker { color: var(--accent); font-weight: 700; }
   .feedback .streak-line {
     display: flex;
     align-items: center;
@@ -3253,7 +3268,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.27";
+const APP_VERSION = "3.27.1";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3897,6 +3912,19 @@ function fmtFractions(text) {
     '<span class="frac"><span class="num">$1</span><span class="den">$2</span></span>');
   return t;
 }
+
+// Build the post-answer feedback for a math/psatMath entry. If the entry
+// carries a `steps` array (a step-by-step walkthrough — used by the
+// Parents' Choice lesson banks), render it as a numbered list so each step
+// is its own discrete line instead of a run-on sentence. Otherwise fall
+// back to the prose `explanation`.
+function mathFeedbackHtml(entry) {
+  if (Array.isArray(entry.steps) && entry.steps.length) {
+    const lis = entry.steps.map(s => `<li>${fmtFractions(String(s))}</li>`).join("");
+    return `<b>How to solve it:</b><ol class="solve-steps">${lis}</ol>`;
+  }
+  return `<b>Explanation:</b> ${fmtFractions(entry.explanation)}`;
+}
 function loadProgress() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -4480,7 +4508,7 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
       promptHtml: `<div class="prompt">Multiple-choice math. Calculator allowed.</div>${chartHtml}<div class="math-q">${fmtFractions(entry.question)}</div>`,
       choices,
       answerIdx: choices.indexOf(entry.correct),
-      feedbackHtml: `<b>Explanation:</b> ${fmtFractions(entry.explanation)}`,
+      feedbackHtml: mathFeedbackHtml(entry),
       displayLabel: entry.question,
     };
   }
@@ -4586,7 +4614,7 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
       promptHtml: `<div class="prompt">Select the best answer from the choices given.</div><div class="math-q">${fmtFractions(entry.question)}</div>`,
       choices,
       answerIdx: choices.indexOf(entry.correct),
-      feedbackHtml: `<b>Explanation:</b> ${fmtFractions(entry.explanation)}`,
+      feedbackHtml: mathFeedbackHtml(entry),
       displayLabel: entry.question,
     };
   }
