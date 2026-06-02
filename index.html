@@ -3,10 +3,19 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#0f172a" />
 <title>Custom Test Practicer 9000</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8E%AF%3C/text%3E%3C/svg%3E">
 <style>
   :root {
+    /* ── Dark theme (default) ──────────────────────────────────────────
+       The app shipped dark-first; these are the canonical values. The
+       light theme (html.light, below) overrides the SAME tokens. Anything
+       that must differ between themes routes through a var() — the white-
+       overlay ladder (--w03..--w35) for subtle surfaces/borders, and the
+       --on-* tokens for text that sits on a filled --accent/--good/etc.
+       The dark values here are byte-identical to before theming, so dark
+       mode renders exactly as it always has. */
     --bg: #0f172a;
     --panel: #1e293b;
     --panel-2: #273549;
@@ -17,7 +26,73 @@
     --bad: #ef4444;
     --warn: #f59e0b;
     --shadow: 0 10px 30px rgba(0,0,0,.35);
+    /* Body background radial-gradient blobs */
+    --grad1: #1d2a4d;
+    --grad2: #1a3a3a;
+    /* Subtle surface/border overlays. Dark = lighten with white; light
+       flips to darken-with-slate. Same opacity ladder so dark is unchanged. */
+    --w03: rgba(255,255,255,.03);
+    --w04: rgba(255,255,255,.04);
+    --w05: rgba(255,255,255,.05);
+    --w06: rgba(255,255,255,.06);
+    --w08: rgba(255,255,255,.08);
+    --w10: rgba(255,255,255,.1);
+    --w12: rgba(255,255,255,.12);
+    --w15: rgba(255,255,255,.15);
+    --w18: rgba(255,255,255,.18);
+    --w35: rgba(255,255,255,.35);
+    /* Text color that sits ON a filled --accent/--good/--bad/--warn chip */
+    --on-accent: #0b1220;
+    --on-good: #052e16;
+    --on-bad: #450a0a;
+    --on-warn: #2a1c00;
   }
+  html.light {
+    /* ── Light theme ───────────────────────────────────────────────────
+       Slate-family palette to match the dark theme's character. Accent /
+       good / bad / warn are darkened to ~600/700 shades so they stay
+       legible as TEXT and BORDERS on white; their filled chips switch to
+       white --on-* text instead of the dark-on-light text used in dark. */
+    --bg: #eef2f7;
+    --panel: #ffffff;
+    --panel-2: #f1f5f9;
+    --text: #0f172a;
+    --muted: #51607a;
+    --accent: #2563eb;
+    --good: #15803d;
+    --bad: #dc2626;
+    --warn: #b45309;
+    --shadow: 0 10px 30px rgba(15,23,42,.12);
+    --grad1: #dbeafe;
+    --grad2: #d1fae5;
+    --w03: rgba(15,23,42,.04);
+    --w04: rgba(15,23,42,.05);
+    --w05: rgba(15,23,42,.06);
+    --w06: rgba(15,23,42,.07);
+    --w08: rgba(15,23,42,.09);
+    --w10: rgba(15,23,42,.11);
+    --w12: rgba(15,23,42,.13);
+    --w15: rgba(15,23,42,.15);
+    --w18: rgba(15,23,42,.17);
+    --w35: rgba(15,23,42,.32);
+    --on-accent: #ffffff;
+    --on-good: #ffffff;
+    --on-bad: #ffffff;
+    --on-warn: #ffffff;
+  }
+  /* Light-theme fixups: a handful of chips/links use bright tints (gold,
+     light-green, light-blue) chosen to glow on a dark panel. On a white panel
+     those wash out, so darken the TEXT to a ~700 shade here; the tinted
+     backgrounds carry over unchanged. Dark mode is unaffected. */
+  html.light #bankedHeaderBadge { color: #15803d; }
+  html.light .payout-chip,
+  html.light .review-bounty-chip,
+  html.light .banked-chip .amt,
+  html.light .settings-banked-row .banked-amt-text { color: #b45309; }
+  html.light .brush-up-link { color: #1d4ed8; }
+  html.light .grid-in-tag.good { color: #15803d; }
+  html.light .stats-grid .stat-cell .num.flame { color: #c2410c; }
+  html.light .test-type-pill.parents-flavor.active { color: #047857; }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
@@ -25,8 +100,8 @@
     /* Arial/Helvetica matches the standard online test interface and most
        published prep materials. Keep this generic so it feels like the real test. */
     font-family: Arial, Helvetica, sans-serif;
-    background: radial-gradient(1200px 800px at 20% -10%, #1d2a4d 0%, transparent 60%),
-                radial-gradient(900px 700px at 100% 110%, #1a3a3a 0%, transparent 60%),
+    background: radial-gradient(1200px 800px at 20% -10%, var(--grad1) 0%, transparent 60%),
+                radial-gradient(900px 700px at 100% 110%, var(--grad2) 0%, transparent 60%),
                 var(--bg);
     color: var(--text);
     -webkit-font-smoothing: antialiased;
@@ -58,14 +133,14 @@
   header.app .back {
     background: transparent;
     color: var(--muted);
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid var(--w08);
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 15px;
     cursor: pointer;
     font-family: inherit;
   }
-  header.app .back:hover { background: rgba(255,255,255,.04); color: var(--text); }
+  header.app .back:hover { background: var(--w04); color: var(--text); }
   .hidden { display: none !important; }
 
   /* ─── Home view ─── */
@@ -87,7 +162,7 @@
   .test-type-pill {
     flex: 1 1 auto;
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 10px;
     padding: 8px 14px;
     color: var(--muted);
@@ -321,7 +396,7 @@
   .grade-pill {
     flex: 1 1 auto;
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 10px;
     padding: 7px 12px;
     color: var(--muted);
@@ -359,7 +434,7 @@
     border-radius: 12px;
     padding: 4px;
     margin-bottom: 18px;
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
   }
   .mode-toggle button {
     flex: 1;
@@ -395,7 +470,7 @@
   .mode-toggle .mode-test-half { border-top-right-radius: 0; border-bottom-right-radius: 0; }
   .mode-toggle .mode-test-full { border-top-left-radius: 0; border-bottom-left-radius: 0; }
   .mode-toggle .mode-test-half + .mode-test-full {
-    border-left: 1px solid rgba(255,255,255,.08);
+    border-left: 1px solid var(--w08);
     margin-left: -1px;
   }
   .mode-toggle .mode-sublabel {
@@ -408,7 +483,7 @@
     margin-left: 2px;
     padding: 2px 6px;
     border-radius: 4px;
-    background: rgba(255,255,255,.05);
+    background: var(--w05);
   }
   .mode-toggle button.active .mode-sublabel {
     opacity: 1;
@@ -463,7 +538,7 @@
   /* ─── Review mode panel ─── */
   .review-mode-panel {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 16px;
     padding: 28px 24px;
     margin-bottom: 16px;
@@ -530,7 +605,7 @@
   }
   .section-card {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 14px;
     padding: 18px;
     text-align: left;
@@ -561,7 +636,7 @@
     margin-top: 28px;
     padding: 16px 18px;
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 12px;
     font-size: 15px;
     color: var(--muted);
@@ -575,7 +650,7 @@
   .stats-summary button {
     background: transparent;
     color: var(--muted);
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid var(--w08);
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 14px;
@@ -597,7 +672,7 @@
   .quiz-bar .progress { flex: 1; min-width: 0; }
   .quiz-bar .progress-bar {
     height: 6px;
-    background: rgba(255,255,255,.06);
+    background: var(--w06);
     border-radius: 999px;
     overflow: hidden;
     margin-top: 6px;
@@ -615,7 +690,7 @@
     padding: 6px 12px;
     border-radius: 8px;
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     flex-shrink: 0;
   }
   .timer.warn { color: var(--warn); border-color: var(--warn); }
@@ -626,7 +701,7 @@
 
   .passage {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 14px;
     padding: 18px 22px;
     margin-bottom: 14px;
@@ -650,7 +725,7 @@
 
   .card {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 18px;
     padding: 28px;
     box-shadow: var(--shadow);
@@ -746,7 +821,7 @@
      separate scrollable panel like ISEE reading needs. */
   .psat-passage {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-left: 3px solid var(--accent);
     border-radius: 10px;
     padding: 14px 18px;
@@ -775,17 +850,17 @@
     margin: 10px 0;
     font-size: 14px;
     font-variant-numeric: tabular-nums;
-    background: rgba(255,255,255,.03);
+    background: var(--w03);
   }
   .psat-passage th, .psat-passage td,
   .math-q th, .math-q td {
-    border: 1px solid rgba(255,255,255,.15);
+    border: 1px solid var(--w15);
     padding: 6px 12px;
     text-align: left;
   }
   .psat-passage th,
   .math-q th {
-    background: rgba(255,255,255,.06);
+    background: var(--w06);
     font-weight: 700;
     color: var(--text);
   }
@@ -807,8 +882,8 @@
     align-items: center;
     gap: 10px;
     padding: 18px;
-    background: rgba(255,255,255,.03);
-    border: 1px solid rgba(255,255,255,.08);
+    background: var(--w03);
+    border: 1px solid var(--w08);
     border-radius: 12px;
   }
   .grid-in-label {
@@ -825,8 +900,8 @@
     font-weight: 700;
     text-align: center;
     border-radius: 10px;
-    border: 2px solid rgba(255,255,255,.12);
-    background: rgba(255,255,255,.05);
+    border: 2px solid var(--w12);
+    background: var(--w05);
     color: var(--text);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-variant-numeric: tabular-nums;
@@ -870,8 +945,8 @@
   /* PSAT inline SVG charts (data-analysis questions) */
   .psat-chart-wrap {
     margin: 12px 0 16px;
-    background: rgba(255,255,255,.03);
-    border: 1px solid rgba(255,255,255,.08);
+    background: var(--w03);
+    border: 1px solid var(--w08);
     border-radius: 12px;
     padding: 10px;
     overflow-x: auto;
@@ -890,12 +965,12 @@
     font-family: inherit;
   }
   .psat-chart .pc-grid {
-    stroke: rgba(255,255,255,.08);
+    stroke: var(--w08);
     stroke-width: 1;
     stroke-dasharray: 2 4;
   }
   .psat-chart .pc-axis {
-    stroke: rgba(255,255,255,.35);
+    stroke: var(--w35);
     stroke-width: 1.5;
   }
   .psat-chart .pc-tick,
@@ -934,7 +1009,7 @@
   }
   .qc-col {
     background: var(--panel-2);
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid var(--w08);
     border-radius: 12px;
     padding: 18px;
     text-align: center;
@@ -986,18 +1061,18 @@
     width: 26px;
     height: 26px;
     border-radius: 8px;
-    background: rgba(255,255,255,.08);
+    background: var(--w08);
     font-size: 15px;
     font-weight: 700;
     color: var(--muted);
     flex-shrink: 0;
   }
   .option.selected { background: rgba(96,165,250,.10); border-color: var(--accent); }
-  .option.selected .key { background: var(--accent); color: #0b1220; }
+  .option.selected .key { background: var(--accent); color: var(--on-accent); }
   .option.correct { background: rgba(34,197,94,.15); border-color: var(--good); }
-  .option.correct .key { background: var(--good); color: #052e16; }
+  .option.correct .key { background: var(--good); color: var(--on-good); }
   .option.wrong { background: rgba(239,68,68,.15); border-color: var(--bad); }
-  .option.wrong .key { background: var(--bad); color: #450a0a; }
+  .option.wrong .key { background: var(--bad); color: var(--on-bad); }
   .option .option-text {
     display: flex;
     flex-direction: column;
@@ -1022,8 +1097,8 @@
     font-size: 15px;
     font-weight: 800;
     color: var(--muted);
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.12);
+    background: var(--w06);
+    border: 1px solid var(--w12);
     transition: background .12s, color .12s;
   }
   .option .elim-toggle:hover { background: rgba(239,68,68,.18); color: var(--bad); }
@@ -1091,7 +1166,7 @@
     padding: 12px 14px;
     margin-bottom: 14px;
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid var(--w08);
     border-radius: 14px;
   }
   .q-box {
@@ -1099,8 +1174,8 @@
     width: 36px;
     height: 36px;
     border-radius: 8px;
-    border: 1.5px solid rgba(255,255,255,.18);
-    background: rgba(255,255,255,.04);
+    border: 1.5px solid var(--w18);
+    background: var(--w04);
     color: var(--muted);
     font-size: 14px;
     font-weight: 700;
@@ -1111,7 +1186,7 @@
     justify-content: center;
     transition: transform .08s ease, background .12s ease, border-color .12s ease;
   }
-  .q-box:hover { transform: translateY(-1px); border-color: rgba(255,255,255,.35); }
+  .q-box:hover { transform: translateY(-1px); border-color: var(--w35); }
   .q-box.answered {
     background: rgba(96,165,250,.22);
     border-color: rgba(96,165,250,.55);
@@ -1185,8 +1260,8 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: rgba(255,255,255,.1);
-    border: 1px solid rgba(255,255,255,.15);
+    background: var(--w10);
+    border: 1px solid var(--w15);
   }
   .feedback .streak-line .pip.filled { background: var(--good); border-color: var(--good); }
   .feedback .mastered-banner {
@@ -1218,7 +1293,7 @@
   .actions .right { display: flex; gap: 8px; }
   button.primary {
     background: var(--accent);
-    color: #0b1220;
+    color: var(--on-accent);
     border: none;
     padding: 12px 20px;
     border-radius: 10px;
@@ -1234,17 +1309,17 @@
   button.ghost {
     background: transparent;
     color: var(--muted);
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid var(--w08);
     padding: 10px 14px;
     border-radius: 10px;
     font-size: 15px;
     cursor: pointer;
     font-family: inherit;
   }
-  button.ghost:hover { background: rgba(255,255,255,.04); color: var(--text); }
+  button.ghost:hover { background: var(--w04); color: var(--text); }
   button.success {
     background: var(--good);
-    color: #052e16;
+    color: var(--on-good);
     border: none;
     padding: 10px 14px;
     border-radius: 10px;
@@ -1259,7 +1334,7 @@
      confuses "submit the whole section" with "next question". */
   button.danger {
     background: var(--warn);
-    color: #2a1c00;
+    color: var(--on-warn);
     border: none;
     padding: 12px 18px;
     border-radius: 10px;
@@ -1311,6 +1386,16 @@
     transition: background .15s;
   }
   .footer-ref-btn:hover { background: rgba(96,165,250,.2); }
+  /* Footer button row holds the Math Reference + theme toggle side by side. */
+  .footer-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  /* Theme toggle — neutral (not accent-blue) so it reads as a utility, not a
+     primary action. Routes through the overlay tokens so it flips with the theme. */
+  .footer-theme-btn {
+    background: var(--w06);
+    border: 1px solid var(--w15);
+    color: var(--text);
+  }
+  .footer-theme-btn:hover { background: var(--w10); }
   .footer-version { display: block; }
   /* ─── Math Reference (cheat sheet) ─── */
   .view-reference { width: min(960px, 100%); }
@@ -1332,7 +1417,7 @@
   }
   .ref-card {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid var(--w08);
     border-radius: 14px;
     padding: 16px 18px;
   }
@@ -1351,7 +1436,7 @@
     align-items: baseline;
     gap: 14px;
     padding: 7px 0;
-    border-top: 1px solid rgba(255,255,255,.05);
+    border-top: 1px solid var(--w05);
   }
   .ref-row:first-child { border-top: 0; }
   .ref-row .rl { color: var(--muted); font-size: 13px; flex-shrink: 0; }
@@ -1479,7 +1564,7 @@
 
   .kbd {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    background: rgba(255,255,255,.06);
+    background: var(--w06);
     padding: 2px 6px;
     border-radius: 5px;
     font-size: 13px;
@@ -1489,7 +1574,7 @@
   .view-results { width: min(820px, 100%); }
   .results-summary {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 18px;
     padding: 28px;
     text-align: center;
@@ -1519,8 +1604,8 @@
     max-width: 520px;
     margin: 14px auto 0;
     padding: 10px 14px;
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.08);
+    background: var(--w04);
+    border: 1px solid var(--w08);
     border-radius: 10px;
     font-size: 12px;
     line-height: 1.5;
@@ -1567,7 +1652,7 @@
   .essays-list { display: flex; flex-direction: column; gap: 10px; }
   .essay-card {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 12px;
     padding: 16px 18px;
   }
@@ -1607,7 +1692,7 @@
   .essay-card details summary:hover { color: var(--text); }
   .essay-card details[open] summary { color: var(--text); margin-bottom: 8px; }
   .essay-card-text {
-    background: rgba(255,255,255,.03);
+    background: var(--w03);
     padding: 12px 14px;
     border-radius: 8px;
     white-space: pre-wrap;
@@ -1804,7 +1889,7 @@
   /* ─── Stats page ─── */
   .stats-section {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 16px;
     padding: 20px 22px;
     margin-bottom: 14px;
@@ -1821,7 +1906,7 @@
     gap: 14px;
   }
   .stats-grid .stat-cell {
-    background: rgba(255,255,255,.04);
+    background: var(--w04);
     border-radius: 12px;
     padding: 14px;
     text-align: center;
@@ -1850,7 +1935,7 @@
     justify-content: space-between;
     gap: 14px;
     padding: 10px 14px;
-    background: rgba(255,255,255,.04);
+    background: var(--w04);
     border-radius: 10px;
     font-size: 15px;
   }
@@ -1875,7 +1960,7 @@
     background: linear-gradient(135deg, rgba(96,165,250,0.95), rgba(168,85,247,0.95));
     color: white;
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.10) inset;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px var(--w10) inset;
     font-size: 14px;
     max-width: calc(100vw - 24px);
     animation: update-banner-pop 0.28s cubic-bezier(.34,1.56,.64,1);
@@ -1928,7 +2013,7 @@
   }
   .modal-card {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.1);
+    border: 1px solid var(--w10);
     border-radius: 18px;
     padding: 24px;
     max-width: 460px;
@@ -1966,7 +2051,7 @@
     gap: 8px;
   }
   .modal-checklist li {
-    background: rgba(255,255,255,.05);
+    background: var(--w05);
     border-radius: 10px;
     padding: 10px 14px;
     color: var(--text);
@@ -1999,8 +2084,8 @@
     text-align: center;
     letter-spacing: 8px;
     border-radius: 10px;
-    border: 2px solid rgba(255,255,255,.12);
-    background: rgba(255,255,255,.05);
+    border: 2px solid var(--w12);
+    background: var(--w05);
     color: var(--text);
     font-family: inherit;
     /* CSS-level digit masking so we can use type="text" and skip the
@@ -2044,8 +2129,8 @@
     width: 100%;
     padding: 10px 10px 10px 24px;
     border-radius: 8px;
-    border: 1px solid rgba(255,255,255,.12);
-    background: rgba(255,255,255,.05);
+    border: 1px solid var(--w12);
+    background: var(--w05);
     color: var(--text);
     font-size: 16px;
     font-weight: 700;
@@ -2086,8 +2171,8 @@
   #batteryStageConfig + .modal-actions, /* unused, kept to avoid CSS lint complaints */
   #batteryStageConfig .modal-body { padding-bottom: 4px; }
   .settings-card {
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.08);
+    background: var(--w04);
+    border: 1px solid var(--w08);
     border-radius: 14px;
     padding: 14px;
     margin-top: 14px;
@@ -2125,7 +2210,7 @@
   .switch .slider {
     position: absolute;
     inset: 0;
-    background: rgba(255,255,255,.18);
+    background: var(--w18);
     border-radius: 28px;
     transition: background .18s ease;
   }
@@ -2166,8 +2251,8 @@
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
-    border: 1px solid rgba(255,255,255,.15);
-    background: rgba(255,255,255,.05);
+    border: 1px solid var(--w15);
+    background: var(--w05);
     color: var(--text);
     font-family: inherit;
   }
@@ -2182,7 +2267,7 @@
     border-radius: 7px;
     font-size: 12px;
     background: transparent;
-    border: 1px solid rgba(255,255,255,.15);
+    border: 1px solid var(--w15);
     color: var(--muted);
     cursor: pointer;
     font-family: inherit;
@@ -2213,7 +2298,7 @@
   .review-list { display: flex; flex-direction: column; gap: 8px; }
   .review-item {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-left: 3px solid var(--good);
     border-radius: 10px;
     padding: 12px 16px;
@@ -2270,7 +2355,7 @@
   .review-item .defs-others {
     margin-top: 10px;
     padding: 8px 14px;
-    background: rgba(255,255,255,.03);
+    background: var(--w03);
     border-radius: 8px;
     font-size: 14px;
   }
@@ -2340,7 +2425,7 @@
   .view-essay { width: min(820px, 100%); }
   .essay-prompt {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-left: 3px solid var(--accent);
     border-radius: 12px;
     padding: 18px 22px;
@@ -2361,7 +2446,7 @@
     width: 100%;
     min-height: 50vh;
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.08);
+    border: 1px solid var(--w08);
     border-radius: 12px;
     padding: 16px 18px;
     color: var(--text);
@@ -2382,7 +2467,7 @@
   .essay-meta .word-count { font-weight: 700; color: var(--text); }
   .essay-final {
     background: var(--panel);
-    border: 1px solid rgba(255,255,255,.06);
+    border: 1px solid var(--w06);
     border-radius: 12px;
     padding: 20px 24px;
     color: var(--text);
@@ -2393,6 +2478,48 @@
     overflow-y: auto;
   }
 </style>
+<script>
+  /* Theme bootstrap — runs in <head> before <body> paints, so there is no
+     dark→light flash on load. Stored choice wins; otherwise follow the OS
+     preference; otherwise default dark (the app's original look). The footer
+     toggle is wired in the main script at the bottom of the page; everything
+     it needs is published on window here. */
+  (function () {
+    window.THEME_KEY = "isee-theme";
+    window.getStoredTheme = function () {
+      try { return localStorage.getItem(window.THEME_KEY); } catch (_) { return null; }
+    };
+    window.resolveInitialTheme = function () {
+      var stored = window.getStoredTheme();
+      if (stored === "light" || stored === "dark") return stored;
+      try {
+        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches) return "light";
+      } catch (_) {}
+      return "dark";
+    };
+    window.applyTheme = function (theme, persist) {
+      var light = theme === "light";
+      document.documentElement.classList.toggle("light", light);
+      try {
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", light ? "#eef2f7" : "#0f172a");
+      } catch (_) {}
+      if (persist) { try { localStorage.setItem(window.THEME_KEY, theme); } catch (_) {} }
+      var btn = document.getElementById("themeToggleBtn");
+      if (btn) {
+        btn.textContent = light ? "☀️ Light" : "🌙 Dark";
+        btn.setAttribute("aria-pressed", String(light));
+      }
+    };
+    window.toggleTheme = function () {
+      var next = document.documentElement.classList.contains("light") ? "dark" : "light";
+      window.applyTheme(next, true);
+    };
+    // Apply the resolved theme immediately (class only — button isn't in the
+    // DOM yet; its label gets synced by the wiring at the bottom of the page).
+    window.applyTheme(window.resolveInitialTheme(), false);
+  })();
+</script>
 </head>
 <body>
 
@@ -2853,7 +2980,10 @@
 <!-- Build stamp — populated at boot from APP_VERSION / APP_VERSION_DATE so
      the parent can tell what version is running after a hard refresh. -->
 <footer class="app-footer" id="appFooter">
-  <button class="footer-ref-btn" id="mathRefBtn">📐 Math Reference</button>
+  <div class="footer-btns">
+    <button class="footer-ref-btn" id="mathRefBtn">📐 Math Reference</button>
+    <button class="footer-ref-btn footer-theme-btn" id="themeToggleBtn" type="button" aria-label="Toggle light or dark theme" aria-pressed="false">🌙 Dark</button>
+  </div>
   <span class="footer-version" id="appVersionStamp"></span>
 </footer>
 
@@ -3272,8 +3402,8 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.29";
-const APP_VERSION_DATE = "2026-05-29";
+const APP_VERSION = "3.30";
+const APP_VERSION_DATE = "2026-06-01";
 
 // Anti-spam: minimum seconds per question for a test to count toward
 // monetized earnings. Faster than this and we assume the kid is
@@ -5356,7 +5486,7 @@ async function copyToClipboard(text) {
 function showCopyFallback(text) {
   appConfirm({
     title: "Copy this for feedback",
-    body: `Select all of the text below and copy it, then paste into Claude or ChatGPT:<br><br><textarea readonly style="width:100%;height:180px;font-size:12px;font-family:monospace;background:rgba(255,255,255,.05);color:var(--text);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:8px;">${escapeHtml(text)}</textarea>`,
+    body: `Select all of the text below and copy it, then paste into Claude or ChatGPT:<br><br><textarea readonly style="width:100%;height:180px;font-size:12px;font-family:monospace;background:var(--w05);color:var(--text);border:1px solid var(--w15);border-radius:8px;padding:8px;">${escapeHtml(text)}</textarea>`,
     okLabel: "Done",
     cancelLabel: "Close",
   });
@@ -6235,7 +6365,7 @@ function renderBatteryFinal() {
     );
   }
   breakdown.push(
-    `<div class="stats-row" style="margin-top:6px;border-top:1px solid rgba(255,255,255,.06);"><div class="left"><span class="name">Sections subtotal</span></div><div class="right"><strong>${fmt$(r.sectionPayouts)}</strong></div></div>`
+    `<div class="stats-row" style="margin-top:6px;border-top:1px solid var(--w06);"><div class="left"><span class="name">Sections subtotal</span></div><div class="right"><strong>${fmt$(r.sectionPayouts)}</strong></div></div>`
   );
   const bonusName = r.anyRushed
     ? `🏁 Finishing bonus <span style="color:#ef4444;font-size:11px;font-weight:700;">FORFEITED (rushed)</span>`
@@ -7998,6 +8128,22 @@ $("essaysHomeBtn").addEventListener("click", () => { renderHome(); showView("hom
 // Math Reference (cheat sheet) — footer button opens it; the global back
 // button (top of every non-home view) handles returning home.
 $("mathRefBtn").addEventListener("click", () => { showView("reference"); window.scrollTo(0, 0); });
+// Light/dark theme toggle (footer). The head bootstrap already applied the
+// resolved theme + set the class; here we just sync the button label to it and
+// wire the click. Choosing a theme persists it (window.applyTheme(_, true)).
+(function () {
+  const tbtn = $("themeToggleBtn");
+  if (!tbtn) return;
+  tbtn.textContent = document.documentElement.classList.contains("light") ? "☀️ Light" : "🌙 Dark";
+  tbtn.addEventListener("click", () => window.toggleTheme());
+  // If the user hasn't made an explicit choice, keep following the OS setting.
+  try {
+    const mq = window.matchMedia("(prefers-color-scheme: light)");
+    const onScheme = (e) => { if (!window.getStoredTheme()) window.applyTheme(e.matches ? "light" : "dark", false); };
+    if (mq.addEventListener) mq.addEventListener("change", onScheme);
+    else if (mq.addListener) mq.addListener(onScheme);
+  } catch (_) {}
+})();
 // (The Mock Test Day card is now dynamically created inside renderSectionsGrid
 //  with its click handler wired there — no static #batteryCTA element exists.)
 $("batteryModalCancel").addEventListener("click", () => $("batteryModal").classList.add("hidden"));

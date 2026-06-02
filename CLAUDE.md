@@ -157,6 +157,24 @@ ISEE / PSAT convention: when every answer choice is a pure number, present them 
 
 ## Architecture
 
+### Theming (light / dark, v3.30+)
+The app is dark-first; light mode is a CSS-variable theme overlay. All theme-able colors are tokens in `:root` (dark = canonical); `html.light { ... }` overrides the **same** tokens. Toggle lives in the footer next to Math Reference (🌙 Dark / ☀️ Light).
+
+How the tokenization works (so dark mode stayed byte-identical):
+- Core palette tokens: `--bg --panel --panel-2 --text --muted --accent --good --bad --warn --shadow`.
+- `--grad1 / --grad2` — the body radial-gradient blobs.
+- **White-overlay ladder** `--w03 --w04 --w05 --w06 --w08 --w10 --w12 --w15 --w18 --w35`: subtle surface/border tints. Dark = `rgba(255,255,255,.0X)` (lighten); light = `rgba(15,23,42,.0X)` (darken-with-slate). The ~76 hardcoded `rgba(255,255,255,.0X)` overlays were sed-replaced with these tokens, so the dark values are identical to pre-theming.
+- **`--on-*` tokens** (`--on-accent --on-good --on-bad --on-warn`): text color that sits ON a filled `--accent/--good/--bad/--warn` chip (e.g. `button.primary`, `.option.correct .key`). Dark = the original dark text (`#0b1220` etc.); light = `#fff`. Needed because the accent/good/warn colors darken to ~600/700 shades in light mode (legible as text/borders on white), so their filled chips flip to white text.
+- A few chips use **bright tints** (gold `#fbbf24`, light-green `#4ade80`, light-blue `#93c5fd`) chosen to glow on a dark panel; those wash out on white, so there's a small block of `html.light <selector> { color: <700-shade> }` fixups (banked badge, payout/bounty chips, brush-up link, grid-in-good tag, flame stat, active Parents pill). Tiny-mode option pastels sit on colored buttons and are left alone (colorful in both themes).
+
+Mechanics:
+- **No-FOUC bootstrap**: a tiny `<script>` in `<head>` (before `<body>`) reads the stored choice / OS preference and sets `html.classList` before first paint. Publishes `window.applyTheme / toggleTheme / resolveInitialTheme / getStoredTheme / THEME_KEY`.
+- **Persistence**: `localStorage["isee-theme"]` = `"light"｜"dark"`. Stored choice wins; else `prefers-color-scheme`; else dark.
+- Footer button wiring (label sync + click + live OS-change following when unset) is in the main bottom script.
+- `<meta name="theme-color">` is updated on toggle for mobile browser chrome.
+
+**When adding new CSS:** route subtle surface/border colors through the `--wXX` tokens and text-on-fill through `--on-*` — don't hardcode `rgba(255,255,255,…)` or dark-on-accent text, or it won't flip for light mode. New bright-accent text on a panel/tint may need an `html.light` fixup; verify both themes in preview.
+
 ### Modes
 `state.mode` is one of:
 - `"practice"` — instant feedback, no timer, missed questions recycle back into the queue
@@ -338,6 +356,7 @@ For audit-style rewrites (e.g. the v3.19 distractor rewrite), agents EDIT IN PLA
 - Don't read `state.monetized` or `state.payoutConfig` — those names don't exist anymore. Use `isMonetizedActive()` / `activePayoutConfig()` / `isMonetizedFor(testType)`.
 - Don't write to `L().rewardsBanked` — there's no per-grade bank anymore. Write to `state.rewardsBanked`.
 - Don't write the visible `prompt` for tiny entries assuming TTS will speak it well. Add `audioPrompt` for anything with emoji, slash-phonemes (`/s/`), or digits.
+- Don't hardcode `rgba(255,255,255,…)` overlays or dark-text-on-accent colors in new CSS — they won't flip for light mode. Use the `--wXX` overlay ladder and `--on-*` tokens (see Theming). Verify new UI in BOTH themes.
 
 ## User preferences picked up across the project
 
