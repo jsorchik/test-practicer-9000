@@ -58,16 +58,33 @@ The one safe form of dedup is **replacing** a duplicate's content in-place. Past
 `STORAGE_KEY = "isee-progress-v5"`. **Do not rename** — the app was once explicitly named ISEE-something, the user later asked for generic naming, but localStorage data uses this exact key. Renaming silently wipes everyone's stats.
 
 ### Test types
-Three: `isee` (default), `psat`, `tiny` (Unicorn Quest for a 5yo). `state.testType` is the current selector; home view has a top-level pill toggle. Each test type owns its own grades and sections, with lifetimes nested under `state.lifetimes[testType][grade]`.
+Four: `isee` (default), `psat`, `tiny` (Unicorn Quest for a 5yo), `parents` (Parents' Choice — custom parent-curated study). `state.testType` is the current selector; home view has a top-level pill toggle. Each test type owns its own grades and sections, with lifetimes nested under `state.lifetimes[testType][grade]`.
 
 ```js
-TESTS.isee.grades   = GRADES                     // {lower, bridge, middle}
-TESTS.isee.sections = SECTIONS                   // verbal_synonyms, verbal_completion, …
-TESTS.psat.grades   = { psat89: {...} }
-TESTS.psat.sections = PSAT_SECTIONS              // psat_rw, psat_math
-TESTS.tiny.grades   = { prek: {...} }
-TESTS.tiny.sections = TINY_SECTIONS              // tiny_letters, tiny_numbers
+TESTS.isee.grades    = GRADES                    // {lower, bridge, middle}
+TESTS.isee.sections  = SECTIONS                  // verbal_synonyms, verbal_completion, …
+TESTS.psat.grades    = { psat89: {...} }
+TESTS.psat.sections  = PSAT_SECTIONS             // psat_rw, psat_math
+TESTS.tiny.grades    = { prek: {...} }
+TESTS.tiny.sections  = TINY_SECTIONS             // tiny_letters, tiny_numbers
+TESTS.parents.grades   = { pc_lower, pc_middle } // grade keys pc_* (avoid colliding with ISEE lower/middle)
+TESTS.parents.sections = PARENTS_SECTIONS        // pc_prealgebra, … (grows as parents request subjects)
 ```
+
+**Grade keys must be globally unique** across test types — the `QUESTION_REGISTRY` id is `${gradeKey}-${sectionKey}-${idx}`. ISEE uses lower/bridge/middle, so Parents' Choice uses `pc_lower`/`pc_middle`.
+
+The home **grade toggle renders dynamically** from `currentGrades()` via `renderGradeToggle()` — no hardcoded grade buttons. Adding a test type with any number of grades just works; single-grade types auto-hide the toggle.
+
+### Parents' Choice (custom study type)
+A parent-curated study area. Two grades (`pc_lower` / `pc_middle`) and a growing list of "subjects" (sections) that differ per grade. `PARENTS_SECTIONS` is the **union** of subjects across both grades; each grade's `pools` only fills the subjects it has, and `renderSectionsGrid` **skips** (doesn't render) a subject whose pool is empty for the current grade — so no "coming soon" disabled cards.
+
+**To add a new Parents' Choice subject** (the recurring ask — "add a lesson on X"):
+1. Create `data/parents-<subject>.js` with `const PARENTS_<SUBJECT> = [ ...math/MCQ entries... ]`. Use `type: "math"` entries with rich step-by-step `explanation` fields (the teaching happens there — Practice mode shows the full worked solution after each answer). Include a `topic` for Khan brush-up links.
+2. Add a `<script src>` tag for it (before the inline app script).
+3. Add a section to `PARENTS_SECTIONS`: `{ key: "pc_<subject>", name, parent: "Parents' Choice", description, poolKey: "<subject>" }`.
+4. Wire the pool into the right grade: `TESTS.parents.grades.pc_lower.pools.<subject> = PARENTS_<SUBJECT>` (+ a `tests`/`testsFull` entry for that section key if test mode is wanted). Leave the OTHER grade's pool empty (`[]`) so it's skipped there.
+5. Add a `SECTION_EMOJI["pc_<subject>"]`.
+First subject shipped: **Pre-Algebra** (Lower) — solving linear equations, anchored on `4h + 10 = 26`. Content is in `data/parents-prealgebra.js`.
 
 Helper functions (use these instead of `GRADES` / `SECTIONS` directly when the path is test-type-sensitive):
 

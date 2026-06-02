@@ -133,6 +133,15 @@
     background: rgba(244,114,182,.15);
     color: #ec4899;
   }
+  /* Parents' Choice pill — green flavor to set it apart from the test-prep
+     types (it's parent-curated study, not an exam). */
+  .test-type-pill.parents-flavor { border-color: rgba(52,211,153,.30); }
+  .test-type-pill.parents-flavor:hover { background: rgba(52,211,153,.10); color: var(--text); }
+  .test-type-pill.parents-flavor.active {
+    border-color: #34d399;
+    background: rgba(52,211,153,.14);
+    color: #34d399;
+  }
 
   /* ─── Tiny mode (Unicorn Quest) — kid-friendly styling ─── */
   body.tiny-mode {
@@ -2409,6 +2418,10 @@
       <span class="tt-label">🦄 Unicorn Quest</span>
       <span class="tt-sub">Letters & numbers for little kids</span>
     </button>
+    <button class="test-type-pill parents-flavor" id="testTypeParents" data-type="parents" title="Extra practice your parents picked">
+      <span class="tt-label">📚 Parents' Choice</span>
+      <span class="tt-sub">Extra practice your parents picked</span>
+    </button>
   </div>
 
   <!-- PSAT "content in progress" banner — shown only when testType is
@@ -2423,20 +2436,10 @@
   <!-- Grade toggle: visible only when the current testType has more than one
        grade (ISEE: lower/bridge/middle). PSAT has a single grade so this
        container hides; the rest of the home stays shared between types. -->
-  <div class="grade-toggle" id="gradeToggle">
-    <button class="grade-pill" id="gradeLower" title="Grades 4 → 5">
-      <span class="label">Lower Level</span>
-      <span class="sub">Grades 4 → 5</span>
-    </button>
-    <button class="grade-pill" id="gradeBridge" title="Grade 5 → 6">
-      <span class="label">Bridge Level</span>
-      <span class="sub">Grade 5 → 6</span>
-    </button>
-    <button class="grade-pill active" id="gradeMiddle" title="Grades 6 → 7">
-      <span class="label">Middle Level</span>
-      <span class="sub">Grades 6 → 7</span>
-    </button>
-  </div>
+  <!-- Grade pills are rendered dynamically from the active test type's
+       grades (renderGradeToggle) so any test type's grade set works —
+       ISEE's 3, Parents' Choice's 2, single-grade types auto-hide. -->
+  <div class="grade-toggle" id="gradeToggle"></div>
 
   <!-- Mode row. Test mode splits into two sub-tabs (Half / Full) so the
        volume choice happens inline rather than as a separate toggle row
@@ -2944,6 +2947,7 @@
 <script src="data/psat-math.js"></script>
 <script src="data/tiny-letters.js"></script>
 <script src="data/tiny-numbers.js"></script>
+<script src="data/parents-prealgebra.js"></script>
 <script src="data/definitions.js"></script>
 <script>
 // ════════════════════════════════════════════════════════════════════════════
@@ -3006,6 +3010,14 @@ const TESTS = {
     sub: "Letters and numbers for little kids",
     defaultGrade: "prek",
     // grades / sections wired up below — see TESTS.tiny.grades = { prek: {...} }.
+  },
+  parents: {
+    label: "Parents' Choice",
+    sub: "Extra practice your parents picked",
+    defaultGrade: "pc_lower",
+    // grades / sections wired up below — see TESTS.parents.grades = { pc_lower, pc_middle }.
+    // Grade keys are pc_* so they don't collide with ISEE's lower/middle in
+    // the QUESTION_REGISTRY id space (`${gradeKey}-${sectionKey}-${idx}`).
   },
 };
 
@@ -3204,6 +3216,35 @@ TESTS.tiny.grades = {
 };
 TESTS.tiny.sections = TINY_SECTIONS;
 
+// ════════════════════════════════════════════════════════════════════════════
+// PARENTS' CHOICE — a custom study type. Two grades (Lower / Middle), and a
+// growing list of "subjects" (sections) the parents ask for. Each subject's
+// content is a normal question bank loaded via <script src>. Subjects differ
+// per grade — a grade only shows subjects whose pool it actually fills, so
+// PARENTS_SECTIONS is the union across both grades (empty pools are skipped
+// in renderSectionsGrid).
+// ════════════════════════════════════════════════════════════════════════════
+const PARENTS_SECTIONS = [
+  { key: "pc_prealgebra", name: "Pre-Algebra", parent: "Parents' Choice", description: "Solve for a variable, step by step — 4h + 10 = 26 and friends.", poolKey: "prealgebra" },
+];
+TESTS.parents.grades = {
+  pc_lower: {
+    label: "Lower",
+    sub: "Younger / earlier topics",
+    pools: { prealgebra: PARENTS_PREALGEBRA },
+    tests:     { pc_prealgebra: { questionCount:  8, durationSec: 12 * 60 } },
+    testsFull: { pc_prealgebra: { questionCount: 12, durationSec: 20 * 60 } },
+  },
+  pc_middle: {
+    label: "Middle",
+    sub: "Older / harder topics",
+    pools: { prealgebra: [] },   // no Middle subjects yet — add as parents request
+    tests:     {},
+    testsFull: {},
+  },
+};
+TESTS.parents.sections = PARENTS_SECTIONS;
+
 const MASTERY_THRESHOLD = 3;
 // Storage key retained from previous version to preserve user progress across the rebrand.
 const STORAGE_KEY = "isee-progress-v5";
@@ -3212,7 +3253,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.26";
+const APP_VERSION = "3.27";
 const APP_VERSION_DATE = "2026-05-29";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3259,9 +3300,10 @@ const TINY_DEFAULT_PAYOUT_CONFIG = {
   reviewMasteryBounty: 0.05,
 };
 const DEFAULT_PAYOUT_CONFIG_BY_TYPE = {
-  isee: { ...DEFAULT_PAYOUT_CONFIG },
-  psat: { ...DEFAULT_PAYOUT_CONFIG },
-  tiny: { ...TINY_DEFAULT_PAYOUT_CONFIG },
+  isee:    { ...DEFAULT_PAYOUT_CONFIG },
+  psat:    { ...DEFAULT_PAYOUT_CONFIG },
+  tiny:    { ...TINY_DEFAULT_PAYOUT_CONFIG },
+  parents: { ...DEFAULT_PAYOUT_CONFIG },
 };
 
 // Returns the payoutConfig for the active testType. Use this instead of
@@ -3310,6 +3352,8 @@ const SECTION_EMOJI = {
   // Unicorn Quest
   tiny_letters:      "🔡",
   tiny_numbers:      "🧮",
+  // Parents' Choice
+  pc_prealgebra:     "🔢",
 };
 function sectionEmoji(key) { return SECTION_EMOJI[key] || "•"; }
 
@@ -3459,15 +3503,17 @@ const state = {
     isee: false,
     psat: false,
     tiny: false,
+    parents: false,
   },
   // Per-test-type payout config. Each test type maintains its own values
   // so a kid finishing a 5-question Unicorn Quest doesn't out-earn a
   // 12-year-old finishing a full Mock Test Day. Read via activePayoutConfig()
   // anywhere a consumer needs the current values.
   payoutConfigByType: {
-    isee: { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.isee },
-    psat: { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.psat },
-    tiny: { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.tiny },
+    isee:    { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.isee },
+    psat:    { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.psat },
+    tiny:    { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.tiny },
+    parents: { ...DEFAULT_PAYOUT_CONFIG_BY_TYPE.parents },
   },
   // Single global rewards bank — shared across all test types and grades.
   // Earlier the bank was per-(test type × grade), which meant a parent had
@@ -3555,6 +3601,10 @@ const state = {
     },
     tiny: {
       prek:   { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0, recentPicks: {} },
+    },
+    parents: {
+      pc_lower:  { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0, recentPicks: {} },
+      pc_middle: { score: 0, total: 0, streak: 0, best: 0, mistakes: {}, perfectTests: 0, totalTests: 0, longestTestStreak: 0, bestByTest: {}, essays: [], tests: [], rewardsBanked: 0, recentPicks: {} },
     },
   },
 };
@@ -3852,7 +3902,11 @@ function loadProgress() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const data = JSON.parse(raw);
-    if (data.gradeLevel && GRADES[data.gradeLevel]) state.gradeLevel = data.gradeLevel;
+    // Accept a saved gradeLevel if it's valid in ANY test type's grades
+    // (not just ISEE's) — Parents' Choice + future types use their own grade
+    // keys. The final normalization below still fixes any testType×grade
+    // mismatch against the restored testType.
+    if (data.gradeLevel && Object.values(TESTS).some(t => (t.grades || {})[data.gradeLevel])) state.gradeLevel = data.gradeLevel;
     if (data.testVolume === "half" || data.testVolume === "full") state.testVolume = data.testVolume;
     // parentPin used to be persisted as a static value (default 6969). It's
     // now computed daily from the current date via getCurrentParentPin(), so
@@ -3950,6 +4004,17 @@ function loadProgress() {
       }
       for (const g of Object.keys(incomingTiny)) {
         if (!state.lifetimes.tiny[g]) state.lifetimes.tiny[g] = incomingTiny[g];
+      }
+      // Same for Parents' Choice.
+      const incomingParents = data.lifetimes.parents || {};
+      for (const g of Object.keys(state.lifetimes.parents)) {
+        if (incomingParents[g]) {
+          Object.assign(state.lifetimes.parents[g], incomingParents[g]);
+          if (!state.lifetimes.parents[g].mistakes) state.lifetimes.parents[g].mistakes = {};
+        }
+      }
+      for (const g of Object.keys(incomingParents)) {
+        if (!state.lifetimes.parents[g]) state.lifetimes.parents[g] = incomingParents[g];
       }
     }
     // Migration: add new gamification fields for older saved states. Same
@@ -4846,10 +4911,8 @@ function renderHome() {
   // the testType-specific bits.
   applyTestTypeToHome();
 
-  // Grade pills
-  $("gradeLower").classList.toggle("active", state.gradeLevel === "lower");
-  $("gradeBridge").classList.toggle("active", state.gradeLevel === "bridge");
-  $("gradeMiddle").classList.toggle("active", state.gradeLevel === "middle");
+  // Grade pills — rendered from the active test type's grades.
+  renderGradeToggle();
 
   // Mode tabs. Test mode is split into two sub-tabs (Half / Full) — each
   // is highlighted when its (mode + volume) combo matches state. Practice
@@ -4921,6 +4984,13 @@ function renderSectionsGrid() {
     : new Set(["verbal_combined"]);
   for (const section of sectionsForType) {
     if (HIDDEN_FROM_GRID.has(section.key)) continue;
+    // Parents' Choice: subjects differ per grade, so the section list is the
+    // union across grades. Skip (don't even show) a subject the current grade
+    // hasn't filled yet — avoids a row of disabled "coming soon" cards.
+    if (state.testType === "parents" && !section.isEssay) {
+      const pc = poolFor(section);
+      if (!pc || pc.length === 0) continue;
+    }
     const card = document.createElement("button");
     card.className = "section-card";
     // Subtle gold shimmer on individual cards when Monetized Mode is on,
@@ -5428,7 +5498,7 @@ function tryUnlockPin() {
 // The list of test types shown in the modal (in display order). Each card
 // has a toggle + payout fields + banked rows + reset. Single source of truth
 // so adding a new test type only requires updating TESTS + this array.
-const SETTINGS_CARD_TYPES = ["isee", "psat", "tiny"];
+const SETTINGS_CARD_TYPES = ["isee", "psat", "tiny", "parents"];
 
 function renderSettingsCards() {
   const container = $("settingsCardsContainer");
@@ -6164,6 +6234,29 @@ function setGrade(grade) {
   renderHome();
 }
 
+// Render the grade pills for the active test type. Builds them from
+// currentGrades() so adding a test type with any number of grades just
+// works — no hardcoded grade IDs. Each pill's subtitle is hover-only
+// (screen-reader text) to keep the compact layout. applyTestTypeToHome
+// still hides the whole row when a type has a single grade.
+function renderGradeToggle() {
+  const wrap = $("gradeToggle");
+  if (!wrap) return;
+  const grades = currentGrades();
+  wrap.innerHTML = Object.keys(grades).map(k => {
+    const g = grades[k];
+    const active = k === state.gradeLevel ? " active" : "";
+    const sub = g.sub || "";
+    return `<button class="grade-pill${active}" data-grade="${escapeHtml(k)}" title="${escapeHtml(sub)}">
+      <span class="label">${escapeHtml(g.label || k)}</span>
+      <span class="sub">${escapeHtml(sub)}</span>
+    </button>`;
+  }).join("");
+  wrap.querySelectorAll("[data-grade]").forEach(btn => {
+    btn.addEventListener("click", () => setGrade(btn.dataset.grade));
+  });
+}
+
 // Top-level test type toggle (ISEE vs PSAT). Each testType keeps its own
 // last-selected grade tracked in lastGradeByType so toggling back restores
 // the kid's spot inside that test's grade structure. On switch, we point
@@ -6196,6 +6289,7 @@ function applyTestTypeToHome() {
   $("testTypeIsee").classList.toggle("active", isIsee);
   $("testTypePsat").classList.toggle("active", isPsat);
   $("testTypeTiny").classList.toggle("active", isTiny);
+  $("testTypeParents").classList.toggle("active", tt === "parents");
   // Body class drives kid-mode CSS (pink palette, bigger buttons, etc.)
   // app-wide while tiny is the active test type.
   document.body.classList.toggle("tiny-mode", isTiny);
@@ -7797,9 +7891,9 @@ function renderMistakesList() {
 $("testTypeIsee").addEventListener("click", () => setTestType("isee"));
 $("testTypePsat").addEventListener("click", () => setTestType("psat"));
 $("testTypeTiny").addEventListener("click", () => setTestType("tiny"));
-$("gradeLower").addEventListener("click", () => setGrade("lower"));
-$("gradeBridge").addEventListener("click", () => setGrade("bridge"));
-$("gradeMiddle").addEventListener("click", () => setGrade("middle"));
+$("testTypeParents").addEventListener("click", () => setTestType("parents"));
+// Grade pill clicks are wired per-render inside renderGradeToggle (the pills
+// are built dynamically from the active test type's grades).
 
 $("modePractice").addEventListener("click", (e) => {
   if (e.target.classList.contains("info-icon")) return;  // info icon handled separately
