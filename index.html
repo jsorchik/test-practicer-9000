@@ -598,6 +598,12 @@
     margin-bottom: 18px;
   }
   .review-breakdown { display: flex; flex-direction: column; gap: 8px; }
+  /* Per-section breakdown rows double as "review just this section" buttons. */
+  .review-breakdown .review-hint { font-size: 12px; color: var(--muted); margin: -4px 0 8px; }
+  .review-section-row { cursor: pointer; transition: background .12s, box-shadow .12s; }
+  .review-section-row:hover { background: var(--w08); }
+  .review-section-row:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--accent) inset; }
+  .review-section-row .review-row-go { color: var(--accent); font-weight: 700; font-size: 13px; margin-left: 8px; white-space: nowrap; }
   /* ─── Volume toggle (Half / Full test length) ─── */
   /* .volume-toggle removed — its Half/Full choice now lives inside the
      Test sub-tabs of .mode-toggle above. */
@@ -3405,7 +3411,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.30.1";
+const APP_VERSION = "3.31";
 const APP_VERSION_DATE = "2026-06-03";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3725,6 +3731,7 @@ const state = {
   _eliminatedQid: null,   // which question practiceEliminated belongs to
   // Review
   reviewQueue: [],
+  reviewFilterSection: null,   // when set, review only this section's mistakes
   reviewIdx: 0,
   reviewCurrent: null,
   reviewAnswered: false,
@@ -5240,7 +5247,7 @@ function renderReviewModePanel(stats) {
     : `${stats.active} ${stats.active === 1 ? "thing" : "things"} to drill until they stick`;
   $("reviewHeadline").textContent = headline;
   $("startReviewBtn").disabled = stats.active === 0;
-  $("startReviewBtn").textContent = stats.active === 0 ? "Nothing to review" : `Start Review →`;
+  $("startReviewBtn").textContent = stats.active === 0 ? "Nothing to review" : `Review all →`;
   $("viewMistakesBtn").style.display = stats.mastered + stats.active > 0 ? "" : "none";
 
   // Sparkle + bounty chip when monetized AND a bounty is configured (parent
@@ -5272,15 +5279,16 @@ function renderReviewModePanel(stats) {
     if (section.isCombined) continue;
     const n = counts[section.key] || 0;
     if (n === 0) continue;
+    // Each row is also a button: tap to review ONLY this section's mistakes.
     breakdownRows.push(`
-      <div class="stats-row">
+      <div class="stats-row review-section-row" role="button" tabindex="0" data-review-section="${section.key}" title="Review only ${escapeHtml(section.name)}">
         <div class="left"><span class="emoji">${sectionEmoji(section.key)}</span><span class="name">${section.name}</span></div>
-        <div class="right"><strong>${n}</strong> to drill</div>
+        <div class="right"><strong>${n}</strong> to drill <span class="review-row-go">Review →</span></div>
       </div>
     `);
   }
   $("reviewBreakdown").innerHTML = breakdownRows.length
-    ? `<div class="stats-section" style="margin-top:6px;padding:14px 18px;"><h3 style="margin-bottom:10px;">Breakdown</h3>${breakdownRows.join("")}</div>`
+    ? `<div class="stats-section" style="margin-top:6px;padding:14px 18px;"><h3 style="margin-bottom:6px;">Review by section</h3><div class="review-hint">Tap a section to drill just those.</div>${breakdownRows.join("")}</div>`
     : "";
 }
 
@@ -7048,9 +7056,14 @@ function finishTest() {
 // ════════════════════════════════════════════════════════════════════════════
 // REVIEW MODE
 // ════════════════════════════════════════════════════════════════════════════
-function startReview() {
-  const ids = getActiveMistakeIds();
+function startReview(sectionKey = null) {
+  let ids = getActiveMistakeIds();
+  // Optional section filter — drill just one section's mistakes (e.g. only
+  // Math Achievement). Match on the mistake's stored sectionKey, the same
+  // field the home-panel breakdown counts by, so the two always agree.
+  if (sectionKey) ids = ids.filter(id => (L().mistakes[id] || {}).sectionKey === sectionKey);
   if (ids.length === 0) return;
+  state.reviewFilterSection = sectionKey || null;
   state.mode = "review";
   clearActiveSession();  // review isn't resumable; drop any stale test snapshot
   state.reviewQueue = shuffle(ids);
@@ -7166,7 +7179,10 @@ function renderQuiz(picked = -1) {
   } else if (mode === "review") {
     const total = state.reviewQueue.length;
     const n = Math.min(state.reviewIdx + 1, total);
-    $("progressLabel").textContent = `Reviewing ${n} of ${total}`;
+    const secName = state.reviewFilterSection
+      ? ((findSectionByKey(state.reviewFilterSection) || {}).name || "")
+      : "";
+    $("progressLabel").textContent = `Reviewing ${secName ? secName + " · " : ""}${n} of ${total}`;
     $("progressFill").style.width = `${(state.reviewIdx / total) * 100}%`;
   } else {
     $("progressLabel").textContent = `${currentGrade().label} · ${state.section.name} · Score ${L().score} / ${L().total}`;
@@ -8120,7 +8136,22 @@ $("flagBtn").addEventListener("click", () => { if (state.mode === "test") testTo
 $("finishBtn").addEventListener("click", () => { triggerFinishTest(); });
 $("masterBtn").addEventListener("click", () => { if (state.mode === "review") reviewMarkMastered(); });
 
-$("startReviewBtn").addEventListener("click", startReview);
+// Note: wrap in an arrow so the click Event isn't passed as the section filter.
+$("startReviewBtn").addEventListener("click", () => startReview());
+// Per-section review: the breakdown rows act as buttons (click or Enter/Space).
+// Delegated on the container, which persists across renderReviewModePanel's
+// innerHTML rebuilds.
+$("reviewBreakdown").addEventListener("click", (e) => {
+  const row = e.target.closest("[data-review-section]");
+  if (row) startReview(row.getAttribute("data-review-section"));
+});
+$("reviewBreakdown").addEventListener("keydown", (e) => {
+  if (e.key !== "Enter" && e.key !== " ") return;
+  const row = e.target.closest("[data-review-section]");
+  if (!row) return;
+  e.preventDefault();
+  startReview(row.getAttribute("data-review-section"));
+});
 $("viewMistakesBtn").addEventListener("click", () => { renderMistakesList(); showView("mistakes"); });
 $("viewStatsBtn").addEventListener("click", () => { renderStats(); showView("stats"); });
 $("statsHomeBtn").addEventListener("click", () => { renderHome(); showView("home"); });

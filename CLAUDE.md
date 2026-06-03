@@ -179,7 +179,7 @@ Mechanics:
 `state.mode` is one of:
 - `"practice"` — instant feedback, no timer, missed questions recycle back into the queue
 - `"test"` — timed section, no per-question feedback during test; numbered navigator strip + flag-for-review + free navigation + Submit Section confirmation
-- `"review"` — drill the mistakes pool until each entry hits `MASTERY_THRESHOLD = 3` correct-in-a-row
+- `"review"` — drill the mistakes pool until each entry hits `MASTERY_THRESHOLD = 3` correct-in-a-row. `startReview(sectionKey?)` takes an optional section filter; the review-mode home panel's per-section breakdown rows are buttons that call it (e.g. drill only Math Achievement). `state.reviewFilterSection` holds the active filter (null = all) and prefixes the quiz header ("Reviewing Mathematics Achievement · 1 of 4"). Filter matches the mistake's stored `sectionKey` — the same field the breakdown counts by, so the two always agree.
 
 ### Views
 `state.view` and `showView(name)`: `home | quiz | results | mistakes | essay | stats | tests | essays | batteryTransition | batteryResults`. All views are sibling divs in `<body>`; `showView` toggles `.hidden`. Routable views (`home/stats/essays/tests/mistakes`) sync to URL hash.
