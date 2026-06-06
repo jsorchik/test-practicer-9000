@@ -1200,4 +1200,14 @@ const WORDS = [
   { word: "exterior",     correct: "outside",       wrong: ["interior", "inside", "pond"],           meaning: "the outer part" },
   { word: "apex",         correct: "pinnacle",      wrong: ["base", "bottom", "sniff"],         meaning: "the top or highest point" },
   { word: "nadir",        correct: "low point",     wrong: ["peak", "summit", "glossy"],               meaning: "the lowest point" },
+  // Parent-requested ISEE Middle focus words also seeded into the regular bank
+  // (the eight not already present). Fresh distractors, ERB pattern.
+  { word: "bias",         correct: "prejudice",     wrong: ["fairness", "ladder", "applause"],     meaning: "an unfair preference for or against something" },
+  { word: "illustrate",   correct: "demonstrate",   wrong: ["obscure", "fasten", "wander"],        meaning: "to make clear, often with an example or picture" },
+  { word: "contempt",     correct: "scorn",         wrong: ["respect", "drizzle", "luggage"],      meaning: "a feeling that someone or something is worthless" },
+  { word: "dismal",       correct: "gloomy",        wrong: ["bright", "crisp", "hollow"],          meaning: "dreary and depressing" },
+  { word: "tentative",    correct: "hesitant",      wrong: ["confident", "sticky", "fragrant"],    meaning: "uncertain, or done as a trial" },
+  { word: "condemn",      correct: "denounce",      wrong: ["praise", "polish", "stumble"],        meaning: "to express strong disapproval of" },
+  { word: "exempt",       correct: "excused",       wrong: ["obligated", "rusty", "curved"],       meaning: "freed from a duty that others must follow" },
+  { word: "conspicuous",  correct: "noticeable",    wrong: ["hidden", "gentle", "wealthy"],        meaning: "easily seen; obvious" },
 ];

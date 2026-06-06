@@ -739,4 +739,15 @@ const SENTENCE_COMPLETIONS = [
   { sentence: "The lobby's ___ chandelier sparkled with hundreds of crystal drops.", correct: "spectacular", wrong: ["plain","dingy","modest"], explanation: "Spectacular = stunningly impressive; matches hundreds of sparkles." },
   { sentence: "Although the salad recipe was ___, Mom adjusted it whenever she ran out of an ingredient.", correct: "fixed", wrong: ["flexible","loose","optional"], explanation: "Fixed = unchanging; Mom's adjustments break the rule for practicality." },
   { sentence: "The student's ___ improvement from a C to an A in one quarter astonished her advisor.", correct: "meteoric", wrong: ["gradual","slow","unnoticed"], explanation: "Meteoric = swift and dramatic in rising; a C-to-A jump in one quarter is meteoric." },
+  // Parent-requested ISEE Middle focus words also seeded into the regular bank
+  // (the eight not already present). Fresh sentences, distinct from the
+  // Parents' Choice focus bank for extra variety.
+  { sentence: "The newspaper tried to report without ___, giving both candidates equal space.", correct: "bias", wrong: ["humor", "luggage", "rainfall"], explanation: "Giving both sides equal space avoids an unfair leaning → 'bias.'" },
+  { sentence: "The chef used a quick sketch to ___ exactly how to fold the dumpling.", correct: "illustrate", wrong: ["disguise", "postpone", "purchase"], explanation: "A sketch makes the method clear → 'illustrate.'" },
+  { sentence: "She could not hide her ___ for anyone who littered in the park.", correct: "contempt", wrong: ["admiration", "patience", "curiosity"], explanation: "A scornful feeling toward litterers → 'contempt'; 'admiration' is the opposite." },
+  { sentence: "The team's ___ record of one win all season left the fans discouraged.", correct: "dismal", wrong: ["impressive", "average", "lengthy"], explanation: "One win all season is gloomy and poor → 'dismal.'" },
+  { sentence: "He gave only a ___ nod, still unsure whether he really agreed.", correct: "tentative", wrong: ["firm", "loud", "sudden"], explanation: "'Still unsure' signals an uncertain, trial response → 'tentative.'" },
+  { sentence: "City officials were quick to ___ the vandalism of the new mural.", correct: "condemn", wrong: ["applaud", "sketch", "fund"], explanation: "Officials strongly disapprove of vandalism → 'condemn'; 'applaud' is the opposite." },
+  { sentence: "An ___ player sits out the penalty that everyone else must serve.", correct: "exempt", wrong: ["eager", "clumsy", "honest"], explanation: "Sitting out a penalty others must serve means freed from it → 'exempt.'" },
+  { sentence: "The bright red graffiti was so ___ that the principal spotted it from across the yard.", correct: "conspicuous", wrong: ["faded", "fragile", "ancient"], explanation: "Spotted from across the yard = very easy to see → 'conspicuous.'" },
 ];
