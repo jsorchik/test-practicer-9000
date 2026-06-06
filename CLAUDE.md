@@ -84,7 +84,13 @@ A parent-curated study area. Two grades (`pc_lower` / `pc_middle`) and a growing
 3. Add a section to `PARENTS_SECTIONS`: `{ key: "pc_<subject>", name, parent: "Parents' Choice", description, poolKey: "<subject>" }`.
 4. Wire the pool into the right grade: `TESTS.parents.grades.pc_lower.pools.<subject> = PARENTS_<SUBJECT>` (+ a `tests`/`testsFull` entry for that section key if test mode is wanted). Leave the OTHER grade's pool empty (`[]`) so it's skipped there.
 5. Add a `SECTION_EMOJI["pc_<subject>"]`.
-First subject shipped: **Pre-Algebra** (Lower) — solving linear equations, anchored on `4h + 10 = 26`. Content is in `data/parents-prealgebra.js`.
+
+**Parents' Choice subjects aren't limited to math.** `makeQuestion` dispatches on entry *shape*, not section, so synonym (`{word, correct, wrong[3], meaning}`) and sentence-completion (`{sentence, correct, wrong[3], explanation}`) entries render with the normal verbal machinery even under a Parents' Choice section. A single data file can export multiple banks (one per sub-section).
+
+Subjects shipped:
+- **Pre-Algebra** (Lower) — solving linear equations, anchored on `4h + 10 = 26`. `data/parents-prealgebra.js`.
+- **Unit Conversion** + **Pythagorean Theorem** (Middle) — `data/parents-units.js`, `data/parents-pythagoras.js`.
+- **Focus Words — Synonyms** + **Focus Words — Fill-in-the-Blank** (Middle) — a parent-curated 37-word ISEE Middle vocab list, as both synonym and cloze banks (`PARENTS_VOCAB_SYN` / `PARENTS_VOCAB_CLOZE` in `data/parents-vocab.js`). Two sections (`pc_vocab_syn` / `pc_vocab_cloze`) so each mode drills separately and the per-section review filter can target either.
 
 Helper functions (use these instead of `GRADES` / `SECTIONS` directly when the path is test-type-sensitive):
 
