@@ -3452,7 +3452,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.36";
+const APP_VERSION = "3.37";
 const APP_VERSION_DATE = "2026-06-07";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -5245,7 +5245,7 @@ function renderSectionsGrid() {
     // (no payouts in practice).
     if (isMonetizedActive() && state.mode === "test") card.classList.add("lite-sparkle");
     const t = testConfigFor(section);
-    const poolCount = section.isEssay ? currentGrade().pools.essays.length : poolFor(section).length;
+    const poolCount = section.isEssay ? currentGrade().pools.essays.length : poolFor(section).filter(e => !isRetired(e)).length;
     const available = !!(t && (section.isEssay || poolCount > 0));
     card.disabled = !available;
     const metaLine = state.mode === "test"
@@ -5423,7 +5423,7 @@ function renderStats() {
     if (section.isCombined) continue;
     let count;
     if (section.isEssay) count = (g.pools.essays || []).length;
-    else                 count = poolFor(section).length;
+    else                 count = poolFor(section).filter(e => !isRetired(e)).length;
     const noun = section.isEssay ? "prompts"
                : section.isReading ? "questions across passages"
                : "questions";
