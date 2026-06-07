@@ -1210,4 +1210,13 @@ const WORDS = [
   { word: "condemn",      correct: "denounce",      wrong: ["praise", "polish", "stumble"],        meaning: "to express strong disapproval of" },
   { word: "exempt",       correct: "excused",       wrong: ["obligated", "rusty", "curved"],       meaning: "freed from a duty that others must follow" },
   { word: "conspicuous",  correct: "noticeable",    wrong: ["hidden", "gentle", "wealthy"],        meaning: "easily seen; obvious" },
+  // Words pulled from a real ISEE Middle practice test (parent-supplied).
+  // (pacify, lofty, torrid, vigorous, and haphazard were already in the bank
+  //  above, so only the six genuinely-new words are added here.)
+  { word: "plume",        correct: "feather",       wrong: ["root", "puddle", "stone"],            meaning: "a large feather, or a rising column of smoke" },
+  { word: "insolently",   correct: "rudely",        wrong: ["politely", "quickly", "faintly"],     meaning: "in a rude, disrespectful way" },
+  { word: "overhaul",     correct: "repair",        wrong: ["neglect", "borrow", "sketch"],        meaning: "to fix or revise something thoroughly" },
+  { word: "supplement",   correct: "addition",      wrong: ["reduction", "puzzle", "meadow"],      meaning: "something added to complete or enhance" },
+  { word: "inundated",    correct: "flooded",       wrong: ["drained", "polished", "narrow"],      meaning: "overwhelmed or flooded" },
+  { word: "thwarted",     correct: "blocked",       wrong: ["aided", "painted", "rented"],         meaning: "prevented from succeeding; frustrated" },
 ];
