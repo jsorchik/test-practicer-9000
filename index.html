@@ -26,6 +26,7 @@
     --bad: #ef4444;
     --warn: #f59e0b;
     --shadow: 0 10px 30px rgba(0,0,0,.35);
+    --option-hover: #334158;   /* MCQ option :hover background (lighter than --panel-2) */
     /* Body background radial-gradient blobs */
     --grad1: #1d2a4d;
     --grad2: #1a3a3a;
@@ -63,6 +64,7 @@
     --bad: #dc2626;
     --warn: #b45309;
     --shadow: 0 10px 30px rgba(15,23,42,.12);
+    --option-hover: #e2e8f0;   /* slate-200 — darker than the white panel, keeps dark text readable */
     --grad1: #dbeafe;
     --grad2: #d1fae5;
     --w03: rgba(15,23,42,.04);
@@ -1061,7 +1063,7 @@
     font-family: inherit;
     line-height: 1.4;
   }
-  .option:hover:not(:disabled) { background: #334158; }
+  .option:hover:not(:disabled) { background: var(--option-hover); }
   .option:active:not(:disabled) { transform: translateY(1px); }
   .option .key {
     display: inline-flex;
@@ -3420,7 +3422,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.32";
+const APP_VERSION = "3.32.1";
 const APP_VERSION_DATE = "2026-06-06";
 
 // Anti-spam: minimum seconds per question for a test to count toward
