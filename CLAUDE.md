@@ -91,6 +91,8 @@ Subjects shipped:
 - **Pre-Algebra** (Lower) — solving linear equations, anchored on `4h + 10 = 26`. `data/parents-prealgebra.js`.
 - **Unit Conversion** + **Pythagorean Theorem** (Middle) — `data/parents-units.js`, `data/parents-pythagoras.js`.
 - **Focus Words — Synonyms** + **Focus Words — Fill-in-the-Blank** (Middle) — a parent-curated 37-word ISEE Middle vocab list, as both synonym and cloze banks (`PARENTS_VOCAB_SYN` / `PARENTS_VOCAB_CLOZE` in `data/parents-vocab.js`). Two sections (`pc_vocab_syn` / `pc_vocab_cloze`) so each mode drills separately and the per-section review filter can target either.
+- **Test Words — Synonyms** + **Test Words — Fill-in-the-Blank** (Lower + Middle) — vocab pulled from the kid's real practice tests, drilled as syn + cloze. `data/parents-testwords.js` (`PARENTS_TESTWORDS_{MIDDLE,LOWER}_{SYN,CLOZE}`). Sections `pc_testwords_syn` / `pc_testwords_cloze` are shared across both grades, each grade filling its own pool.
+- **Missed Quant — Redo** (Lower + Middle) — the exact quant questions the kid answered wrong on a real test (identified from red/green answer markers in the screenshots). `data/parents-missedquant.js` (`PARENTS_MISSEDQUANT_{MIDDLE,LOWER}`). Mixes `math` + `quantComparison`; uses the new ISEE chart/table support for the graph/table items. Section `pc_missed_quant`.
 
 Helper functions (use these instead of `GRADES` / `SECTIONS` directly when the path is test-type-sensitive):
 
@@ -129,7 +131,7 @@ The home view exposes this as **two sub-tabs of the Test mode button** (`Test ·
 | `psatMath` | `{type, question, correct, wrong[3], explanation, chart?, topic?}` | PSAT MCQ; optional inline chart or `<table>` in question |
 | `psatMathGridIn` | `{type, question, correct, accept[]?, explanation, chart?, topic?}` | No `wrong[]`; kid types answer; `psatAnswersMatch` handles equivalents |
 | `psatRW` | `{type, subtype: "comprehension"\|"vocab"\|"writingEdit", passage, question, choices[4], correct: 0-3, qType?, explanation}` | Passage inline; `<u>...</u>` allowed in passages. See "Question type taxonomies" below for qType values. |
-| `math` (ISEE) | `{type, question, correct, wrong[3], explanation, topic?}` | Same as psatMath sans chart support |
+| `math` (ISEE) | `{type, question, correct, wrong[3], explanation, topic?, chart?}` | Optional `chart` (bar/line/scatter, same spec as PSAT) renders above the question (v3.35+); inline `<table>` allowed in `question` (passes through `fmtFractions` unescaped). `quantComparison` also accepts an optional `chart`. |
 | Reading question (ISEE) | `{question, choices, correct, explanation, passageId, qType?, topic?}` (no `type` field) | `passageId` links to a separate passage object |
 | Sentence completion | `{sentence, correct, wrong[3], explanation}` | Sentence has `___` for the blank |
 | Synonym | `{word, correct, wrong[3], meaning}` | `meaning` shown in feedback |

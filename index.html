@@ -3114,6 +3114,8 @@
 <script src="data/parents-units.js"></script>
 <script src="data/parents-pythagoras.js"></script>
 <script src="data/parents-vocab.js"></script>
+<script src="data/parents-testwords.js"></script>
+<script src="data/parents-missedquant.js"></script>
 <script src="data/definitions.js"></script>
 <script>
 // ════════════════════════════════════════════════════════════════════════════
@@ -3396,26 +3398,47 @@ const PARENTS_SECTIONS = [
   { key: "pc_pythagoras", name: "Pythagorean Theorem", parent: "Parents' Choice", description: "a² + b² = c² — find the hypotenuse or a missing leg of a right triangle.", poolKey: "pythagoras" },
   { key: "pc_vocab_syn",   name: "Focus Words — Synonyms",        parent: "Parents' Choice", description: "Synonyms for the ISEE Middle focus word list.",            poolKey: "vocabSyn" },
   { key: "pc_vocab_cloze", name: "Focus Words — Fill-in-the-Blank", parent: "Parents' Choice", description: "Sentence completions using the ISEE Middle focus word list.", poolKey: "vocabCloze" },
+  { key: "pc_testwords_syn",   name: "Test Words — Synonyms",          parent: "Parents' Choice", description: "Synonyms for the vocabulary from the real practice test.",       poolKey: "testWordsSyn" },
+  { key: "pc_testwords_cloze", name: "Test Words — Fill-in-the-Blank", parent: "Parents' Choice", description: "Fill-in-the-blank for the vocabulary from the real practice test.", poolKey: "testWordsCloze" },
+  { key: "pc_missed_quant",    name: "Missed Quant — Redo",            parent: "Parents' Choice", description: "The quant questions you got wrong on the real practice test — try them again.", poolKey: "missedQuant" },
 ];
 TESTS.parents.grades = {
   pc_lower: {
     label: "Lower",
     sub: "Younger / earlier topics",
-    pools: { prealgebra: PARENTS_PREALGEBRA, units: [], pythagoras: [], vocabSyn: [], vocabCloze: [] },
-    tests:     { pc_prealgebra: { questionCount:  8, durationSec: 12 * 60 } },
-    testsFull: { pc_prealgebra: { questionCount: 12, durationSec: 20 * 60 } },
+    pools: {
+      prealgebra: PARENTS_PREALGEBRA, units: [], pythagoras: [], vocabSyn: [], vocabCloze: [],
+      testWordsSyn: PARENTS_TESTWORDS_LOWER_SYN, testWordsCloze: PARENTS_TESTWORDS_LOWER_CLOZE, missedQuant: PARENTS_MISSEDQUANT_LOWER,
+    },
+    tests: {
+      pc_prealgebra: { questionCount: 8, durationSec: 12 * 60 },
+      pc_testwords_syn: { questionCount: 8, durationSec: 8 * 60 }, pc_testwords_cloze: { questionCount: 8, durationSec: 8 * 60 },
+      pc_missed_quant: { questionCount: 8, durationSec: 12 * 60 },
+    },
+    testsFull: {
+      pc_prealgebra: { questionCount: 12, durationSec: 20 * 60 },
+      pc_testwords_syn: { questionCount: 9, durationSec: 10 * 60 }, pc_testwords_cloze: { questionCount: 9, durationSec: 10 * 60 },
+      pc_missed_quant: { questionCount: 11, durationSec: 18 * 60 },
+    },
   },
   pc_middle: {
     label: "Middle",
     sub: "Older / harder topics",
-    pools: { prealgebra: [], units: PARENTS_UNITS, pythagoras: PARENTS_PYTHAGORAS, vocabSyn: PARENTS_VOCAB_SYN, vocabCloze: PARENTS_VOCAB_CLOZE },
+    pools: {
+      prealgebra: [], units: PARENTS_UNITS, pythagoras: PARENTS_PYTHAGORAS, vocabSyn: PARENTS_VOCAB_SYN, vocabCloze: PARENTS_VOCAB_CLOZE,
+      testWordsSyn: PARENTS_TESTWORDS_MIDDLE_SYN, testWordsCloze: PARENTS_TESTWORDS_MIDDLE_CLOZE, missedQuant: PARENTS_MISSEDQUANT_MIDDLE,
+    },
     tests: {
       pc_units: { questionCount: 8, durationSec: 12 * 60 }, pc_pythagoras: { questionCount: 8, durationSec: 12 * 60 },
       pc_vocab_syn: { questionCount: 10, durationSec: 8 * 60 }, pc_vocab_cloze: { questionCount: 10, durationSec: 9 * 60 },
+      pc_testwords_syn: { questionCount: 8, durationSec: 8 * 60 }, pc_testwords_cloze: { questionCount: 8, durationSec: 8 * 60 },
+      pc_missed_quant: { questionCount: 7, durationSec: 12 * 60 },
     },
     testsFull: {
       pc_units: { questionCount: 12, durationSec: 20 * 60 }, pc_pythagoras: { questionCount: 12, durationSec: 20 * 60 },
       pc_vocab_syn: { questionCount: 18, durationSec: 14 * 60 }, pc_vocab_cloze: { questionCount: 18, durationSec: 16 * 60 },
+      pc_testwords_syn: { questionCount: 11, durationSec: 12 * 60 }, pc_testwords_cloze: { questionCount: 11, durationSec: 12 * 60 },
+      pc_missed_quant: { questionCount: 7, durationSec: 14 * 60 },
     },
   },
 };
@@ -3429,7 +3452,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.34";
+const APP_VERSION = "3.35";
 const APP_VERSION_DATE = "2026-06-07";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3534,6 +3557,9 @@ const SECTION_EMOJI = {
   pc_pythagoras:     "📐",
   pc_vocab_syn:      "🔤",
   pc_vocab_cloze:    "✏️",
+  pc_testwords_syn:  "🔤",
+  pc_testwords_cloze:"✏️",
+  pc_missed_quant:   "🎯",
 };
 function sectionEmoji(key) { return SECTION_EMOJI[key] || "•"; }
 
@@ -4749,9 +4775,10 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   }
 
   if (entry.type === "quantComparison") {
+    const chartHtml = entry.chart ? renderChartSvg(entry.chart) : "";
     return {
       id, sectionKey, entry,
-      promptHtml: `<div class="prompt">Using the information given, compare the quantity in Column A to the quantity in Column B.</div>
+      promptHtml: `<div class="prompt">Using the information given, compare the quantity in Column A to the quantity in Column B.</div>${chartHtml}
         <div class="qc-cols">
           <div class="qc-col"><div class="qc-label">Column A</div><div class="qc-val">${fmtFractions(entry.columnA)}</div></div>
           <div class="qc-col"><div class="qc-label">Column B</div><div class="qc-val">${fmtFractions(entry.columnB)}</div></div>
@@ -4775,9 +4802,10 @@ function makeQuestion(entry, sectionKey, idx, gradeLevel = state.gradeLevel) {
   }
   if (entry.type === "math") {
     const choices = buildMathChoices(entry.correct, entry.wrong);
+    const chartHtml = entry.chart ? renderChartSvg(entry.chart) : "";
     return {
       id, sectionKey, entry,
-      promptHtml: `<div class="prompt">Select the best answer from the choices given.</div><div class="math-q">${fmtFractions(entry.question)}</div>`,
+      promptHtml: `<div class="prompt">Select the best answer from the choices given.</div>${chartHtml}<div class="math-q">${fmtFractions(entry.question)}</div>`,
       choices,
       answerIdx: choices.indexOf(entry.correct),
       feedbackHtml: mathFeedbackHtml(entry),

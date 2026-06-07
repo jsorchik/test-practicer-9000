@@ -457,4 +457,14 @@ const LOWER_WORDS = [
   { word: "pout", correct: "sulk", wrong: ["beam", "cheer", "breezy"], meaning: "to push out the lips when upset" },
   { word: "praise", correct: "compliment", wrong: ["insult", "mock", "shiny"], meaning: "to say good things about someone" },
   { word: "precious", correct: "valuable", wrong: ["worthless", "common", "loud"], meaning: "very loved and worth a lot" },
+  // Words pulled from a real ISEE Lower practice test (parent-supplied).
+  { word: "elongate",   correct: "lengthen",  wrong: ["shorten", "wash", "borrow"],       meaning: "to make something longer; stretch out" },
+  { word: "solemnly",   correct: "seriously", wrong: ["cheerfully", "quickly", "loudly"], meaning: "in a serious, formal way" },
+  { word: "uproot",     correct: "remove",    wrong: ["plant", "paint", "borrow"],        meaning: "to pull out by the roots; remove completely" },
+  { word: "salvage",    correct: "rescue",    wrong: ["abandon", "measure", "freeze"],    meaning: "to save something from being lost or destroyed" },
+  { word: "seldom",     correct: "rarely",    wrong: ["often", "loudly", "neatly"],       meaning: "not often; hardly ever" },
+  { word: "liberate",   correct: "free",      wrong: ["capture", "polish", "stack"],      meaning: "to set free" },
+  { word: "devotion",   correct: "loyalty",   wrong: ["neglect", "puzzle", "hallway"],    meaning: "deep love, loyalty, or dedication" },
+  { word: "attractive", correct: "appealing", wrong: ["ugly", "damp", "early"],           meaning: "pleasing to look at; appealing" },
+  { word: "widespread", correct: "common",    wrong: ["rare", "sticky", "gentle"],        meaning: "found or spread over a large area" },
 ];
