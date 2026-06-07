@@ -54,6 +54,8 @@ Mistakes are stored in `state.lifetimes[testType][grade].mistakes` keyed by `${g
 
 The one safe form of dedup is **replacing** a duplicate's content in-place. Past dupe fixes (commit `f62badd`): three duplicate Middle WORDS headwords were rewritten as fresh entries at the same indices.
 
+**Soft-retire (v3.36+)** is the safe way to *remove* a weak question (too easy / unrepresentative / extraneous) without splicing: set `retired: true` on the entry. `isRetired(entry)` gates new draws — `pickWithExclusion` (test/battery) and the practice-queue builders skip retired entries — but the entry STAYS in the array, so its index, the mistakes pool, and past-test snapshots all still resolve. Reversible (delete the flag). Never hard-delete to "clean up" a bank.
+
 ### Storage key
 `STORAGE_KEY = "isee-progress-v5"`. **Do not rename** — the app was once explicitly named ISEE-something, the user later asked for generic naming, but localStorage data uses this exact key. Renaming silently wipes everyone's stats.
 

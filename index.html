@@ -3452,7 +3452,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.35";
+const APP_VERSION = "3.36";
 const APP_VERSION_DATE = "2026-06-07";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -3921,18 +3921,27 @@ function buildMathChoices(correct, wrong) {
 // those. If the available fresh-pool isn't big enough, we top up with
 // the OLDEST recent picks (FIFO un-exclusion) so a draw never short-
 // returns.
+// A question is "retired" (soft-removed) when entry.retired is truthy. Retired
+// entries STAY in their data array — so array indices, the mistakes pool, and
+// past-test snapshots all still resolve by id — but they're excluded from NEW
+// practice/test draws. This is the safe alternative to splicing (which would
+// reindex everything after it and corrupt saved progress).
+function isRetired(entry) { return !!(entry && entry.retired); }
+
 function pickWithExclusion(pool, count, recent) {
   const recentSet = new Set(recent || []);
   const fresh = [];
   for (let i = 0; i < pool.length; i++) {
+    if (isRetired(pool[i])) continue;        // never draw a retired question
     if (!recentSet.has(i)) fresh.push(i);
   }
   if (fresh.length >= count) {
     return shuffle(fresh).slice(0, count);
   }
-  // Pool exhausted of fresh — take all fresh + oldest recents to fill
+  // Pool exhausted of fresh — take all fresh + oldest recents to fill (skipping
+  // any recents that have since been retired).
   const needed = count - fresh.length;
-  const topUp = (recent || []).slice(0, needed);
+  const topUp = (recent || []).filter(i => !isRetired(pool[i])).slice(0, needed);
   return shuffle(fresh.concat(topUp)).slice(0, count);
 }
 
@@ -6571,7 +6580,7 @@ function startPractice() {
   state.mode = "practice";
   clearActiveSession();  // practice isn't resumable; drop any stale test snapshot
   const entries = practiceEntriesFor(state.section);
-  state.practicePool = shuffle(entries.map((_, i) => i));
+  state.practicePool = shuffle(entries.map((_, i) => i).filter(i => !isRetired(entries[i].entry)));
   state.practiceCurrent = null;
   state.practiceAnswered = false;
   state.selectedIdx = -1;
@@ -6592,7 +6601,7 @@ function startPractice() {
 
 function practiceNext() {
   const entries = practiceEntriesFor(state.section);
-  if (state.practicePool.length === 0) state.practicePool = shuffle(entries.map((_, i) => i));
+  if (state.practicePool.length === 0) state.practicePool = shuffle(entries.map((_, i) => i).filter(i => !isRetired(entries[i].entry)));
   const localIdx = state.practicePool.pop();
   const ce = entries[localIdx];
   state.practiceCurrent = makeQuestion(ce.entry, ce.sectionKey, ce.idx);
