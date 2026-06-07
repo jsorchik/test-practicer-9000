@@ -3429,7 +3429,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.32.2";
+const APP_VERSION = "3.33";
 const APP_VERSION_DATE = "2026-06-06";
 
 // Anti-spam: minimum seconds per question for a test to count toward
@@ -4844,8 +4844,24 @@ function getEliminated() {
 function toggleEliminated(i) {
   const arr = getEliminated();
   const at = arr.indexOf(i);
-  if (at >= 0) arr.splice(at, 1);
-  else arr.push(i);
+  if (at >= 0) {
+    arr.splice(at, 1);   // un-cross
+  } else {
+    arr.push(i);         // cross out
+    // Crossing out your CURRENT pick also deselects it — you've changed your
+    // mind, so it goes back to unanswered + struck through. (Inverse of
+    // selecting a crossed option, which un-crosses it.)
+    const isPicked = (state.mode === "test")
+      ? (state.testAnswers[state.testIndex] && state.testAnswers[state.testIndex].picked === i)
+      : (state.selectedIdx === i);
+    if (isPicked) {
+      state.selectedIdx = -1;
+      if (state.mode === "test") {
+        const a = state.testAnswers[state.testIndex];
+        if (a) a.picked = null;   // null = unanswered everywhere else
+      }
+    }
+  }
   // Crossed-out indices ride along in the resumable session snapshot (test
   // mode persists testAnswers, where eliminated lives). Practice/review are
   // transient. Only the on/off preference goes in the main save.
@@ -7334,11 +7350,10 @@ function renderQuiz(picked = -1) {
         }
         if (def) inlineDef = `<span class="option-def">${escapeHtml(def)}</span>`;
       }
-      // Hide the ✕ on the currently-selected answer — you can't both pick a
-      // choice and cross it out. (Selecting a crossed-out option already
-      // un-crosses it; this stops the reverse — crossing out your pick.)
-      const isSelectedOpt = (i === state.selectedIdx);
-      const elimToggle = (elimUsable && !isSelectedOpt) ? `<span class="elim-toggle" data-elim="${i}" role="button" aria-label="Cross out this answer">✕</span>` : "";
+      // The ✕ shows on every choice, including the currently-selected one:
+      // crossing out your pick deselects it AND strikes it through (handled in
+      // toggleEliminated). Selecting a crossed-out option does the inverse.
+      const elimToggle = elimUsable ? `<span class="elim-toggle" data-elim="${i}" role="button" aria-label="Cross out this answer">✕</span>` : "";
       btn.innerHTML = `<span class="key">${"ABCD"[i]}</span><span class="option-text"><span class="option-word">${renderChoiceText(choice)}</span>${inlineDef}</span>${elimToggle}`;
       if (showFeedback) {
         if (i === q.answerIdx) btn.classList.add("correct");
