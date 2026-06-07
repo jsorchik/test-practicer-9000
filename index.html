@@ -3398,9 +3398,9 @@ const PARENTS_SECTIONS = [
   { key: "pc_pythagoras", name: "Pythagorean Theorem", parent: "Parents' Choice", description: "a² + b² = c² — find the hypotenuse or a missing leg of a right triangle.", poolKey: "pythagoras" },
   { key: "pc_vocab_syn",   name: "Focus Words — Synonyms",        parent: "Parents' Choice", description: "Synonyms for the ISEE Middle focus word list.",            poolKey: "vocabSyn" },
   { key: "pc_vocab_cloze", name: "Focus Words — Fill-in-the-Blank", parent: "Parents' Choice", description: "Sentence completions using the ISEE Middle focus word list.", poolKey: "vocabCloze" },
-  { key: "pc_testwords_syn",   name: "Test Words — Synonyms",          parent: "Parents' Choice", description: "Synonyms for the vocabulary from the real practice test.",       poolKey: "testWordsSyn" },
-  { key: "pc_testwords_cloze", name: "Test Words — Fill-in-the-Blank", parent: "Parents' Choice", description: "Fill-in-the-blank for the vocabulary from the real practice test.", poolKey: "testWordsCloze" },
-  { key: "pc_missed_quant",    name: "Missed Quant — Redo",            parent: "Parents' Choice", description: "The quant questions you got wrong on the real practice test — try them again.", poolKey: "missedQuant" },
+  { key: "pc_testwords_syn",   name: "Practice Test Review — Synonyms",          parent: "Parents' Choice", description: "Synonyms for the vocabulary from the real practice test.",          poolKey: "testWordsSyn" },
+  { key: "pc_testwords_cloze", name: "Practice Test Review — Fill-in-the-Blank", parent: "Parents' Choice", description: "Fill-in-the-blank for the vocabulary from the real practice test.",    poolKey: "testWordsCloze" },
+  { key: "pc_missed_quant",    name: "Practice Test Review — Missed Math",       parent: "Parents' Choice", description: "The math questions you got wrong on the real practice test — try them again.", poolKey: "missedQuant" },
 ];
 TESTS.parents.grades = {
   pc_lower: {
@@ -3452,7 +3452,7 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.37";
+const APP_VERSION = "3.37.1";
 const APP_VERSION_DATE = "2026-06-07";
 
 // Anti-spam: minimum seconds per question for a test to count toward
