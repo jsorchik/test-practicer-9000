@@ -261,6 +261,7 @@ The Settings modal shows the bank at top as an **editable number input** (parent
 ### Anti-spam
 - Per-test: if elapsed < `MIN_SEC_PER_QUESTION × N`, payout = $0
 - Per-essay: if elapsed < `ESSAY_MIN_SEC` (5 min) AND words ≥ 100, payout = $0
+- **First-completion-only for Parents' Choice (v3.38+):** PC pools are small + fixed, so re-taking the same test would farm rewards. A PC test pays out only the **first non-rushed completion**, keyed by `${testType}-${gradeLevel}-${sectionKey}-${volume}` in `state.paidTests` (persisted). Re-takes still work as practice — they earn $0 and the results screen shows "✓ Already earned". Half and full count as separate tests (one payout each). Only `testType === "parents"` is gated — ISEE/PSAT draw fresh questions from large pools each time, so re-taking is real practice and still pays. `state.lastTestAlreadyEarned` drives the results-screen message. "Reset this level" clears that grade's `paidTests` keys so a fresh study cycle can re-earn.
 
 ### Tiny mode (Unicorn Quest, v3.9+)
 Pink-themed kid mode for a ~5-year-old learning letters / phonics / counting. `state.testType === "tiny"` enables it. The kid CAN'T read questions, so:

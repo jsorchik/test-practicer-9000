@@ -3452,8 +3452,8 @@ const STORAGE_KEY = "isee-progress-v5";
 // tell what version the kid is running (helpful when reporting bugs / sanity-
 // checking that a fix has landed after a hard refresh). Bump on every push
 // of substantive changes; small UX nits don't need a version bump.
-const APP_VERSION = "3.37.1";
-const APP_VERSION_DATE = "2026-06-07";
+const APP_VERSION = "3.38";
+const APP_VERSION_DATE = "2026-06-08";
 
 // Anti-spam: minimum seconds per question for a test to count toward
 // monetized earnings. Faster than this and we assume the kid is
@@ -3727,6 +3727,11 @@ const state = {
   // and the parent pays out once. loadProgress sums any legacy per-grade
   // balances on first load after the migration and zeroes them out.
   rewardsBanked: 0,
+  // Anti-farming: tracks which tests have already paid out so a kid can't
+  // grind the same (small, fixed) Parents' Choice test for repeat rewards.
+  // Keyed by `${testType}-${gradeLevel}-${sectionKey}-${volume}`. Currently
+  // only Parents' Choice tests are gated (see finishTest). Persisted.
+  paidTests: {},
   section: null,
   // Practice
   practicePool: [],
@@ -4279,6 +4284,10 @@ function loadProgress() {
       }
       state.rewardsBanked = sum;
     }
+    // Restore the already-paid-tests ledger (anti-farming).
+    if (data.paidTests && typeof data.paidTests === "object") {
+      state.paidTests = data.paidTests;
+    }
   } catch (_) {}
   // After everything is loaded, ensure state.gradeLevel is valid for the
   // current testType. If a save has testType=psat with gradeLevel=middle
@@ -4307,6 +4316,7 @@ function saveProgress() {
       monetizedByType: state.monetizedByType,
       payoutConfigByType: state.payoutConfigByType,
       rewardsBanked: state.rewardsBanked,
+      paidTests: state.paidTests,
       lifetimes: state.lifetimes,
     }));
   } catch (_) {}
@@ -7064,11 +7074,27 @@ function finishTest() {
   const elapsedSecForCheck = Math.floor((Date.now() - state.testStartMs) / 1000);
   const minTimeSec = total * MIN_SEC_PER_QUESTION;
   const rushed = total > 0 && elapsedSecForCheck < minTimeSec;
-  const perTestEarned = (isMonetizedActive() && !rushed) ? calculateTestEarnings(correct, total) : 0;
+  // Anti-farming for Parents' Choice: those pools are small + fixed, so re-taking
+  // the same test would just farm rewards. Pay out only the FIRST non-rushed
+  // completion of a given PC test (keyed by testType+grade+section+volume).
+  // Re-takes still work as practice — they just earn $0. ISEE/PSAT aren't gated:
+  // their large pools draw fresh questions each time, so re-taking is real practice.
+  const payOncePerTest = state.testType === "parents";
+  const paidKey = `${state.testType}-${state.gradeLevel}-${state.section.key}-${state.testVolume}`;
+  const alreadyPaid = payOncePerTest && !!(state.paidTests && state.paidTests[paidKey]);
+  const perTestEarned = (isMonetizedActive() && !rushed && !alreadyPaid) ? calculateTestEarnings(correct, total) : 0;
   state.lastTestRushed = rushed;
+  // For the results screen: distinguish "earned $0 because already claimed" from
+  // "earned $0 because rushed / not monetized". Only true when a payout would
+  // otherwise have happened (monetized + not rushed) but was blocked as a repeat.
+  state.lastTestAlreadyEarned = alreadyPaid && isMonetizedActive() && !rushed;
   if (perTestEarned > 0) {
     state.rewardsBanked = (state.rewardsBanked || 0) + perTestEarned;
     state.lastTestEarned = perTestEarned;
+    if (payOncePerTest) {
+      if (!state.paidTests) state.paidTests = {};
+      state.paidTests[paidKey] = true;   // lock in — this PC test has now paid once
+    }
   } else {
     state.lastTestEarned = 0;
   }
@@ -7750,7 +7776,9 @@ function renderTestResults() {
     ? `<div><strong style="color:#fbbf24">💰 $${state.lastTestEarned.toFixed(2)}</strong>earned this test</div>`
     : state.lastTestRushed && isMonetizedActive()
       ? `<div><strong style="color:#ef4444">⚠️ Too fast</strong>no payout (give it a real try)</div>`
-      : '';
+      : state.lastTestAlreadyEarned
+        ? `<div><strong style="color:#60a5fa">✓ Already earned</strong>great practice — no repeat payout</div>`
+        : '';
   const bankCell = (state.rewardsBanked || 0) > 0
     ? `<div><strong style="color:#fbbf24">$${state.rewardsBanked.toFixed(2)}</strong>banked total</div>`
     : '';
@@ -8342,6 +8370,14 @@ $("resetProgress").addEventListener("click", async () => {
     perfectTests: 0, totalTests: 0, longestTestStreak: 0,
     bestByTest: {}, essays: [], tests: [], rewardsBanked: 0,
   };
+  // Also clear this grade's anti-farming ledger so a fresh study cycle can
+  // earn rewards again on these tests (keys are `${testType}-${grade}-…`).
+  if (state.paidTests) {
+    const prefix = `${state.testType}-${state.gradeLevel}-`;
+    for (const k of Object.keys(state.paidTests)) {
+      if (k.startsWith(prefix)) delete state.paidTests[k];
+    }
+  }
   saveProgress();
   renderHome();
 });
